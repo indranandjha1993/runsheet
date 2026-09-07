@@ -5,6 +5,7 @@ import type { Route } from "../adapters/http.js";
 import { toCsv } from "../domain/csv.js";
 import { assertParameters, REPORTS, reportNamed } from "../domain/reports.js";
 import type { ReportingDeps, ReportResult } from "../application/ports.js";
+import { compareWindows, METRICS } from "../application/baseline-report.js";
 
 export const runReportQuery = z.object({
   from: z.iso.date(),
@@ -110,10 +111,66 @@ function runRoute(deps: RouteDeps): Route {
   };
 }
 
+export const baselineQuery = z.object({
+  metric: z.string().min(1),
+  baseline_from: z.iso.date(),
+  baseline_to: z.iso.date(),
+  measured_from: z.iso.date(),
+  measured_to: z.iso.date(),
+  lane: z.string().min(1).optional(),
+});
+
+function metricsRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/baselines/metrics",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "reports:read");
+
+      return {
+        status: 200,
+        body: {
+          metrics: METRICS.map((metric) => ({
+            name: metric.name,
+            description: metric.description,
+            better_when: metric.betterWhen,
+          })),
+        },
+      };
+    },
+  };
+}
+
+function baselineRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/baselines/comparison",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "reports:read");
+
+      const parsed = baselineQuery.safeParse(request.query);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const query = parsed.data;
+      const comparison = await compareWindows(deps, {
+        tenantId: caller.tenantId,
+        metric: query.metric,
+        baseline: { from: query.baseline_from, to: query.baseline_to },
+        measured: { from: query.measured_from, to: query.measured_to },
+        ...(query.lane === undefined ? {} : { lane: query.lane }),
+      });
+
+      return { status: 200, body: comparison };
+    },
+  };
+}
+
 export interface RouteDeps extends ReportingDeps {
   readonly lookup: CallerLookup;
 }
 
 export function reportingRoutes(deps: RouteDeps): Route[] {
-  return [catalogueRoute(deps), runRoute(deps)];
+  return [catalogueRoute(deps), runRoute(deps), metricsRoute(deps), baselineRoute(deps)];
 }

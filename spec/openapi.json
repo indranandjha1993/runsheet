@@ -483,6 +483,60 @@
         ]
       }
     },
+    "/v1/baselines/comparison": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "Compare a measured window against a baseline window",
+        "operationId": "getV1BaselinesComparison",
+        "responses": {
+          "200": {
+            "description": "both rates, the interval around the difference, and whether it is distinguishable"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "reports:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/baselines/metrics": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "List the metrics a value claim can be measured on",
+        "operationId": "getV1BaselinesMetrics",
+        "responses": {
+          "200": {
+            "description": "the metrics and which direction is better"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "reports:read"
+            ]
+          }
+        ]
+      }
+    },
     "/v1/callers/current": {
       "get": {
         "tags": [
