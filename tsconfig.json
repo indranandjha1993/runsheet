@@ -27,6 +27,9 @@
     },
     {
       "path": "services/identity/tsconfig.build.json"
+    },
+    {
+      "path": "services/address/tsconfig.build.json"
     }
   ]
 }
