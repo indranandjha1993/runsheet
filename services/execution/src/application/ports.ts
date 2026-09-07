@@ -1,6 +1,9 @@
 import type { Envelope } from "@runsheet/kernel";
 import type { Run } from "../domain/run.js";
 import type { Proof } from "../domain/proof.js";
+import type { Scan } from "../domain/hub-floor.js";
+
+export type ScanDirection = "in" | "out";
 
 export interface ExecutionRepository {
   saveRun(run: Run, expectedVersion: number): Promise<void>;
@@ -8,6 +11,8 @@ export interface ExecutionRepository {
   openRuns(tenantId: string, hubId: string, date: string): Promise<Run[]>;
   saveProof(proof: Proof): Promise<void>;
   proofById(tenantId: string, id: string): Promise<Proof | undefined>;
+  saveScan(id: string, scan: Scan, direction: ScanDirection, runId?: string): Promise<void>;
+  scansFor(tenantId: string, consignmentId: string): Promise<Scan[]>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;
 }
 

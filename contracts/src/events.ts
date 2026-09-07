@@ -54,6 +54,27 @@ const exceptionTopic = { topic: "exception", key: "subject_aggregate_id" } as co
 const promiseTopic = { topic: "promise", key: "consignment_id" } as const;
 const planTopic = { topic: "plan", key: "aggregate_id" } as const;
 
+const scannedInPayload = z.object({
+  hub_id: z.string(),
+  consignment_id: z.string(),
+  worker_id: z.string(),
+  weight_grams: z.number().int().positive().optional(),
+  volumetric_grams: z.number().int().nonnegative().optional(),
+});
+
+const scannedOutPayload = z.object({
+  hub_id: z.string(),
+  consignment_id: z.string(),
+  worker_id: z.string(),
+  run_id: z.string(),
+});
+
+const hubExceptionPayload = z.object({
+  hub_id: z.string(),
+  consignment_id: z.string(),
+  reason: z.enum(["unexpected_parcel", "weight_differs_from_booking", "not_on_this_run"]),
+});
+
 export interface EventDefinition {
   readonly payload: z.ZodType;
   readonly routing: { readonly topic: string; readonly key: string };
@@ -75,6 +96,9 @@ export const eventCatalogue: Record<string, EventDefinition> = {
   "consignment.pickup_attempted": define(attemptedPayload, consignmentTopic),
   "consignment.picked_up": define(empty, consignmentTopic),
   "consignment.inscanned": define(empty, consignmentTopic),
+  "consignment.scanned_in": define(scannedInPayload, consignmentTopic),
+  "consignment.scanned_out": define(scannedOutPayload, consignmentTopic),
+  "consignment.hub_exception": define(hubExceptionPayload, consignmentTopic),
   "consignment.out_for_delivery": define(empty, consignmentTopic),
   "consignment.attempted": define(attemptedPayload, consignmentTopic),
   "consignment.delivered": define(empty, consignmentTopic),

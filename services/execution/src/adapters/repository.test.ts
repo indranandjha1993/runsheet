@@ -35,7 +35,7 @@ const sample = (): Run =>
 
 beforeEach(async () => {
   await pool.query(
-    "DROP TABLE IF EXISTS stop_actions, stops, runs, proofs, aggregate_streams, schema_migrations CASCADE",
+    "DROP TABLE IF EXISTS stop_actions, stops, runs, proofs, hub_scans, aggregate_streams, schema_migrations CASCADE",
   );
   await migrate(pool, migrations);
 });
@@ -161,5 +161,56 @@ describe("the execution repository", () => {
       await repository.nextSequence(tenantId, "a"),
       await repository.nextSequence(tenantId, "b"),
     ]).toEqual([1, 2, 1]);
+  });
+});
+
+describe("hub scans in the database", () => {
+  const scan = {
+    tenantId,
+    hubId: "hub-1",
+    workerId: "w1",
+    consignmentId: "c1",
+    at: new Date("2026-09-07T10:00:00.000Z"),
+    accepted: true,
+  };
+
+  it("reads back a scan with its measurements", async () => {
+    await repository.saveScan("01J8Z0T0000000000000000050", { ...scan, weightGrams: 1500, volumetricGrams: 1200 }, "in");
+
+    const history = await repository.scansFor(tenantId, "c1");
+    expect(history).toHaveLength(1);
+    expect(history[0]).toMatchObject({ weightGrams: 1500, volumetricGrams: 1200, hubId: "hub-1" });
+  });
+
+  it("orders the history the way the parcel travelled", async () => {
+    await repository.saveScan("01J8Z0T0000000000000000051", { ...scan, hubId: "hub-2", at: new Date("2026-09-07T14:00:00.000Z") }, "in");
+    await repository.saveScan("01J8Z0T0000000000000000050", scan, "in");
+
+    const history = await repository.scansFor(tenantId, "c1");
+    expect(history.map((s) => s.hubId)).toEqual(["hub-1", "hub-2"]);
+  });
+
+  it("keeps a refused outscan with its reason, because the parcel was physically presented", async () => {
+    await repository.saveScan(
+      "01J8Z0T0000000000000000052",
+      { ...scan, accepted: false, exception: "not_on_this_run" },
+      "out",
+      "run-1",
+    );
+
+    const history = await repository.scansFor(tenantId, "c1");
+    expect(history[0]).toMatchObject({ accepted: false, exception: "not_on_this_run" });
+  });
+
+  it("refuses an outscan row that names no run", async () => {
+    await expect(
+      repository.saveScan("01J8Z0T0000000000000000053", scan, "out"),
+    ).rejects.toThrow(/hub_scans_outscan_names_a_run/);
+  });
+
+  it("keeps one tenant's scans away from another", async () => {
+    await repository.saveScan("01J8Z0T0000000000000000054", { ...scan, tenantId: "other" }, "in");
+
+    expect(await repository.scansFor(tenantId, "c1")).toEqual([]);
   });
 });

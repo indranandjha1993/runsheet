@@ -296,3 +296,62 @@ describe("reading a run", () => {
     expect(response.status).toBe(404);
   });
 });
+
+describe("hub scanning over the api", () => {
+  const scanIn = {
+    hub_id: "hub-1",
+    worker_id: "w1",
+    consignment_id: "c1",
+    barcode: "RS0000000001",
+    expected: true,
+  };
+
+  it("accepts an inscan and reports what it recorded", async () => {
+    const response = await post("/v1/hub-scans/in", { ...scanIn, weight_grams: 1500 });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({ accepted: true, weight_grams: 1500 });
+  });
+
+  it("reports the exception on a parcel nobody expected", async () => {
+    const response = await post("/v1/hub-scans/in", { ...scanIn, expected: false });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({ accepted: true, exception: "unexpected_parcel" });
+  });
+
+  it("refuses an outscan for a parcel that is not on the run", async () => {
+    const response = await post("/v1/hub-scans/out", {
+      hub_id: "hub-1",
+      worker_id: "w1",
+      consignment_id: "c1",
+      barcode: "RS0000000001",
+      run_id: "run-1",
+      on_run: false,
+    });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({ error: { code: "not_on_this_run" } });
+  });
+
+  it("rejects a barcode that is not one of ours", async () => {
+    const response = await post("/v1/hub-scans/in", { ...scanIn, barcode: "12345" });
+
+    expect(response.status).toBe(400);
+  });
+
+  it("returns the scan history for a parcel", async () => {
+    await post("/v1/hub-scans/in", scanIn);
+    await post("/v1/hub-scans/in", { ...scanIn, hub_id: "hub-2" });
+
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/consignments/c1/hub-scans",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+    expect((response.body as { scans: unknown[] }).scans).toHaveLength(2);
+  });
+})

@@ -243,6 +243,80 @@
         "additionalProperties": {}
       }
     },
+    "consignment.scanned_in": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "hub_id": {
+            "type": "string"
+          },
+          "consignment_id": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          },
+          "weight_grams": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "volumetric_grams": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["hub_id", "consignment_id", "worker_id"]
+      }
+    },
+    "consignment.scanned_out": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "hub_id": {
+            "type": "string"
+          },
+          "consignment_id": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          }
+        },
+        "required": ["hub_id", "consignment_id", "worker_id", "run_id"]
+      }
+    },
+    "consignment.hub_exception": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "hub_id": {
+            "type": "string"
+          },
+          "consignment_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": ["unexpected_parcel", "weight_differs_from_booking", "not_on_this_run"]
+          }
+        },
+        "required": ["hub_id", "consignment_id", "reason"]
+      }
+    },
     "consignment.out_for_delivery": {
       "topic": "consignment",
       "key": "aggregate_id",
