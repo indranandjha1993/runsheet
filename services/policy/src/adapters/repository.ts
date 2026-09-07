@@ -151,7 +151,17 @@ function decisionValues(decision: Decision): unknown[] {
   ];
 }
 
-function policies(pool: Pool): Pick<PolicyRepository, "savePolicy" | "policyById" | "policiesFor"> {
+async function allPoliciesOf(pool: Pool, tenantId: string): Promise<Policy[]> {
+  const result = await pool.query<PolicyRow>(
+    "SELECT * FROM policies WHERE tenant_id = $1 ORDER BY name, version DESC",
+    [tenantId],
+  );
+  return result.rows.map(toPolicy);
+}
+
+function policies(
+  pool: Pool,
+): Pick<PolicyRepository, "savePolicy" | "policyById" | "policiesFor" | "allPolicies"> {
   return {
     async savePolicy(policy) {
       await pool.query(
@@ -177,6 +187,8 @@ function policies(pool: Pool): Pick<PolicyRepository, "savePolicy" | "policyById
       const row = result.rows[0];
       return row === undefined ? undefined : toPolicy(row);
     },
+    allPolicies: (tenantId) => allPoliciesOf(pool, tenantId),
+
     async policiesFor(tenantId, triggerEvent) {
       const result = await pool.query<PolicyRow>(
         `SELECT * FROM policies WHERE tenant_id = $1 AND trigger_event = $2

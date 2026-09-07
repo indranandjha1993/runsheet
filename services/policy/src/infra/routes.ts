@@ -63,6 +63,20 @@ export const outcomeBody = z.discriminatedUnion("type", [
 type MoveBody = z.infer<typeof moveBody>;
 type OutcomeBody = z.infer<typeof outcomeBody>;
 
+function listPoliciesRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/policies",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "policies:read");
+
+      const policies = await deps.repository.allPolicies(caller.tenantId);
+      return { status: 200, body: { policies } };
+    },
+  };
+}
+
 export interface RouteDeps extends PolicyDeps {
   readonly lookup: CallerLookup;
 }
@@ -230,6 +244,7 @@ function calibrationRoute(deps: RouteDeps): Route {
 
 export function policyRoutes(deps: RouteDeps): Route[] {
   return [
+    listPoliciesRoute(deps),
     publishRoute(deps),
     moveRoute(deps),
     considerRoute(deps),

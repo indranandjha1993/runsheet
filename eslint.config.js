@@ -51,10 +51,48 @@ export default tseslint.config(
       "@typescript-eslint/no-non-null-assertion": "error",
     },
   },
-  { files: ["**/*.test.ts"], rules: { "max-lines-per-function": "off" } },
+  { files: ["**/*.test.ts", "**/*.test.tsx"], rules: { "max-lines-per-function": "off" } },
   {
-    files: ["*.js", "*.ts"],
+    // The web app runs in a browser. React components are functions that legitimately run long
+    // in JSX, so the length rule is relaxed for them and nothing else.
+    files: ["apps/web/src/**/*.{ts,tsx}"],
+    languageOptions: {
+      parserOptions: { projectService: { defaultProject: "tsconfig.eslint.json" } },
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        fetch: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
+        URL: "readonly",
+        Blob: "readonly",
+        console: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        crypto: "readonly",
+        HTMLInputElement: "readonly",
+        HTMLElement: "readonly",
+        Event: "readonly",
+        FormData: "readonly",
+        Response: "readonly",
+        Request: "readonly",
+        Headers: "readonly",
+      },
+    },
+    rules: {
+      "max-lines-per-function": ["error", { max: 80, skipBlankLines: true, skipComments: true }],
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+    },
+  },
+  {
+    files: ["*.js", "*.ts", "apps/*/vite.config.ts", "apps/*/serve.js"],
     extends: [tseslint.configs.disableTypeChecked],
-    languageOptions: { parserOptions: { projectService: false, project: null } },
+    languageOptions: {
+      parserOptions: { projectService: false, project: null },
+      globals: { process: "readonly", URL: "readonly", Buffer: "readonly", console: "readonly" },
+    },
   },
 );

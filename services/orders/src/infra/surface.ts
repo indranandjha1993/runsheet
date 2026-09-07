@@ -37,6 +37,13 @@ export const ordersSurface: ServiceSurface = {
     },
     {
       method: "GET",
+      path: "/v1/consignments",
+      summary: "List the consignments that are still moving",
+      scope: "consignments:read",
+      replies: [ok("the open consignments, most recently changed first"), unauthorized],
+    },
+    {
+      method: "GET",
       path: "/v1/consignments/:id",
       summary: "Read a consignment",
       scope: "consignments:read",

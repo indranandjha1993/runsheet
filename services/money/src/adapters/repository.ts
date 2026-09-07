@@ -1,7 +1,7 @@
 import type { Pool, PoolClient } from "pg";
 import type { Lane, RateCard } from "../domain/rate-card.js";
 import type { InvoiceLine, Settlement, SettlementState } from "../domain/settlement.js";
-import type { CashHolder, MoneyRepository } from "../application/ports.js";
+import type { CashHolder, Invoice, MoneyRepository } from "../application/ports.js";
 import type { CashAccount, CashEntry, MovementKind } from "../domain/cash-ledger.js";
 
 interface CarrierRow {
@@ -158,9 +158,23 @@ async function writeLine(pool: Pool, line: InvoiceLine): Promise<void> {
   );
 }
 
+async function invoicesOf(pool: Pool, tenantId: string): Promise<Invoice[]> {
+  const result = await pool.query<InvoiceRow>(
+    "SELECT * FROM invoices WHERE tenant_id = $1 ORDER BY id DESC LIMIT 200",
+    [tenantId],
+  );
+  return result.rows.map((row) => ({
+    id: row.id,
+    tenantId: row.tenant_id,
+    carrierAccountId: row.carrier_account_id,
+    number: row.number,
+    currency: row.currency,
+  }));
+}
+
 function invoices(
   pool: Pool,
-): Pick<MoneyRepository, "saveInvoice" | "invoiceByNumber" | "linesFor"> {
+): Pick<MoneyRepository, "saveInvoice" | "invoiceByNumber" | "linesFor" | "invoicesFor"> {
   return {
     async saveInvoice(invoice, lines) {
       await pool.query(
@@ -170,6 +184,8 @@ function invoices(
       );
       for (const line of lines) await writeLine(pool, line);
     },
+    invoicesFor: (tenantId) => invoicesOf(pool, tenantId),
+
     async invoiceByNumber(tenantId, carrierAccountId, number) {
       const result = await pool.query<InvoiceRow>(
         `SELECT * FROM invoices
@@ -224,7 +240,10 @@ async function writeSettlement(pool: Pool, settlement: Settlement): Promise<void
 
 function settlements(
   pool: Pool,
-): Pick<MoneyRepository, "saveSettlement" | "settlementById" | "settlementsFor"> {
+): Pick<
+  MoneyRepository,
+  "saveSettlement" | "settlementById" | "settlementsFor" | "settlementsInState"
+> {
   return {
     async saveSettlement(settlement) {
       await writeSettlement(pool, settlement);
@@ -237,6 +256,14 @@ function settlements(
       );
       const row = result.rows[0];
       return row === undefined ? undefined : toSettlement(row);
+    },
+
+    async settlementsInState(tenantId, state) {
+      const result = await pool.query<SettlementRow>(
+        "SELECT * FROM settlements WHERE tenant_id = $1 AND state = $2 ORDER BY id DESC LIMIT 500",
+        [tenantId, state],
+      );
+      return result.rows.map(toSettlement);
     },
 
     async settlementsFor(tenantId, invoiceId) {

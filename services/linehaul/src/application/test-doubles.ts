@@ -11,7 +11,21 @@ import type {
 
 const key = (tenantId: string, rest: string): string => `${tenantId}:${rest}`;
 
-function bagStore(): Pick<LinehaulRepository, "saveBag" | "bagById" | "bagsOnTrip" | "openBagFor"> {
+function waitingAt(entries: readonly { bag: Bag }[], tenantId: string, hubId: string): Bag[] {
+  return entries
+    .map((entry) => entry.bag)
+    .filter(
+      (bag) =>
+        bag.tenantId === tenantId &&
+        (bag.status === "open" || bag.status === "sealed") &&
+        bag.originHubId === hubId,
+    );
+}
+
+function bagStore(): Pick<
+  LinehaulRepository,
+  "saveBag" | "bagById" | "bagsOnTrip" | "openBagFor" | "bagsAtHub"
+> {
   const bags = new Map<string, { bag: Bag; version: number }>();
   return {
     saveBag: (bag, expectedVersion) => {
@@ -19,6 +33,7 @@ function bagStore(): Pick<LinehaulRepository, "saveBag" | "bagById" | "bagsOnTri
       return Promise.resolve();
     },
     bagById: (tenantId, id) => Promise.resolve(bags.get(key(tenantId, id))),
+    bagsAtHub: (tenantId, hubId) => Promise.resolve(waitingAt([...bags.values()], tenantId, hubId)),
     bagsOnTrip: (tenantId, tripId) =>
       Promise.resolve(
         [...bags.values()]
@@ -40,7 +55,7 @@ function bagStore(): Pick<LinehaulRepository, "saveBag" | "bagById" | "bagsOnTri
   };
 }
 
-function tripStore(): Pick<LinehaulRepository, "saveTrip" | "tripById"> {
+function tripStore(): Pick<LinehaulRepository, "saveTrip" | "tripById" | "openTrips"> {
   const trips = new Map<string, { trip: Trip; version: number }>();
   return {
     saveTrip: (trip, expectedVersion) => {
@@ -48,6 +63,15 @@ function tripStore(): Pick<LinehaulRepository, "saveTrip" | "tripById"> {
       return Promise.resolve();
     },
     tripById: (tenantId, id) => Promise.resolve(trips.get(key(tenantId, id))),
+    openTrips: (tenantId) =>
+      Promise.resolve(
+        [...trips.values()]
+          .map((entry) => entry.trip)
+          .filter(
+            (trip) =>
+              trip.tenantId === tenantId && trip.status !== "closed" && trip.status !== "cancelled",
+          ),
+      ),
   };
 }
 

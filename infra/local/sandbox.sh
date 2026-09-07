@@ -48,6 +48,9 @@ Sandbox ready at $GATEWAY
   tenant  $TENANT
   key     $SECRET
 
+  Console, already signed in:  http://localhost:${PORT_WEB:-14100}/#key=$SECRET
+  Driver app, in Arabic:       http://localhost:${PORT_WEB:-14100}/driver#key=$SECRET&locale=ar
+
   Hubs BLR1 and DEL3 exist. The interface specification is spec/openapi.json and the
   event specification is contracts/events.json.
 

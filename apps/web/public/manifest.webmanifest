@@ -1,0 +1,9 @@
+{
+  "name": "Runsheet",
+  "short_name": "Runsheet",
+  "start_url": "/driver",
+  "display": "standalone",
+  "background_color": "#f6f6f4",
+  "theme_color": "#0b4a8f",
+  "icons": []
+}

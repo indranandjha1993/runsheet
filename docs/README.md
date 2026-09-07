@@ -18,13 +18,14 @@ everything needed to clone it, run it for a real operation, and understand it in
 | [Every route](reference/routes.md) | Generated from the specification                                |
 | [Every event](reference/events.md) | Generated from the catalogue                                    |
 
-| Running it                      |                                                              |
-| ------------------------------- | ------------------------------------------------------------ |
-| [Operations](operations.md)     | Configuration, deployment, migrations, health, logs, backups |
-| [The driver app](driver-app.md) | Offline queue, sync, three languages                         |
-| [Connectors](connectors.md)     | Plugging a carrier in                                        |
-| [Reporting](reporting.md)       | The six reports, export, and honest baseline measurement     |
-| [Questions people ask](faq.md)  |                                                              |
+| Running it                                   |                                                              |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| [Operations](operations.md)                  | Configuration, deployment, migrations, health, logs, backups |
+| [The console and the driver app](console.md) | The web application: office screens and the handset surface  |
+| [The driver app](driver-app.md)              | Offline queue, sync, three languages                         |
+| [Connectors](connectors.md)                  | Plugging a carrier in                                        |
+| [Reporting](reporting.md)                    | The six reports, export, and honest baseline measurement     |
+| [Questions people ask](faq.md)               |                                                              |
 
 The published specifications are the source of truth for anything these pages say about a
 request or an event: `spec/openapi.json` and `contracts/events.json`. Both are generated from

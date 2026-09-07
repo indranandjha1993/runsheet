@@ -154,3 +154,37 @@ describe("trips in the database", () => {
     expect((await repository.tripById(tenantId, trip().id))?.trip.bagIds).toEqual([]);
   });
 });
+
+describe("what a hub has waiting, and what is on the road", () => {
+  it("lists a hub's open and sealed bags and nothing that has left", async () => {
+    await repository.saveBag(bag(), 0);
+    const sealed = apply(
+      { ...bag(), id: "01J8Z0T0000000000000000011" },
+      { type: "sealed", sealNumber: "S" },
+    );
+    await repository.saveBag(sealed, 0);
+    const gone = apply(sealed, { type: "loaded", tripId: "trip-1" });
+    await repository.saveBag({ ...gone, id: "01J8Z0T0000000000000000012" }, 0);
+
+    const waiting = await repository.bagsAtHub(tenantId, "hub-1");
+
+    expect(waiting.map((b) => b.status).sort()).toEqual(["open", "sealed"]);
+  });
+
+  it("lists the trips still open, with the bags on them", async () => {
+    const crewed = applyToTrip(trip(), { type: "crewed", vehicleId: "v", driverId: "d" });
+    await repository.saveTrip(applyToTrip(crewed, { type: "bag_loaded", bagId: "bag-1" }), 0);
+    await repository.saveTrip(
+      applyToTrip(
+        { ...trip(), id: "01J8Z0T0000000000000000021" },
+        { type: "cancelled", reason: "no" },
+      ),
+      0,
+    );
+
+    const open = await repository.openTrips(tenantId);
+
+    expect(open).toHaveLength(1);
+    expect(open[0]?.bagIds).toEqual(["bag-1"]);
+  });
+});

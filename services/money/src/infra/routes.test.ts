@@ -400,3 +400,40 @@ describe("the cash ledger over the api", () => {
     expect(response.status).toBe(400);
   });
 });
+
+describe("listing invoices and settlements over the api", () => {
+  it("lists nothing before any invoice arrived", async () => {
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/invoices",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+    expect((response.body as { invoices: unknown[] }).invoices).toEqual([]);
+  });
+
+  it("lists settlements by the state a queue is worked in", async () => {
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/settlements?state=mismatched",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+    expect((response.body as { settlements: unknown[] }).settlements).toEqual([]);
+  });
+
+  it("refuses a state it does not know", async () => {
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/settlements?state=lost",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(400);
+  });
+});

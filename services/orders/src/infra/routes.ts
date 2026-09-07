@@ -195,6 +195,21 @@ export const labelBody = z.object({
   format: z.enum(["json", "zpl"]).default("json"),
 });
 
+function listRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/consignments",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "consignments:read");
+
+      const limit = Math.min(Number(request.query["limit"] ?? 100) || 100, 500);
+      const consignments = await deps.repository.openConsignments(caller.tenantId, limit);
+      return { status: 200, body: { consignments } };
+    },
+  };
+}
+
 function labelRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
@@ -236,5 +251,5 @@ function labelRoute(deps: RouteDeps): Route {
 }
 
 export function ordersRoutes(deps: RouteDeps): Route[] {
-  return [bookRoute(deps), eventRoute(deps), readRoute(deps), labelRoute(deps)];
+  return [bookRoute(deps), eventRoute(deps), readRoute(deps), labelRoute(deps), listRoute(deps)];
 }

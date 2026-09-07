@@ -45,6 +45,20 @@ export const linehaulSurface: ServiceSurface = {
     },
     {
       method: "GET",
+      path: "/v1/bags",
+      summary: "List the bags open or sealed at a hub, waiting to travel",
+      scope: "linehaul:read",
+      replies: [ok("the bags"), badRequest, unauthorized],
+    },
+    {
+      method: "GET",
+      path: "/v1/trips",
+      summary: "List the trips that have not yet closed",
+      scope: "linehaul:read",
+      replies: [ok("the trips and the bags on them"), unauthorized],
+    },
+    {
+      method: "GET",
       path: "/v1/bags/:id",
       summary: "Read a bag",
       scope: "linehaul:read",

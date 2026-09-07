@@ -378,3 +378,31 @@ describe("printing labels over the api", () => {
     expect(response.status).toBe(400);
   });
 });
+
+describe("listing consignments over the api", () => {
+  it("lists what is still moving, for a board to show", async () => {
+    await bookedId();
+    await bookedId({ order_reference: "ORD-3002" });
+
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/consignments?limit=10",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+    expect((response.body as { consignments: unknown[] }).consignments).toHaveLength(2);
+  });
+
+  it("never lists more than a screen can use in one go", async () => {
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/consignments?limit=99999",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+  });
+});

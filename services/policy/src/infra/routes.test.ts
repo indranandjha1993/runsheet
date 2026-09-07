@@ -309,3 +309,21 @@ describe("shadow decisions", () => {
     ).toBe(409);
   });
 });
+
+describe("listing policies over the api", () => {
+  it("lists every policy with where it is in its rollout", async () => {
+    await post("/v1/policies", policyBody);
+
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/policies",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+    const body = response.body as { policies: { state: string }[] };
+    expect(body.policies).toHaveLength(1);
+    expect(body.policies[0]?.state).toBe("draft");
+  });
+});

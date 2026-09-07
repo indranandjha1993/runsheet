@@ -42,6 +42,13 @@ The recording is `infra/local/demo.sh` running against the local stack; every ca
 real request. A higher-quality copy is at [`docs/demo.mp4`](docs/demo.mp4). Regenerate it with
 `make video`.
 
+## The console
+
+![The console](docs/console-board.png)
+
+A web console for the office and an installable driver app for the handset, both on the published
+interface, in English, Hindi, and Arabic. See [the console](docs/console.md).
+
 ## Run it
 
 You need Docker, Node 24 or later, and pnpm.
@@ -107,7 +114,8 @@ credential cannot be pointed at somebody else's data.
 | Path                  | What is in it                                                         |
 | --------------------- | --------------------------------------------------------------------- |
 | `services/*`          | Twelve services, one per bounded context, each hexagonal inside       |
-| `apps/driver`         | The handset app: offline queue, runsheet, three languages             |
+| `apps/web`            | The console and the driver app, React on the design tokens            |
+| `apps/driver`         | The handset logic: offline queue, runsheet, three languages           |
 | `packages/kernel`     | Event envelope, identifiers, money, barcodes                          |
 | `packages/eventstore` | Append-only event stream, transactional outbox, idempotent consumer   |
 | `packages/runtime`    | Configuration, logging, tracing, health, migrations                   |

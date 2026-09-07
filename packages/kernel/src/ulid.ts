@@ -1,5 +1,3 @@
-import { randomBytes } from "node:crypto";
-
 const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const TIME_CHARS = 10;
 const RANDOM_CHARS = 16;
@@ -14,8 +12,10 @@ function encodeTime(millis: number): string {
   return out;
 }
 
+// The web crypto interface is the one thing every runtime this code reaches shares: Node, a
+// browser tab, and a handset's web view. Nothing Node-only may live in the kernel.
 function encodeRandom(): string {
-  const bytes = randomBytes(RANDOM_CHARS);
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(RANDOM_CHARS));
   let out = "";
   for (const byte of bytes) {
     out += ALPHABET.charAt(byte % 32);

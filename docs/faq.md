@@ -31,9 +31,9 @@ close raising the cash exception on its own) still happen through the API calls 
 makes explicitly. Everything else on these pages runs end to end.
 
 **Where is the web dashboard?**
-Not built yet. The platform is the interface: every capability is a route, the specifications
-are published, and the reports export as files. A web front end is on the backlog, and the
-design tokens for it come with the first screen rather than ahead of it.
+At `http://localhost:14100` after `make sandbox`: a console for the office and a driver app for
+the handset, described in [the console](console.md). Dense boards, scanning, cash, settlements,
+reports, policies, three languages.
 
 **Can I trust the automation?**
 A policy cannot go live without a dry run and a shadow period in which it agreed with people

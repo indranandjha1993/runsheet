@@ -6,6 +6,7 @@ export interface PolicyRepository {
   savePolicy(policy: Policy): Promise<void>;
   policyById(tenantId: string, id: string): Promise<Policy | undefined>;
   policiesFor(tenantId: string, triggerEvent: string): Promise<Policy[]>;
+  allPolicies(tenantId: string): Promise<Policy[]>;
   saveDecision(decision: Decision): Promise<void>;
   decisionById(tenantId: string, id: string): Promise<Decision | undefined>;
   decisionsFor(tenantId: string, policyId: string): Promise<Decision[]>;

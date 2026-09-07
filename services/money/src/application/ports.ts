@@ -1,5 +1,5 @@
 import type { Envelope } from "@runsheet/kernel";
-import type { Evidence, InvoiceLine, Settlement } from "../domain/settlement.js";
+import type { Evidence, InvoiceLine, Settlement, SettlementState } from "../domain/settlement.js";
 import type { RateCard } from "../domain/rate-card.js";
 import type { CashEntry } from "../domain/cash-ledger.js";
 
@@ -33,6 +33,8 @@ export interface MoneyRepository {
   saveSettlement(settlement: Settlement): Promise<void>;
   settlementById(tenantId: string, id: string): Promise<Settlement | undefined>;
   settlementsFor(tenantId: string, invoiceId: string): Promise<Settlement[]>;
+  invoicesFor(tenantId: string): Promise<Invoice[]>;
+  settlementsInState(tenantId: string, state: SettlementState): Promise<Settlement[]>;
   saveCashMovement(key: string, entries: readonly CashEntry[]): Promise<boolean>;
   cashEntriesFor(tenantId: string, holder: CashHolder): Promise<CashEntry[]>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;

@@ -115,7 +115,7 @@ async function bagsWhere(pool: Pool, where: string, values: unknown[]): Promise<
 
 function bagQueries(
   pool: Pool,
-): Pick<LinehaulRepository, "saveBag" | "bagById" | "bagsOnTrip" | "openBagFor"> {
+): Pick<LinehaulRepository, "saveBag" | "bagById" | "bagsOnTrip" | "openBagFor" | "bagsAtHub"> {
   return {
     async saveBag(bag, expectedVersion) {
       await writeBag(pool, bag, expectedVersion);
@@ -134,6 +134,9 @@ function bagQueries(
     },
 
     bagsOnTrip: (tenantId, tripId) => bagsWhere(pool, "trip_id = $2", [tenantId, tripId]),
+
+    bagsAtHub: (tenantId, hubId) =>
+      bagsWhere(pool, "origin_hub_id = $2 AND status IN ('open', 'sealed')", [tenantId, hubId]),
 
     openBagFor: async (tenantId, originHubId, destinationHubId) => {
       const found = await bagsWhere(
@@ -215,8 +218,27 @@ async function writeTrip(pool: Pool, trip: Trip, expectedVersion: number): Promi
   if (result.rowCount === 0) throw new Error(`trip ${trip.id} changed while it was being updated`);
 }
 
-function tripQueries(pool: Pool): Pick<LinehaulRepository, "saveTrip" | "tripById"> {
+async function openTripsIn(pool: Pool, tenantId: string): Promise<Trip[]> {
+  const result = await pool.query<TripRow>(
+    `SELECT * FROM trips WHERE tenant_id = $1 AND status NOT IN ('closed', 'cancelled')
+       ORDER BY departs_on, id`,
+    [tenantId],
+  );
+  const loads = await pool.query<{ trip_id: string; bag_id: string }>(
+    "SELECT trip_id, bag_id FROM trip_bags WHERE trip_id = ANY($1) ORDER BY position",
+    [result.rows.map((row) => row.id)],
+  );
+  const bagsOf = new Map<string, string[]>();
+  for (const load of loads.rows) {
+    bagsOf.set(load.trip_id, [...(bagsOf.get(load.trip_id) ?? []), load.bag_id]);
+  }
+  return result.rows.map((row) => toTrip(row, bagsOf.get(row.id) ?? []));
+}
+
+function tripQueries(pool: Pool): Pick<LinehaulRepository, "saveTrip" | "tripById" | "openTrips"> {
   return {
+    openTrips: (tenantId) => openTripsIn(pool, tenantId),
+
     async saveTrip(trip, expectedVersion) {
       await writeTrip(pool, trip, expectedVersion);
       await pool.query("DELETE FROM trip_bags WHERE trip_id = $1 AND bag_id <> ALL($2)", [
