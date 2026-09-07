@@ -22,6 +22,7 @@ describe("gateway configuration", () => {
       "promise",
       "exceptions",
       "money",
+      "policy",
     ]) {
       expect(addressOf(config, name)).toContain("http://localhost:");
     }
