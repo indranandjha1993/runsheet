@@ -2,6 +2,7 @@ import { types, type Pool } from "pg";
 import type { ExecutionRepository } from "../application/ports.js";
 import type { Proof, ProofKind } from "../domain/proof.js";
 import type { Run, RunStatus } from "../domain/run.js";
+import type { Scan } from "../domain/hub-floor.js";
 import type { ActionKind, ActionResult, Stop, StopAction } from "../domain/stop.js";
 
 // A calendar date has no time zone. Left to its default the driver turns it into a Date at local
@@ -236,6 +237,58 @@ function proofQueries(pool: Pool): Pick<ExecutionRepository, "saveProof" | "proo
   };
 }
 
+interface ScanRow {
+  tenant_id: string;
+  hub_id: string;
+  worker_id: string;
+  consignment_id: string;
+  scanned_at: Date;
+  accepted: boolean;
+  weight_grams: number | null;
+  volumetric_grams: number | null;
+  exception: string | null;
+}
+
+function toScan(row: ScanRow): Scan {
+  return {
+    tenantId: row.tenant_id,
+    hubId: row.hub_id,
+    workerId: row.worker_id,
+    consignmentId: row.consignment_id,
+    at: row.scanned_at,
+    accepted: row.accepted,
+    ...(row.weight_grams === null ? {} : { weightGrams: row.weight_grams }),
+    ...(row.volumetric_grams === null ? {} : { volumetricGrams: row.volumetric_grams }),
+    ...(row.exception === null ? {} : { exception: row.exception }),
+  };
+}
+
+function scanQueries(pool: Pool): Pick<ExecutionRepository, "saveScan" | "scansFor"> {
+  return {
+    async saveScan(id, scan, direction, runId) {
+      await pool.query(
+        `INSERT INTO hub_scans (id, tenant_id, hub_id, worker_id, consignment_id, direction,
+           run_id, scanned_at, accepted, weight_grams, volumetric_grams, exception)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [
+          id, scan.tenantId, scan.hubId, scan.workerId, scan.consignmentId, direction,
+          runId ?? null, scan.at, scan.accepted, scan.weightGrams ?? null,
+          scan.volumetricGrams ?? null, scan.exception ?? null,
+        ],
+      );
+    },
+
+    async scansFor(tenantId, consignmentId) {
+      const result = await pool.query<ScanRow>(
+        `SELECT * FROM hub_scans WHERE tenant_id = $1 AND consignment_id = $2
+         ORDER BY scanned_at, id`,
+        [tenantId, consignmentId],
+      );
+      return result.rows.map(toScan);
+    },
+  };
+}
+
 function streamQueries(pool: Pool): Pick<ExecutionRepository, "nextSequence"> {
   return {
     async nextSequence(tenantId, aggregateId) {
@@ -255,5 +308,10 @@ function streamQueries(pool: Pool): Pick<ExecutionRepository, "nextSequence"> {
 }
 
 export function postgresExecution(pool: Pool): ExecutionRepository {
-  return { ...runQueries(pool), ...proofQueries(pool), ...streamQueries(pool) };
+  return {
+    ...runQueries(pool),
+    ...proofQueries(pool),
+    ...scanQueries(pool),
+    ...streamQueries(pool),
+  };
 }

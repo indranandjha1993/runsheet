@@ -1,20 +1,19 @@
 import type { Envelope } from "@runsheet/kernel";
 import type { Run } from "../domain/run.js";
 import type { Proof } from "../domain/proof.js";
+import type { Scan } from "../domain/hub-floor.js";
 import type { Clock, EventPublisher, ExecutionRepository, Identifiers } from "./ports.js";
 
-export function inMemoryExecution(): ExecutionRepository {
-  const runs = new Map<string, { run: Run; version: number }>();
-  const proofs = new Map<string, Proof>();
-  const sequences = new Map<string, number>();
-  const key = (tenantId: string, rest: string): string => `${tenantId}:${rest}`;
+const keyOf = (tenantId: string, rest: string): string => `${tenantId}:${rest}`;
 
+function runStore(): Pick<ExecutionRepository, "saveRun" | "runById" | "openRuns"> {
+  const runs = new Map<string, { run: Run; version: number }>();
   return {
     saveRun: (run, expectedVersion) => {
-      runs.set(key(run.tenantId, run.id), { run, version: expectedVersion + 1 });
+      runs.set(keyOf(run.tenantId, run.id), { run, version: expectedVersion + 1 });
       return Promise.resolve();
     },
-    runById: (tenantId, id) => Promise.resolve(runs.get(key(tenantId, id))),
+    runById: (tenantId, id) => Promise.resolve(runs.get(keyOf(tenantId, id))),
     openRuns: (tenantId, hubId, date) =>
       Promise.resolve(
         [...runs.values()]
@@ -28,18 +27,48 @@ export function inMemoryExecution(): ExecutionRepository {
               run.status !== "cancelled",
           ),
       ),
+  };
+}
+
+function proofStore(): Pick<ExecutionRepository, "saveProof" | "proofById"> {
+  const proofs = new Map<string, Proof>();
+  return {
     saveProof: (proof) => {
-      proofs.set(key(proof.tenantId, proof.id), proof);
+      proofs.set(keyOf(proof.tenantId, proof.id), proof);
       return Promise.resolve();
     },
-    proofById: (tenantId, id) => Promise.resolve(proofs.get(key(tenantId, id))),
+    proofById: (tenantId, id) => Promise.resolve(proofs.get(keyOf(tenantId, id))),
+  };
+}
+
+function scanStore(): Pick<ExecutionRepository, "saveScan" | "scansFor"> {
+  const scans: { key: string; scan: Scan }[] = [];
+  return {
+    saveScan: (_id, scan) => {
+      scans.push({ key: keyOf(scan.tenantId, scan.consignmentId), scan });
+      return Promise.resolve();
+    },
+    scansFor: (tenantId, consignmentId) =>
+      Promise.resolve(
+        scans.filter((e) => e.key === keyOf(tenantId, consignmentId)).map((e) => e.scan),
+      ),
+  };
+}
+
+function streamStore(): Pick<ExecutionRepository, "nextSequence"> {
+  const sequences = new Map<string, number>();
+  return {
     nextSequence: (tenantId, aggregateId) => {
-      const at = key(tenantId, aggregateId);
+      const at = keyOf(tenantId, aggregateId);
       const next = (sequences.get(at) ?? 0) + 1;
       sequences.set(at, next);
       return Promise.resolve(next);
     },
   };
+}
+
+export function inMemoryExecution(): ExecutionRepository {
+  return { ...runStore(), ...proofStore(), ...scanStore(), ...streamStore() };
 }
 
 export interface Published {

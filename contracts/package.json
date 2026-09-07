@@ -6,8 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b",
-    "generate": "tsc -b && node --experimental-strip-types scripts/generate.ts"
+    "build": "tsc -b tsconfig.build.json",
+    "generate": "tsc -b tsconfig.build.json && node --experimental-strip-types scripts/generate.ts"
   },
   "dependencies": {
     "@runsheet/kernel": "workspace:*",

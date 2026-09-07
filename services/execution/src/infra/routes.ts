@@ -5,6 +5,8 @@ import { captureProof, planRun, recordRunEvent } from "../application/run-operat
 import type { ExecutionDeps } from "../application/ports.js";
 import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 import type { RunEvent } from "../domain/run.js";
+import type { Scan } from "../domain/hub-floor.js";
+import { recordScanIn, recordScanOut } from "../application/hub-operations.js";
 
 const planBody = z.object({
   hub_id: z.string().min(1),
@@ -209,10 +211,143 @@ function readRoute(deps: RouteDeps): Route {
   };
 }
 
+const scanInBody = z.object({
+  hub_id: z.string().min(1),
+  worker_id: z.string().min(1),
+  consignment_id: z.string().min(1),
+  barcode: z.string().min(1),
+  expected: z.boolean().default(true),
+  weight_grams: z.number().int().positive().optional(),
+  booked_weight_grams: z.number().int().positive().optional(),
+  dimensions_mm: z
+    .object({
+      length: z.number().int().positive(),
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
+});
+
+const scanOutBody = z.object({
+  hub_id: z.string().min(1),
+  worker_id: z.string().min(1),
+  consignment_id: z.string().min(1),
+  barcode: z.string().min(1),
+  run_id: z.string().min(1),
+  on_run: z.boolean(),
+});
+
+function scanResponse(scan: Scan): Record<string, unknown> {
+  return {
+    consignment_id: scan.consignmentId,
+    hub_id: scan.hubId,
+    scanned_at: scan.at,
+    accepted: scan.accepted,
+    ...(scan.weightGrams === undefined ? {} : { weight_grams: scan.weightGrams }),
+    ...(scan.volumetricGrams === undefined ? {} : { volumetric_grams: scan.volumetricGrams }),
+    ...(scan.exception === undefined ? {} : { exception: scan.exception }),
+  };
+}
+
+function scanInRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/hub-scans/in",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:write");
+
+      const parsed = scanInBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const scan = await recordScanIn(deps, {
+        tenantId: caller.tenantId,
+        hubId: parsed.data.hub_id,
+        workerId: parsed.data.worker_id,
+        consignmentId: parsed.data.consignment_id,
+        barcode: parsed.data.barcode,
+        expected: parsed.data.expected,
+        ...(parsed.data.weight_grams === undefined
+          ? {}
+          : { weightGrams: parsed.data.weight_grams }),
+        ...(parsed.data.booked_weight_grams === undefined
+          ? {}
+          : { bookedWeightGrams: parsed.data.booked_weight_grams }),
+        ...(parsed.data.dimensions_mm === undefined
+          ? {}
+          : { dimensionsMm: parsed.data.dimensions_mm }),
+      });
+
+      return { status: 201, body: scanResponse(scan) };
+    },
+  };
+}
+
+function scanOutRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/hub-scans/out",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:write");
+
+      const parsed = scanOutBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const scan = await recordScanOut(deps, {
+        tenantId: caller.tenantId,
+        hubId: parsed.data.hub_id,
+        workerId: parsed.data.worker_id,
+        consignmentId: parsed.data.consignment_id,
+        barcode: parsed.data.barcode,
+        runId: parsed.data.run_id,
+        onRun: parsed.data.on_run,
+      });
+
+      // The scan is kept either way; the refusal is what the loader on the floor needs to see.
+      if (!scan.accepted) {
+        return {
+          status: 409,
+          body: {
+            error: {
+              code: scan.exception ?? "not_on_this_run",
+              message: "that parcel is not on this run",
+            },
+          },
+        };
+      }
+      return { status: 201, body: scanResponse(scan) };
+    },
+  };
+}
+
+function scanHistoryRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/consignments/:id/hub-scans",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:read");
+
+      const scans = await deps.repository.scansFor(caller.tenantId, request.params["id"] ?? "");
+      return { status: 200, body: { scans: scans.map(scanResponse) } };
+    },
+  };
+}
+
 export interface RouteDeps extends ExecutionDeps {
   readonly lookup: CallerLookup;
 }
 
 export function executionRoutes(deps: RouteDeps): Route[] {
-  return [planRoute(deps), eventRoute(deps), actionRoute(deps), proofRoute(deps), readRoute(deps)];
+  return [
+    planRoute(deps),
+    eventRoute(deps),
+    actionRoute(deps),
+    proofRoute(deps),
+    readRoute(deps),
+    scanInRoute(deps),
+    scanOutRoute(deps),
+    scanHistoryRoute(deps),
+  ];
 }
