@@ -1,3 +1,5 @@
+export { loadConfig } from "./config.js";
+export type { Environment } from "./config.js";
 export { healthReport } from "./health.js";
 export type { CheckResult, HealthReport, Probe } from "./health.js";
 export { newTraceContext, parseTraceparent, toTraceparent } from "./trace.js";

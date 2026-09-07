@@ -1,5 +1,15 @@
 # Contributing
 
+## Getting set up
+
+```sh
+make setup    # .env, dependencies, infrastructure, migrations
+make check    # tests, type check, linter
+```
+
+Everything configurable lives in `.env`; `.env.example` documents every variable. Never commit a
+`.env`. Never hardcode a host, a port, or a URL: if it varies by deployment, it is configuration.
+
 ## Branches and history
 
 - `main` is the trunk and always green. Cut a branch per change: `rs-123-short-name`.
