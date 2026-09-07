@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "packages/webhooks/tsconfig.build.json"
+    },
+    {
       "path": "packages/kernel/tsconfig.build.json"
     },
     {
