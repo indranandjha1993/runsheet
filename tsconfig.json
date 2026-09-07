@@ -3,6 +3,9 @@
   "references": [
     {
       "path": "packages/kernel"
+    },
+    {
+      "path": "packages/eventstore"
     }
   ]
 }

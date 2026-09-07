@@ -1,0 +1,15 @@
+{
+  "name": "@runsheet/eventstore",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@runsheet/kernel": "workspace:*",
+    "pg": "^8.13.1"
+  }
+}
