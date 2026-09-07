@@ -19,3 +19,4 @@ CREATE DATABASE test_consumer;
 CREATE DATABASE test_contracts;
 CREATE DATABASE test_network;
 CREATE DATABASE test_orders;
+CREATE DATABASE test_execution;
