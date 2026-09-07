@@ -12,7 +12,6 @@ export interface HttpRequest {
   readonly headers: Record<string, string | undefined>;
   readonly body: unknown;
   readonly params?: Record<string, string>;
-  readonly query?: Record<string, string>;
 }
 
 export interface HttpResponse {
@@ -24,9 +23,7 @@ export interface HttpResponse {
 export interface Route {
   readonly method: string;
   readonly path: string;
-  handle(
-    request: HttpRequest & { params: Record<string, string>; query: Record<string, string> },
-  ): Promise<HttpResponse>;
+  handle(request: HttpRequest & { params: Record<string, string> }): Promise<HttpResponse>;
 }
 
 interface Compiled extends Route {
@@ -60,9 +57,7 @@ export function createRouter(routes: readonly Route[]): {
     async handle(request) {
       const trace = newTraceContext(request.headers["traceparent"]);
       const headers = { traceparent: toTraceparent(trace) };
-      const target = new URL(request.url, "http://router.local");
-      const path = target.pathname;
-      const query = Object.fromEntries(target.searchParams);
+      const path = new URL(request.url, "http://router.local").pathname;
 
       const matches = compiled
         .map((route) => ({ route, found: route.pattern.exec(path) }))
@@ -86,7 +81,7 @@ export function createRouter(routes: readonly Route[]): {
       );
 
       try {
-        const response = await match.route.handle({ ...request, params, query });
+        const response = await match.route.handle({ ...request, params });
         return { ...response, headers: { ...headers, ...response.headers } };
       } catch (error) {
         if (isDomainError(error) || isRefusal(error)) {

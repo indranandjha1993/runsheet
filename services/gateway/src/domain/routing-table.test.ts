@@ -60,7 +60,38 @@ describe("finding the service behind a path", () => {
         "exceptions",
         "money",
         "policy",
+        "linehaul",
       ]),
     );
+  });
+});
+
+describe("the newest services", () => {
+  it("sends bag and trip paths to the linehaul service", () => {
+    expect(upstreamFor("/v1/bags/parcels")?.name).toBe("linehaul");
+    expect(upstreamFor("/v1/trips/t1/manifest")?.name).toBe("linehaul");
+  });
+
+  it("sends hub scans to execution, not to orders", () => {
+    expect(upstreamFor("/v1/hub-scans")?.name).toBe("execution");
+  });
+
+  it("sends the cash ledger to the money service", () => {
+    expect(upstreamFor("/v1/cash/movements")?.name).toBe("money");
+  });
+
+  it("still sends label printing to orders, because the consignment owns it", () => {
+    expect(upstreamFor("/v1/consignments/c1/labels")?.name).toBe("orders");
+  });
+
+  it("gives every prefix exactly one upstream", () => {
+    const seen = new Map<string, string>();
+    for (const upstream of UPSTREAMS) {
+      for (const prefix of upstream.prefixes) {
+        const already = seen.get(prefix);
+        expect(already ?? upstream.name).toBe(upstream.name);
+        seen.set(prefix, upstream.name);
+      }
+    }
   });
 });

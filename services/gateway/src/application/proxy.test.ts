@@ -23,7 +23,10 @@ beforeEach(() => {
   });
 });
 
-const get = (url: string, headers = credential): Promise<{ status: number; body: unknown; headers: Record<string, string> }> =>
+const get = (
+  url: string,
+  headers: Record<string, string> = credential,
+): Promise<{ status: number; body: unknown; headers: Record<string, string> }> =>
   proxy.handle({ method: "GET", url, headers, body: undefined });
 
 describe("passing a request to the right service", () => {

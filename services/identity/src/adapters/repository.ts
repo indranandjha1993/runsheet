@@ -52,8 +52,13 @@ function tenantQueries(pool: Pool): Pick<IdentityRepository, "saveTenant" | "ten
          ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, active = EXCLUDED.active,
            locale = EXCLUDED.locale, currency = EXCLUDED.currency`,
         [
-          tenant.id, tenant.name, tenant.countryCode, tenant.currency, tenant.locale,
-          tenant.region, tenant.active,
+          tenant.id,
+          tenant.name,
+          tenant.countryCode,
+          tenant.currency,
+          tenant.locale,
+          tenant.region,
+          tenant.active,
         ],
       );
     },

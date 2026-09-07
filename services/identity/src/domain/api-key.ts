@@ -17,6 +17,8 @@ export const SCOPES = [
   "money:write",
   "policies:read",
   "policies:write",
+  "linehaul:read",
+  "linehaul:write",
   "pii:read",
 ] as const;
 

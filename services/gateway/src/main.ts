@@ -36,7 +36,12 @@ async function readBody(incoming: IncomingMessage): Promise<unknown> {
   }
 }
 
-function send(response: ServerResponse, status: number, body: unknown, headers: Record<string, string>): void {
+function send(
+  response: ServerResponse,
+  status: number,
+  body: unknown,
+  headers: Record<string, string>,
+): void {
   response.writeHead(status, { "content-type": "application/json", ...headers });
   response.end(JSON.stringify(body));
 }

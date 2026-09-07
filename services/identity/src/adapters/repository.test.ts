@@ -75,9 +75,7 @@ describe("the identity repository", () => {
   it("will not let one tenant revoke another's key", async () => {
     await repository.saveKey(issued.record);
 
-    expect(
-      await repository.revokeKey("someone-else", issued.record.id, new Date()),
-    ).toBe(false);
+    expect(await repository.revokeKey("someone-else", issued.record.id, new Date())).toBe(false);
   });
 
   it("reads back a revoked key so authentication can refuse it", async () => {

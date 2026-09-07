@@ -17,7 +17,13 @@
       "path": "../../packages/runtime/tsconfig.build.json"
     },
     {
+      "path": "../../packages/eventstore/tsconfig.build.json"
+    },
+    {
       "path": "../../packages/auth/tsconfig.build.json"
+    },
+    {
+      "path": "../../contracts/tsconfig.build.json"
     }
   ]
 }

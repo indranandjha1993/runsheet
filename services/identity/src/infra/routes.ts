@@ -128,7 +128,8 @@ function readTenantRoute(deps: IdentityDeps): Route {
     path: "/v1/tenants/:id",
     handle: async (request) => {
       const tenant = await deps.repository.tenantById(request.params["id"] ?? "");
-      if (tenant === undefined) throw new DomainError("not_found", "no tenant with that identifier");
+      if (tenant === undefined)
+        throw new DomainError("not_found", "no tenant with that identifier");
       return { status: 200, body: tenant };
     },
   };

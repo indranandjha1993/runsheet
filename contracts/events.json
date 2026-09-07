@@ -775,6 +775,208 @@
         "additionalProperties": {}
       }
     },
+    "bag.parcel_added": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "bag.parcel_removed": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "bag.sealed": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "bag.loaded": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "bag.received": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "bag.emptied": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "bag.seal_broken": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "bag_id": {
+            "type": "string"
+          },
+          "seal_number": {
+            "type": "string"
+          },
+          "consignment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["bag_id", "seal_number", "consignment_ids"]
+      }
+    },
+    "bag.discrepancy_found": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "bag_id": {
+            "type": "string"
+          },
+          "missing_consignment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unexpected_consignment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "misrouted": {
+            "type": "boolean"
+          }
+        },
+        "required": ["bag_id", "missing_consignment_ids", "unexpected_consignment_ids", "misrouted"]
+      }
+    },
+    "trip.planned": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.crewed": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.bag_loaded": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.bag_unloaded": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.departed": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.arrived": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.closed": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.cancelled": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "trip.bags_missing": {
+      "topic": "linehaul",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
     "consignment.out_for_delivery": {
       "topic": "consignment",
       "key": "aggregate_id",
