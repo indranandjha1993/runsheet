@@ -26,7 +26,7 @@ describe("recording a hub inscan", () => {
       hubId: "hub-1",
       workerId: "w1",
       consignmentId: "c-1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       expected: true,
     });
 
@@ -44,7 +44,7 @@ describe("recording a hub inscan", () => {
       hubId: "hub-1",
       workerId: "w1",
       consignmentId: "c-1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       expected: true,
       weightGrams: 1500,
       dimensionsMm: { length: 300, width: 200, height: 100 },
@@ -62,7 +62,7 @@ describe("recording a hub inscan", () => {
       hubId: "hub-1",
       workerId: "w1",
       consignmentId: "c-1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       expected: false,
     });
 
@@ -76,7 +76,7 @@ describe("recording a hub inscan", () => {
       tenantId: "t",
       workerId: "w1",
       consignmentId: "c-1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       expected: true,
     };
     await recordScanIn(deps, { ...common, hubId: "hub-1" });
@@ -94,7 +94,7 @@ describe("recording a hub outscan", () => {
       hubId: "hub-1",
       workerId: "w1",
       consignmentId: "c-1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       runId: "run-1",
       onRun: true,
     });
@@ -110,7 +110,7 @@ describe("recording a hub outscan", () => {
       hubId: "hub-1",
       workerId: "w1",
       consignmentId: "c-1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       runId: "run-1",
       onRun: false,
     });

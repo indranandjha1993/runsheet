@@ -53,6 +53,17 @@ const record = async (id: string, body: unknown): Promise<{ status: number; body
     body,
   });
 
+const post = async (
+  url: string,
+  body: unknown,
+): Promise<{ status: number; body: unknown; headers?: Record<string, string> }> =>
+  router.handle({ method: "POST", url, headers: tenant, body });
+
+async function bookedId(overrides: Record<string, unknown> = {}): Promise<string> {
+  const response = await book({ ...booking, ...overrides });
+  return (response.body as { id: string }).id;
+}
+
 function idOf(response: { body: unknown }): string {
   return (response.body as { id: string }).id;
 }
@@ -310,3 +321,50 @@ describe("reading a consignment", () => {
     expect(response.status).toBe(404);
   });
 });
+
+describe("printing labels over the api", () => {
+  const print = {
+    origin: { hub_code: "BLR1", city: "Bengaluru" },
+    destination: {
+      hub_code: "DEL3",
+      name: "Aarav Sharma",
+      line: "Flat 402, Sunrise Apartments",
+      city: "Noida",
+      postcode: "201309",
+    },
+    sort_code: "DEL3-N-04",
+    service_level: "next_day",
+  };
+
+  it("returns one label for each package", async () => {
+    const id = await bookedId({ packages: [{ weight_grams: 1200 }, { weight_grams: 800 }] });
+
+    const response = await post(`/v1/consignments/${id}/labels`, print);
+
+    expect(response.status).toBe(200);
+    expect((response.body as { labels: unknown[] }).labels).toHaveLength(2);
+  });
+
+  it("returns printer commands when the caller asks for them", async () => {
+    const id = await bookedId();
+
+    const response = await post(`/v1/consignments/${id}/labels`, { ...print, format: "zpl" });
+
+    expect(response.headers?.["content-type"]).toBe("application/vnd.zebra.zpl");
+    expect(String(response.body).startsWith("^XA")).toBe(true);
+  });
+
+  it("refuses to label a consignment that does not exist", async () => {
+    const response = await post("/v1/consignments/01J8Z0T0000000000000000099/labels", print);
+
+    expect(response.status).toBe(404);
+  });
+
+  it("refuses a request that names no destination", async () => {
+    const id = await bookedId();
+
+    const response = await post(`/v1/consignments/${id}/labels`, { ...print, destination: {} });
+
+    expect(response.status).toBe(400);
+  });
+})

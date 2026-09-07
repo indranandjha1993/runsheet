@@ -43,7 +43,25 @@ function toConsignment(row: ConsignmentRow, packages: Package[]): Consignment {
   };
 }
 
-function orderQueries(pool: Pool): Pick<OrdersRepository, "saveOrder" | "orderByReference"> {
+interface OrderRow {
+  id: string;
+  tenant_id: string;
+  reference: string;
+  payment_mode: "prepaid" | "cod";
+}
+
+function toOrder(row: OrderRow): Order {
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    reference: row.reference,
+    paymentMode: row.payment_mode,
+  };
+}
+
+function orderQueries(
+  pool: Pool,
+): Pick<OrdersRepository, "saveOrder" | "orderByReference" | "orderById"> {
   return {
     async saveOrder(order) {
       await pool.query(
@@ -52,14 +70,21 @@ function orderQueries(pool: Pool): Pick<OrdersRepository, "saveOrder" | "orderBy
       );
     },
     async orderByReference(tenantId, reference) {
-      const result = await pool.query<Order & { tenant_id: string; payment_mode: "prepaid" | "cod" }>(
-        "SELECT id, tenant_id, reference, payment_mode FROM orders WHERE tenant_id = $1 AND reference = $2",
+      const result = await pool.query<OrderRow>(
+        "SELECT * FROM orders WHERE tenant_id = $1 AND reference = $2",
         [tenantId, reference],
       );
       const row = result.rows[0];
-      return row === undefined
-        ? undefined
-        : { id: row.id, tenantId: row.tenant_id, reference: row.reference, paymentMode: row.payment_mode };
+      return row === undefined ? undefined : toOrder(row);
+    },
+
+    async orderById(tenantId, id) {
+      const result = await pool.query<OrderRow>(
+        "SELECT * FROM orders WHERE tenant_id = $1 AND id = $2",
+        [tenantId, id],
+      );
+      const row = result.rows[0];
+      return row === undefined ? undefined : toOrder(row);
     },
   };
 }
@@ -155,6 +180,47 @@ function streamQueries(pool: Pool): Pick<OrdersRepository, "nextSequence"> {
   };
 }
 
+// A consignment's barcodes are allocated once, as a contiguous block of one serial per piece.
+// Every later print reads that block back, so a reprint never gives a parcel a number the
+// platform has not seen. Two prints racing may burn a block; serials are cheap, wrong labels
+// are not.
+function serialQueries(pool: Pool): Pick<OrdersRepository, "serialFor"> {
+  return {
+    async serialFor(tenantId, consignmentId, pieces) {
+      const existing = await pool.query<{ first_serial: string }>(
+        "SELECT first_serial FROM consignment_serials WHERE tenant_id = $1 AND consignment_id = $2",
+        [tenantId, consignmentId],
+      );
+      const found = existing.rows[0];
+      if (found !== undefined) return Number(found.first_serial);
+
+      const reserved = await pool.query<{ first_serial: string }>(
+        `UPDATE parcel_serials SET next_serial = next_serial + $1
+         RETURNING next_serial - $1 AS first_serial`,
+        [pieces],
+      );
+      const block = reserved.rows[0];
+      if (block === undefined) throw new Error("the parcel serial counter is missing");
+
+      const claimed = await pool.query<{ first_serial: string }>(
+        `INSERT INTO consignment_serials (tenant_id, consignment_id, first_serial, pieces)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (tenant_id, consignment_id) DO UPDATE SET pieces = consignment_serials.pieces
+         RETURNING first_serial`,
+        [tenantId, consignmentId, block.first_serial, pieces],
+      );
+      const row = claimed.rows[0];
+      if (row === undefined) throw new Error(`could not reserve serials for ${consignmentId}`);
+      return Number(row.first_serial);
+    },
+  };
+}
+
 export function postgresOrders(pool: Pool): OrdersRepository {
-  return { ...orderQueries(pool), ...consignmentQueries(pool), ...streamQueries(pool) };
+  return {
+    ...orderQueries(pool),
+    ...consignmentQueries(pool),
+    ...serialQueries(pool),
+    ...streamQueries(pool),
+  };
 }

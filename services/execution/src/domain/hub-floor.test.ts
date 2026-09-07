@@ -15,7 +15,7 @@ describe("scanning a parcel into a hub", () => {
     const scan = scanIn(context, {
       consignmentId: "c-1",
       expected: true,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
     });
 
     expect(scan.accepted).toBe(true);
@@ -26,7 +26,7 @@ describe("scanning a parcel into a hub", () => {
     const scan = scanIn(context, {
       consignmentId: "c-1",
       expected: false,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
     });
 
     expect(scan.accepted).toBe(true);
@@ -37,7 +37,7 @@ describe("scanning a parcel into a hub", () => {
     const scan = scanIn(context, {
       consignmentId: "c-1",
       expected: true,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       weightGrams: 1250,
       dimensionsMm: { length: 300, width: 200, height: 100 },
     });
@@ -50,7 +50,7 @@ describe("scanning a parcel into a hub", () => {
     const scan = scanIn(context, {
       consignmentId: "c-1",
       expected: true,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       weightGrams: 5000,
       bookedWeightGrams: 1200,
     });
@@ -62,12 +62,18 @@ describe("scanning a parcel into a hub", () => {
     const scan = scanIn(context, {
       consignmentId: "c-1",
       expected: true,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       weightGrams: 1260,
       bookedWeightGrams: 1200,
     });
 
     expect(scan.exception).toBeUndefined();
+  });
+
+  it("refuses a barcode whose check digit does not add up, so a misread never books a scan", () => {
+    expect(() =>
+      scanIn(context, { consignmentId: "c-1", expected: true, barcode: "RS0000000014" }),
+    ).toThrow("that barcode is not a Runsheet label");
   });
 
   it("refuses a barcode that is not one of ours", () => {
@@ -78,7 +84,7 @@ describe("scanning a parcel into a hub", () => {
 
   it("refuses a scan with no consignment", () => {
     expect(() =>
-      scanIn(context, { consignmentId: "", expected: true, barcode: "RS0000000001" }),
+      scanIn(context, { consignmentId: "", expected: true, barcode: "RS0000000013" }),
     ).toThrow("a scan needs a consignment");
   });
 });
@@ -89,7 +95,7 @@ describe("scanning a parcel out to a run", () => {
       consignmentId: "c-1",
       runId: "run-1",
       onRun: true,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
     });
 
     expect(scan.accepted).toBe(true);
@@ -100,7 +106,7 @@ describe("scanning a parcel out to a run", () => {
       consignmentId: "c-1",
       runId: "run-1",
       onRun: false,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
     });
 
     expect(scan.accepted).toBe(false);
@@ -112,7 +118,7 @@ describe("scanning a parcel out to a run", () => {
       consignmentId: "c-1",
       runId: "run-1",
       onRun: true,
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
     });
 
     expect(scan.workerId).toBe("w1");
