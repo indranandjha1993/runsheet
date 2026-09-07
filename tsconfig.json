@@ -6,6 +6,9 @@
     },
     {
       "path": "packages/eventstore"
+    },
+    {
+      "path": "packages/runtime"
     }
   ]
 }
