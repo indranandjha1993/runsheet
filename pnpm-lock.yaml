@@ -57,6 +57,8 @@ importers:
         specifier: ^4.0.0
         version: 4.5.4
 
+  packages/auth: {}
+
   packages/eventstore:
     dependencies:
       '@runsheet/kernel':
@@ -82,6 +84,30 @@ importers:
 
   services/execution:
     dependencies:
+      '@runsheet/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@runsheet/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@runsheet/eventstore':
+        specifier: workspace:*
+        version: link:../../packages/eventstore
+      '@runsheet/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@runsheet/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.0
+      zod:
+        specifier: ^4.0.0
+        version: 4.5.4
+
+  services/identity:
+    dependencies:
       '@runsheet/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -103,6 +129,9 @@ importers:
 
   services/network:
     dependencies:
+      '@runsheet/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@runsheet/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -124,6 +153,9 @@ importers:
 
   services/orders:
     dependencies:
+      '@runsheet/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@runsheet/contracts':
         specifier: workspace:*
         version: link:../../contracts

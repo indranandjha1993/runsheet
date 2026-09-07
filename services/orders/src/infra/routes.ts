@@ -4,6 +4,7 @@ import type { Route } from "../adapters/http.js";
 import { bookConsignment } from "../application/book-consignment.js";
 import { recordConsignmentEvent } from "../application/record-event.js";
 import type { OrdersDeps } from "../application/ports.js";
+import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 
 const bookBody = z
   .object({
@@ -41,13 +42,7 @@ const eventBody = z.discriminatedUnion("type", [
 
 type EventBody = z.infer<typeof eventBody>;
 
-function tenantOf(headers: Record<string, string | undefined>): string {
-  const tenant = headers["x-tenant-id"];
-  if (tenant === undefined || tenant === "") {
-    throw new DomainError("tenant_required", "the x-tenant-id header is required");
-  }
-  return tenant;
-}
+
 
 function invalid(message: string): { status: number; body: unknown } {
   return { status: 400, body: { error: { code: "invalid_request", message } } };
@@ -96,16 +91,19 @@ function toDomainEvent(body: EventBody): DomainEvent {
   return build(body);
 }
 
-function bookRoute(deps: OrdersDeps): Route {
+function bookRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/consignments",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "consignments:write");
+
       const parsed = bookBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
 
       const consignment = await bookConsignment(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         orderReference: parsed.data.order_reference,
         service: parsed.data.service,
         paymentMode: parsed.data.payment_mode,
@@ -128,16 +126,19 @@ function bookRoute(deps: OrdersDeps): Route {
   };
 }
 
-function eventRoute(deps: OrdersDeps): Route {
+function eventRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/consignments/:id/events",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "consignments:write");
+
       const parsed = eventBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
 
       const consignment = await recordConsignmentEvent(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         consignmentId: request.params["id"] ?? "",
         event: toDomainEvent(parsed.data),
       });
@@ -147,13 +148,16 @@ function eventRoute(deps: OrdersDeps): Route {
   };
 }
 
-function readRoute(deps: OrdersDeps): Route {
+function readRoute(deps: RouteDeps): Route {
   return {
     method: "GET",
     path: "/v1/consignments/:id",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "consignments:read");
+
       const found = await deps.repository.consignmentById(
-        tenantOf(request.headers),
+        caller.tenantId,
         request.params["id"] ?? "",
       );
       if (found === undefined) {
@@ -164,6 +168,10 @@ function readRoute(deps: OrdersDeps): Route {
   };
 }
 
-export function ordersRoutes(deps: OrdersDeps): Route[] {
+export interface RouteDeps extends OrdersDeps {
+  readonly lookup: CallerLookup;
+}
+
+export function ordersRoutes(deps: RouteDeps): Route[] {
   return [bookRoute(deps), eventRoute(deps), readRoute(deps)];
 }
