@@ -1,4 +1,5 @@
 import { types, type Pool } from "pg";
+import { ulid } from "@runsheet/runtime";
 import type { ExecutionRepository } from "../application/ports.js";
 import type { Proof, ProofKind } from "../domain/proof.js";
 import type { Run, RunStatus } from "../domain/run.js";
@@ -324,6 +325,24 @@ function scanQueries(pool: Pool): Pick<ExecutionRepository, "saveScan" | "scansF
   };
 }
 
+// The insert either takes the key or finds it taken. Nothing else decides whether a driver's
+// tap has already been recorded, so a retry over a flaky link cannot double a delivery.
+function commandQueries(pool: Pool): Pick<ExecutionRepository, "claimCommand"> {
+  return {
+    async claimCommand(tenantId, deviceId, commandId) {
+      const eventId = ulid();
+      const result = await pool.query<{ event_id: string }>(
+        `INSERT INTO device_commands (tenant_id, device_id, command_id, event_id)
+         VALUES ($1,$2,$3,$4)
+         ON CONFLICT (tenant_id, device_id, command_id) DO NOTHING
+         RETURNING event_id`,
+        [tenantId, deviceId, commandId, eventId],
+      );
+      return result.rows[0]?.event_id;
+    },
+  };
+}
+
 function streamQueries(pool: Pool): Pick<ExecutionRepository, "nextSequence"> {
   return {
     async nextSequence(tenantId, aggregateId) {
@@ -348,6 +367,7 @@ export function postgresExecution(pool: Pool): ExecutionRepository {
     ...runQueries(pool),
     ...proofQueries(pool),
     ...scanQueries(pool),
+    ...commandQueries(pool),
     ...streamQueries(pool),
   };
 }

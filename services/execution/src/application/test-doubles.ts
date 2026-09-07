@@ -55,9 +55,19 @@ function scanStore(): Pick<ExecutionRepository, "saveScan" | "scansFor"> {
   };
 }
 
-function streamStore(): Pick<ExecutionRepository, "nextSequence"> {
+function streamStore(): Pick<ExecutionRepository, "nextSequence" | "claimCommand"> {
   const sequences = new Map<string, number>();
+  const claimed = new Map<string, string>();
+  let issued = 0;
   return {
+    claimCommand: (tenantId, deviceId, commandId) => {
+      const at = keyOf(tenantId, `${deviceId}:${commandId}`);
+      if (claimed.has(at)) return Promise.resolve(undefined);
+      issued += 1;
+      const eventId = `01J8Z0T00000000000000${String(issued).padStart(5, "0")}`;
+      claimed.set(at, eventId);
+      return Promise.resolve(eventId);
+    },
     nextSequence: (tenantId, aggregateId) => {
       const at = keyOf(tenantId, aggregateId);
       const next = (sequences.get(at) ?? 0) + 1;

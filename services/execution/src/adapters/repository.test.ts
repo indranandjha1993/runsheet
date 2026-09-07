@@ -35,7 +35,8 @@ const sample = (): Run =>
 
 beforeEach(async () => {
   await pool.query(
-    "DROP TABLE IF EXISTS stop_actions, stops, runs, proofs, hub_scans, aggregate_streams, schema_migrations CASCADE",
+    `DROP TABLE IF EXISTS stop_actions, stops, runs, proofs, hub_scans, device_commands,
+       proof_media, aggregate_streams, schema_migrations CASCADE`,
   );
   await migrate(pool, migrations);
 });
@@ -220,5 +221,39 @@ describe("hub scans in the database", () => {
     await repository.saveScan("01J8Z0T0000000000000000054", { ...scan, tenantId: "other" }, "in");
 
     expect(await repository.scansFor(tenantId, "c1")).toEqual([]);
+  });
+});
+
+describe("claiming a command a handset sent", () => {
+  it("gives an event identifier the first time", async () => {
+    expect(await repository.claimCommand(tenantId, "device-1", "cmd-1")).toBeDefined();
+  });
+
+  it("gives nothing the second time, whatever the batch it arrived in", async () => {
+    await repository.claimCommand(tenantId, "device-1", "cmd-1");
+
+    expect(await repository.claimCommand(tenantId, "device-1", "cmd-1")).toBeUndefined();
+  });
+
+  it("treats the same command identifier from another handset as its own", async () => {
+    const mine = await repository.claimCommand(tenantId, "device-1", "cmd-1");
+    const theirs = await repository.claimCommand(tenantId, "device-2", "cmd-1");
+
+    expect(theirs).toBeDefined();
+    expect(theirs).not.toBe(mine);
+  });
+
+  it("keeps one tenant's commands away from another", async () => {
+    await repository.claimCommand(tenantId, "device-1", "cmd-1");
+
+    expect(await repository.claimCommand("other", "device-1", "cmd-1")).toBeDefined();
+  });
+
+  it("holds under a burst of retries of the same command", async () => {
+    const claims = await Promise.all(
+      Array.from({ length: 8 }, () => repository.claimCommand(tenantId, "device-1", "cmd-1")),
+    );
+
+    expect(claims.filter((claim) => claim !== undefined)).toHaveLength(1);
   });
 });
