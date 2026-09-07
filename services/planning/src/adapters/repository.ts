@@ -79,7 +79,10 @@ function planQueries(pool: Pool): Omit<PlanningRepository, "nextSequence"> {
       );
       if (plans.rows.length === 0) return [];
 
-      const byPlan = await stopsByPlan(pool, plans.rows.map((row) => row.id));
+      const byPlan = await stopsByPlan(
+        pool,
+        plans.rows.map((row) => row.id),
+      );
       return plans.rows.map((row) => toRun(row, byPlan.get(row.id) ?? []));
     },
   };
@@ -97,7 +100,8 @@ function streamQueries(pool: Pool): Pick<PlanningRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

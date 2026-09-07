@@ -100,7 +100,9 @@ describe("planning a day", () => {
   });
 
   it("refuses to plan nothing", async () => {
-    await expect(planDay(deps, { ...command, jobs: [] })).rejects.toThrow("there is nothing to plan");
+    await expect(planDay(deps, { ...command, jobs: [] })).rejects.toThrow(
+      "there is nothing to plan",
+    );
   });
 
   it("plans nothing when there are no vehicles, and says so", async () => {

@@ -73,11 +73,7 @@ describe("building a label", () => {
       destination: { ...request.destination, locality: undefined },
     });
 
-    expect(label.address).toEqual([
-      "Aarav Sharma",
-      "Flat 402, Sunrise Apartments",
-      "Noida 201309",
-    ]);
+    expect(label.address).toEqual(["Aarav Sharma", "Flat 402, Sunrise Apartments", "Noida 201309"]);
   });
 
   it("shows the weight in kilograms, because that is what the floor reads", () => {

@@ -40,14 +40,21 @@ beforeEach(() => {
   );
 });
 
-const post = (url: string, body: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
 const get = (url: string): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "GET", url, headers: tenant, body: undefined });
 
 async function carrier(): Promise<string> {
-  const response = await post("/v1/carrier-accounts", { name: "Regional Express", currency: "INR" });
+  const response = await post("/v1/carrier-accounts", {
+    name: "Regional Express",
+    currency: "INR",
+  });
   return (response.body as { id: string }).id;
 }
 
@@ -76,7 +83,9 @@ describe("setting up a carrier and its rates", () => {
   });
 
   it("refuses a currency that is not one", async () => {
-    expect((await post("/v1/carrier-accounts", { name: "x", currency: "rupees" })).status).toBe(400);
+    expect((await post("/v1/carrier-accounts", { name: "x", currency: "rupees" })).status).toBe(
+      400,
+    );
   });
 
   it("stores a rate card with its bands", async () => {
@@ -184,7 +193,9 @@ describe("receiving an invoice over the api", () => {
   });
 
   it("refuses a request with no credential", async () => {
-    expect((await post("/v1/carrier-accounts", { name: "x", currency: "INR" }, {})).status).toBe(401);
+    expect((await post("/v1/carrier-accounts", { name: "x", currency: "INR" }, {})).status).toBe(
+      401,
+    );
   });
 });
 
@@ -239,10 +250,10 @@ describe("working a settlement over the api", () => {
     ).body as Reconciled;
     expect(reconciled.settlements[0]?.state).toBe("matched");
 
-    const approved = await send(
-      `/v1/settlements/${reconciled.settlements[0]?.id ?? ""}/events`,
-      { type: "approved", by: "u1" },
-    );
+    const approved = await send(`/v1/settlements/${reconciled.settlements[0]?.id ?? ""}/events`, {
+      type: "approved",
+      by: "u1",
+    });
 
     expect(approved.body).toMatchObject({ state: "approved", autoApproved: false });
   });
@@ -264,9 +275,9 @@ describe("working a settlement over the api", () => {
     const result = await invoiced(20000);
     const id = result.settlements[0]?.id ?? "";
 
-    expect((await post(`/v1/settlements/${id}/events`, { type: "paid", reference: "x" })).status).toBe(
-      409,
-    );
+    expect(
+      (await post(`/v1/settlements/${id}/events`, { type: "paid", reference: "x" })).status,
+    ).toBe(409);
   });
 
   it("refuses a dispute with no note", async () => {
@@ -282,8 +293,11 @@ describe("working a settlement over the api", () => {
     const result = await invoiced();
 
     expect(
-      (await post(`/v1/settlements/${result.settlements[0]?.id ?? ""}/events`, { type: "forgiven" }))
-        .status,
+      (
+        await post(`/v1/settlements/${result.settlements[0]?.id ?? ""}/events`, {
+          type: "forgiven",
+        })
+      ).status,
     ).toBe(400);
   });
 
@@ -385,4 +399,4 @@ describe("the cash ledger over the api", () => {
 
     expect(response.status).toBe(400);
   });
-})
+});

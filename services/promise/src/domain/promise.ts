@@ -59,7 +59,8 @@ export function updateEta(promise: Promise, command: UpdateEtaCommand): Promise 
 
   const atRisk = command.eta > promise.windowEnd;
   const changedState = atRisk !== promise.atRisk;
-  const notifiable = atRisk || changedState ? movedMaterially(promise.lastNotifiedEta, command.eta) : false;
+  const notifiable =
+    atRisk || changedState ? movedMaterially(promise.lastNotifiedEta, command.eta) : false;
 
   return {
     ...promise,

@@ -39,9 +39,9 @@ describe("composing a message", () => {
   it("has every template in every language, so nobody gets a worse experience", () => {
     for (const template of Object.keys(TEMPLATES)) {
       for (const locale of LOCALES) {
-        expect(compose({ template, locale, values: { window: "w", eta: "e", reason: "r" } })).not.toBe(
-          "",
-        );
+        expect(
+          compose({ template, locale, values: { window: "w", eta: "e", reason: "r" } }),
+        ).not.toBe("");
       }
     }
   });

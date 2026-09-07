@@ -25,13 +25,13 @@ describe("publishing a policy", () => {
   });
 
   it("refuses a policy with no budget, because a runaway must stop itself", () => {
-    expect(() => publish({ ...draft(), budgetPerDay: 0 })).toThrow(
-      "a policy needs a daily budget",
-    );
+    expect(() => publish({ ...draft(), budgetPerDay: 0 })).toThrow("a policy needs a daily budget");
   });
 
   it("refuses one with no code hash, because a replay must know what ran", () => {
-    expect(() => publish({ ...draft(), codeHash: "" })).toThrow("a policy version needs a code hash");
+    expect(() => publish({ ...draft(), codeHash: "" })).toThrow(
+      "a policy version needs a code hash",
+    );
   });
 });
 
@@ -90,10 +90,11 @@ describe("the road from draft to live", () => {
 
   it("can be rolled back from anywhere, instantly", () => {
     const live = applyToPolicy(
-      applyToPolicy(
-        applyToPolicy(draft(), { type: "dry_run_passed", decisions: 10 }),
-        { type: "shadowed", decisions: 1000, agreedWithHumans: 0.95 },
-      ),
+      applyToPolicy(applyToPolicy(draft(), { type: "dry_run_passed", decisions: 10 }), {
+        type: "shadowed",
+        decisions: 1000,
+        agreedWithHumans: 0.95,
+      }),
       { type: "staged", percent: 50 },
     );
 
@@ -116,10 +117,11 @@ describe("retiring a policy", () => {
   it("retires one that has run its course", () => {
     const live = applyToPolicy(
       applyToPolicy(
-        applyToPolicy(
-          applyToPolicy(draft(), { type: "dry_run_passed", decisions: 10 }),
-          { type: "shadowed", decisions: 1000, agreedWithHumans: 0.95 },
-        ),
+        applyToPolicy(applyToPolicy(draft(), { type: "dry_run_passed", decisions: 10 }), {
+          type: "shadowed",
+          decisions: 1000,
+          agreedWithHumans: 0.95,
+        }),
         { type: "staged", percent: 100 },
       ),
       { type: "went_live" },

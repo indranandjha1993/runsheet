@@ -1,12 +1,6 @@
 import type { Envelope } from "@runsheet/kernel";
 import type { Address } from "../domain/address.js";
-import type {
-  AddressRepository,
-  Clock,
-  EventPublisher,
-  Geocoder,
-  Identifiers,
-} from "./ports.js";
+import type { AddressRepository, Clock, EventPublisher, Geocoder, Identifiers } from "./ports.js";
 
 export function inMemoryAddresses(): AddressRepository {
   const byId = new Map<string, Address>();

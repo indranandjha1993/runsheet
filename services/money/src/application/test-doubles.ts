@@ -73,7 +73,9 @@ export function inMemoryMoney(): MoneyRepository {
     },
     cashEntriesFor: (tenantId, holder) =>
       Promise.resolve(
-        [...movements.values()].flat().filter((entry) => entry.tenantId === tenantId && holds(entry, holder)),
+        [...movements.values()]
+          .flat()
+          .filter((entry) => entry.tenantId === tenantId && holds(entry, holder)),
       ),
     nextSequence: (tenantId, aggregateId) => {
       const at = key(tenantId, aggregateId);

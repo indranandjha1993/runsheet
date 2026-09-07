@@ -59,9 +59,9 @@ describe("hub", () => {
   });
 
   it("allows a hub that is open around the clock", () => {
-    expect(hub({ ...valid, opensMinutesOfDay: 0, closesMinutesOfDay: 1440 }).closesMinutesOfDay).toBe(
-      1440,
-    );
+    expect(
+      hub({ ...valid, opensMinutesOfDay: 0, closesMinutesOfDay: 1440 }).closesMinutesOfDay,
+    ).toBe(1440);
   });
 
   it("starts active, because a hub is created to be used", () => {

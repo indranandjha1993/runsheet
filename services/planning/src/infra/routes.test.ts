@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { createRouter } from "../adapters/http.js";
 import { planningRoutes } from "./routes.js";
 import { nearestFirstPlanner } from "../adapters/nearest-first.js";
-import { countingIds, fixedClock, inMemoryPlans, recordingPublisher } from "../application/test-doubles.js";
+import {
+  countingIds,
+  fixedClock,
+  inMemoryPlans,
+  recordingPublisher,
+} from "../application/test-doubles.js";
 
 const tenantId = "01J8Z0T0000000000000000002";
 const tenant = { authorization: "Bearer rsk_test" };
@@ -45,7 +50,10 @@ const body = {
   ],
 };
 
-const post = (payload: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  payload: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url: "/v1/plans", headers, body: payload });
 
 interface Plan {

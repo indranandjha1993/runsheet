@@ -4,7 +4,9 @@ import { migrate } from "@runsheet/runtime";
 import { postgresOrders } from "./repository.js";
 import { apply, book, type Consignment } from "../domain/consignment.js";
 
-const pool = new Pool({ connectionString: "postgres://runsheet:runsheet@localhost:15432/test_orders" });
+const pool = new Pool({
+  connectionString: "postgres://runsheet:runsheet@localhost:15432/test_orders",
+});
 const repository = postgresOrders(pool);
 const migrations = new URL("../../migrations", import.meta.url).pathname;
 const tenantId = "01J8Z0T0000000000000000002";
@@ -17,7 +19,12 @@ const sample = (): Consignment =>
     orderId,
     service: "next_day",
     paymentMode: "cod",
-    guards: { proofRequirement: "photo", attemptLimit: 3, codAmountMinor: 1000, codCurrency: "INR" },
+    guards: {
+      proofRequirement: "photo",
+      attemptLimit: 3,
+      codAmountMinor: 1000,
+      codCurrency: "INR",
+    },
     packages: [
       { id: "01J8Z0T0000000000000000011", weightGrams: 1200 },
       { id: "01J8Z0T0000000000000000012", weightGrams: 800 },
@@ -25,7 +32,9 @@ const sample = (): Consignment =>
   });
 
 beforeEach(async () => {
-  await pool.query("DROP TABLE IF EXISTS consignment_serials, parcel_serials, packages, consignments, orders,\n       aggregate_streams, schema_migrations CASCADE");
+  await pool.query(
+    "DROP TABLE IF EXISTS consignment_serials, parcel_serials, packages, consignments, orders,\n       aggregate_streams, schema_migrations CASCADE",
+  );
   await migrate(pool, migrations);
   await repository.saveOrder({ id: orderId, tenantId, reference: "ORD-1001", paymentMode: "cod" });
 });
@@ -52,7 +61,9 @@ describe("the orders repository", () => {
   it("keeps one tenant's consignments invisible to another", async () => {
     await repository.saveConsignment(sample(), 0);
 
-    expect(await repository.consignmentById("01J8Z0T0000000000000000099", sample().id)).toBeUndefined();
+    expect(
+      await repository.consignmentById("01J8Z0T0000000000000000099", sample().id),
+    ).toBeUndefined();
   });
 
   it("refuses a write when someone else changed the consignment first", async () => {

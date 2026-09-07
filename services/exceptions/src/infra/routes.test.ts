@@ -37,10 +37,17 @@ beforeEach(() => {
   );
 });
 
-const post = (url: string, body: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
-const get = (url: string, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const get = (
+  url: string,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "GET", url, headers, body: undefined });
 
 const variance = {

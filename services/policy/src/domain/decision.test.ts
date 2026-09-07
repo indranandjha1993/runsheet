@@ -129,13 +129,18 @@ describe("what happens to a decision", () => {
   it("will not execute a proposal nobody approved", () => {
     const cautious = { ...proposed(), autonomy: "propose" as const };
 
-    expect(() =>
-      applyToDecision(cautious, { type: "executed", producedEventIds: [], at }),
-    ).toThrow("a decision this policy only proposes cannot be executed until it is approved");
+    expect(() => applyToDecision(cautious, { type: "executed", producedEventIds: [], at })).toThrow(
+      "a decision this policy only proposes cannot be executed until it is approved",
+    );
   });
 
   it("records a rejection with who said no", () => {
-    const rejected = applyToDecision(proposed(), { type: "rejected", by: "u1", reason: "wrong", at });
+    const rejected = applyToDecision(proposed(), {
+      type: "rejected",
+      by: "u1",
+      reason: "wrong",
+      at,
+    });
 
     expect(rejected.state).toBe("rejected");
   });
@@ -173,7 +178,11 @@ describe("what happens to a decision", () => {
   it("marks a shadow decision as recorded rather than pretending it acted", () => {
     const shadow = { ...proposed(), shadow: true };
 
-    const recorded = applyToDecision(shadow, { type: "shadow_recorded", wouldHaveDone: "approve", at });
+    const recorded = applyToDecision(shadow, {
+      type: "shadow_recorded",
+      wouldHaveDone: "approve",
+      at,
+    });
 
     expect(recorded.state).toBe("shadow_recorded");
   });
@@ -181,9 +190,9 @@ describe("what happens to a decision", () => {
   it("will not execute a shadow decision, whatever anyone asks", () => {
     const shadow = { ...proposed(), shadow: true };
 
-    expect(() =>
-      applyToDecision(shadow, { type: "executed", producedEventIds: [], at }),
-    ).toThrow("a shadow decision never executes");
+    expect(() => applyToDecision(shadow, { type: "executed", producedEventIds: [], at })).toThrow(
+      "a shadow decision never executes",
+    );
   });
 
   it("expires a proposal nobody got to in time", () => {

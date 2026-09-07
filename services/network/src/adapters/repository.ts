@@ -81,7 +81,11 @@ function ringOf(boundary: Polygon): (readonly [number, number])[] {
 }
 
 function hubQueries(pool: Pool): Pick<NetworkRepository, "saveHub" | "hubByCode" | "hubById"> {
-  const findBy = async (column: string, tenantId: string, value: string): Promise<Hub | undefined> => {
+  const findBy = async (
+    column: string,
+    tenantId: string,
+    value: string,
+  ): Promise<Hub | undefined> => {
     const result = await pool.query<HubRow>(
       `SELECT * FROM hubs WHERE tenant_id = $1 AND ${column} = $2`,
       [tenantId, value],

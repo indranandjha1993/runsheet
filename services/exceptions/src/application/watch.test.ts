@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { observe } from "./watch.js";
 import { work } from "./work.js";
-import {
-  countingIds,
-  fixedClock,
-  inMemoryExceptions,
-  recordingPublisher,
-} from "./test-doubles.js";
+import { countingIds, fixedClock, inMemoryExceptions, recordingPublisher } from "./test-doubles.js";
 import type { ExceptionsDeps } from "./ports.js";
 
 const tenantId = "01J8Z0T0000000000000000002";
@@ -119,8 +114,20 @@ describe("watching what the network reports", () => {
   });
 
   it("notices a lost parcel and a damaged one", async () => {
-    expect((await observe(deps, { tenantId, type: "consignment.lost", aggregateId: "c-1", payload: {} })).exception?.severity).toBe("high");
-    expect((await observe(deps, { tenantId, type: "consignment.damaged", aggregateId: "c-2", payload: {} })).exception?.severity).toBe("medium");
+    expect(
+      (await observe(deps, { tenantId, type: "consignment.lost", aggregateId: "c-1", payload: {} }))
+        .exception?.severity,
+    ).toBe("high");
+    expect(
+      (
+        await observe(deps, {
+          tenantId,
+          type: "consignment.damaged",
+          aggregateId: "c-2",
+          payload: {},
+        })
+      ).exception?.severity,
+    ).toBe("medium");
   });
 
   it("notices an address nothing could place with any confidence", async () => {

@@ -24,7 +24,11 @@ export interface MoneyRepository {
   saveRateCard(card: RateCard): Promise<void>;
   rateCardsFor(tenantId: string, carrierAccountId: string): Promise<RateCard[]>;
   saveInvoice(invoice: Invoice, lines: readonly InvoiceLine[]): Promise<void>;
-  invoiceByNumber(tenantId: string, carrierAccountId: string, number: string): Promise<Invoice | undefined>;
+  invoiceByNumber(
+    tenantId: string,
+    carrierAccountId: string,
+    number: string,
+  ): Promise<Invoice | undefined>;
   linesFor(invoiceId: string): Promise<InvoiceLine[]>;
   saveSettlement(settlement: Settlement): Promise<void>;
   settlementById(tenantId: string, id: string): Promise<Settlement | undefined>;

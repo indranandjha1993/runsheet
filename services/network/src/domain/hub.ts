@@ -52,7 +52,8 @@ export function hub(input: HubInput): Hub {
   if (!COUNTRY.test(input.countryCode)) {
     throw new DomainError("invalid_input", "countryCode must be a two-letter code");
   }
-  if (!knownTimeZone(input.timeZone)) throw new DomainError("invalid_input", `unknown time zone: ${input.timeZone}`);
+  if (!knownTimeZone(input.timeZone))
+    throw new DomainError("invalid_input", `unknown time zone: ${input.timeZone}`);
   assertHours(input.opensMinutesOfDay, input.closesMinutesOfDay);
 
   return {

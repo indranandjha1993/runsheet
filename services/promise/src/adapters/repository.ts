@@ -53,7 +53,7 @@ function toNotification(row: NotificationRow): Notification {
   };
 }
 
-const orNull = <T,>(value: T | undefined): T | null => value ?? null;
+const orNull = <T>(value: T | undefined): T | null => value ?? null;
 
 function promises(pool: Pool): Pick<PromiseRepository, "save" | "byConsignment"> {
   return {
@@ -68,9 +68,15 @@ function promises(pool: Pool): Pick<PromiseRepository, "save" | "byConsignment">
            at_risk = EXCLUDED.at_risk, settled = EXCLUDED.settled,
            last_milestone = EXCLUDED.last_milestone, updated_at = now()`,
         [
-          promise.consignmentId, promise.tenantId, promise.windowStart, promise.windowEnd,
-          orNull(promise.estimatedArrival), orNull(promise.lastNotifiedEta), promise.atRisk,
-          promise.settled, orNull(promise.lastMilestone),
+          promise.consignmentId,
+          promise.tenantId,
+          promise.windowStart,
+          promise.windowEnd,
+          orNull(promise.estimatedArrival),
+          orNull(promise.lastNotifiedEta),
+          promise.atRisk,
+          promise.settled,
+          orNull(promise.lastMilestone),
         ],
       );
     },
@@ -96,9 +102,14 @@ function notifications(
            sent_at, failed_reason)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [
-          notification.id, notification.tenantId, notification.consignmentId,
-          notification.channel, notification.template, notification.locale,
-          orNull(notification.sentAt), orNull(notification.failedReason),
+          notification.id,
+          notification.tenantId,
+          notification.consignmentId,
+          notification.channel,
+          notification.template,
+          notification.locale,
+          orNull(notification.sentAt),
+          orNull(notification.failedReason),
         ],
       );
     },
@@ -126,7 +137,8 @@ function streams(pool: Pool): Pick<PromiseRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

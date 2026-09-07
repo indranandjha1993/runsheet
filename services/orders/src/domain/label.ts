@@ -38,8 +38,8 @@ export interface Label {
   readonly serviceLevel: ServiceLevel;
   readonly address: readonly string[];
   readonly weight: string;
-  readonly pieceOf?: string;
-  readonly cod?: string;
+  readonly pieceOf?: string | undefined;
+  readonly cod?: string | undefined;
 }
 
 function addressLines(destination: LabelDestination): string[] {

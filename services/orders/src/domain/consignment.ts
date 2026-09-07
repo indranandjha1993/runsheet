@@ -142,10 +142,7 @@ function assertDeliverable(current: Consignment, cashCollectedMinor: number | un
   const expected = current.guards.codAmountMinor ?? 0;
   const tolerance = current.guards.codToleranceMinor ?? 0;
   if (cashCollectedMinor === undefined) {
-    throw new DomainError(
-      "invalid_input",
-      "cash on delivery must be collected before delivery",
-    );
+    throw new DomainError("invalid_input", "cash on delivery must be collected before delivery");
   }
   if (Math.abs(cashCollectedMinor - expected) > tolerance) {
     throw new DomainError(

@@ -31,14 +31,13 @@ function keyOf(command: RecordMovementCommand): string {
   return `${command.tenantId}:${command.kind}:${command.reference}`;
 }
 
-async function balancesFor(
-  deps: MoneyDeps,
-  command: RecordMovementCommand,
-): Promise<Balances> {
+async function balancesFor(deps: MoneyDeps, command: RecordMovementCommand): Promise<Balances> {
   const driverId = command.driverId;
   const merchantId = command.merchantId;
   const forDriver =
-    driverId === undefined ? [] : await deps.repository.cashEntriesFor(command.tenantId, { driverId });
+    driverId === undefined
+      ? []
+      : await deps.repository.cashEntriesFor(command.tenantId, { driverId });
   const forMerchant =
     merchantId === undefined
       ? []

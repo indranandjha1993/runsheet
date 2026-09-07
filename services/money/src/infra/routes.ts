@@ -29,9 +29,7 @@ const rateCardBody = z.object({
             }),
           )
           .min(1),
-        surcharges: z
-          .array(z.object({ code: z.string().min(1), percent: z.number() }))
-          .default([]),
+        surcharges: z.array(z.object({ code: z.string().min(1), percent: z.number() })).default([]),
       }),
     )
     .min(1),
@@ -55,7 +53,11 @@ const invoiceBody = z.object({
 const settlementBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("approved"), by: z.string().min(1) }),
   z.object({ type: z.literal("disputed"), by: z.string().min(1), note: z.string() }),
-  z.object({ type: z.literal("dispute_resolved"), agreed_minor: z.number().int(), by: z.string().min(1) }),
+  z.object({
+    type: z.literal("dispute_resolved"),
+    agreed_minor: z.number().int(),
+    by: z.string().min(1),
+  }),
   z.object({ type: z.literal("dispute_rejected"), by: z.string().min(1) }),
   z.object({ type: z.literal("paid"), reference: z.string().min(1) }),
   z.object({ type: z.literal("written_off"), by: z.string().min(1), note: z.string() }),

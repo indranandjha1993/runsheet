@@ -96,8 +96,20 @@ describe("a tracking link", () => {
   });
 
   it("is different for every consignment, so one link never reveals another", () => {
-    const first = issueToken({ consignmentId: "c-1", tenantId: "t-1", secret, issuedAt, validHours: 1 });
-    const second = issueToken({ consignmentId: "c-2", tenantId: "t-1", secret, issuedAt, validHours: 1 });
+    const first = issueToken({
+      consignmentId: "c-1",
+      tenantId: "t-1",
+      secret,
+      issuedAt,
+      validHours: 1,
+    });
+    const second = issueToken({
+      consignmentId: "c-2",
+      tenantId: "t-1",
+      secret,
+      issuedAt,
+      validHours: 1,
+    });
 
     expect(first).not.toBe(second);
   });

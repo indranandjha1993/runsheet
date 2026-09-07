@@ -12,7 +12,6 @@ describe("planning configuration", () => {
     expect(() => planningConfig({})).toThrow(/DATABASE_URL_PLANNING is required/);
   });
 
-
   it("points the reader at the example file when something is missing", () => {
     expect(() => planningConfig({})).toThrow(/\.env\.example/);
   });

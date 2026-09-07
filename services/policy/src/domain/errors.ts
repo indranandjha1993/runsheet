@@ -1,9 +1,5 @@
 export type DomainErrorCode =
-  | "invalid_input"
-  | "already_exists"
-  | "not_found"
-  | "tenant_required"
-  | "transition_not_allowed";
+  "invalid_input" | "already_exists" | "not_found" | "tenant_required" | "transition_not_allowed";
 
 const STATUS: Record<DomainErrorCode, number> = {
   invalid_input: 400,

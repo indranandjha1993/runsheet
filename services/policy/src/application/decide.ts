@@ -1,6 +1,13 @@
 import { applyToDecision, propose, type Decision, type Watermark } from "../domain/decision.js";
 import { calibrationOf, type Calibration } from "../domain/calibration.js";
-import { applyToPolicy, bucketOf, inRollout, publish, type Policy, type PolicyEvent } from "../domain/policy.js";
+import {
+  applyToPolicy,
+  bucketOf,
+  inRollout,
+  publish,
+  type Policy,
+  type PolicyEvent,
+} from "../domain/policy.js";
 import { DomainError } from "../domain/errors.js";
 import { announce } from "./announce.js";
 import type { PolicyDeps } from "./ports.js";
@@ -63,7 +70,11 @@ export interface ConsiderCommand {
   readonly inputs: Record<string, unknown>;
   readonly action: Record<string, unknown>;
   readonly readAt: readonly Watermark[];
-  readonly toolCalls?: readonly { tool: string; arguments: Record<string, unknown>; result?: unknown }[];
+  readonly toolCalls?: readonly {
+    tool: string;
+    arguments: Record<string, unknown>;
+    result?: unknown;
+  }[];
 }
 
 export type Considered =

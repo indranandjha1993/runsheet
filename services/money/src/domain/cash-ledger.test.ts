@@ -82,7 +82,9 @@ describe("what the postings do to each account", () => {
       at,
     });
 
-    expect(postings).toEqual([{ account: "merchant_payable", merchantId: "m-1", deltaMinor: -50000 }]);
+    expect(postings).toEqual([
+      { account: "merchant_payable", merchantId: "m-1", deltaMinor: -50000 },
+    ]);
   });
 
   it("a written-off shortfall clears the driver's float without paying the merchant", () => {
@@ -156,7 +158,14 @@ describe("what a merchant is owed", () => {
   it("is not reduced by a shortfall the carrier wrote off, because the merchant is still owed", () => {
     const entries = ledger([
       collect(50000),
-      { kind: "written_off", amountMinor: 50000, currency: "INR", driverId: "d-1", reference: "run-1", at },
+      {
+        kind: "written_off",
+        amountMinor: 50000,
+        currency: "INR",
+        driverId: "d-1",
+        reference: "run-1",
+        at,
+      },
     ]);
 
     expect(merchantPayable(entries, "m-1", "INR").minorUnits).toBe(50000);

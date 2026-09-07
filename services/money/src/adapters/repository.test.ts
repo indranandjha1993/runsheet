@@ -14,7 +14,13 @@ const tenantId = "01J8Z0T0000000000000000002";
 const carrierAccountId = "01J8Z0T0000000000000000010";
 
 const carrier = { id: carrierAccountId, tenantId, name: "Regional Express", currency: "INR" };
-const invoice = { id: "01J8Z0T0000000000000000020", tenantId, carrierAccountId, number: "INV-1", currency: "INR" };
+const invoice = {
+  id: "01J8Z0T0000000000000000020",
+  tenantId,
+  carrierAccountId,
+  number: "INV-1",
+  currency: "INR",
+};
 const line: InvoiceLine = {
   id: "01J8Z0T0000000000000000030",
   invoiceId: invoice.id,
@@ -95,10 +101,18 @@ describe("the money repository", () => {
       ],
     };
     await repository.saveRateCard(
-      rateCard({ ...base, id: "01J8Z0T0000000000000000051", validFrom: new Date("2026-01-01T00:00:00.000Z") }),
+      rateCard({
+        ...base,
+        id: "01J8Z0T0000000000000000051",
+        validFrom: new Date("2026-01-01T00:00:00.000Z"),
+      }),
     );
     await repository.saveRateCard(
-      rateCard({ ...base, id: "01J8Z0T0000000000000000052", validFrom: new Date("2026-06-01T00:00:00.000Z") }),
+      rateCard({
+        ...base,
+        id: "01J8Z0T0000000000000000052",
+        validFrom: new Date("2026-06-01T00:00:00.000Z"),
+      }),
     );
 
     expect((await repository.rateCardsFor(tenantId, carrierAccountId))[0]?.id).toBe(

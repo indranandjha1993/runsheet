@@ -108,9 +108,9 @@ describe("guards frozen at booking", () => {
       { type: "out_for_delivery", runId: "r" },
     );
 
-    expect(apply(lenient, { type: "delivered", proofId: "p", cashCollectedMinor: 249500 }).status).toBe(
-      "delivered",
-    );
+    expect(
+      apply(lenient, { type: "delivered", proofId: "p", cashCollectedMinor: 249500 }).status,
+    ).toBe("delivered");
   });
 });
 

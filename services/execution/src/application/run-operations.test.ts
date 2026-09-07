@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { captureProof, planRun, recordRunEvent } from "./run-operations.js";
-import {
-  countingIds,
-  fixedClock,
-  inMemoryExecution,
-  recordingPublisher,
-} from "./test-doubles.js";
+import { countingIds, fixedClock, inMemoryExecution, recordingPublisher } from "./test-doubles.js";
 import type { ExecutionDeps } from "./ports.js";
 
 const tenantId = "01J8Z0T0000000000000000002";
@@ -78,7 +73,12 @@ describe("a driver's shift", () => {
       event: {
         type: "action_recorded",
         stopId: stopIds[0] ?? "",
-        action: { actionId: actionIds[0] ?? "", result: "done", proofId: "p1", cashCollectedMinor: 50000 },
+        action: {
+          actionId: actionIds[0] ?? "",
+          result: "done",
+          proofId: "p1",
+          cashCollectedMinor: 50000,
+        },
       },
     });
     await recordRunEvent(deps, {
@@ -86,7 +86,12 @@ describe("a driver's shift", () => {
       event: {
         type: "action_recorded",
         stopId: stopIds[1] ?? "",
-        action: { actionId: actionIds[1] ?? "", result: "failed", ndrReason: "nobody_home", proofId: "p2" },
+        action: {
+          actionId: actionIds[1] ?? "",
+          result: "failed",
+          ndrReason: "nobody_home",
+          proofId: "p2",
+        },
       },
     });
     await recordRunEvent(deps, { ...at, event: { type: "completed" } });
@@ -95,14 +100,19 @@ describe("a driver's shift", () => {
     const closed = await recordRunEvent(deps, { ...at, event: { type: "closed" } });
 
     expect(closed.status).toBe("closed");
-    const lastPayload = deps.publisher.published.at(-1)?.payload as { cash: { varianceMinor: number } };
+    const lastPayload = deps.publisher.published.at(-1)?.payload as {
+      cash: { varianceMinor: number };
+    };
     expect(lastPayload.cash.varianceMinor).toBe(0);
   });
 
   it("reports the shortfall when the count is light", async () => {
     const { runId, stopIds, actionIds } = await shift();
     const at = { tenantId, runId };
-    await recordRunEvent(deps, { ...at, event: { type: "assigned", workerId: "w", vehicleId: "v" } });
+    await recordRunEvent(deps, {
+      ...at,
+      event: { type: "assigned", workerId: "w", vehicleId: "v" },
+    });
     await recordRunEvent(deps, { ...at, event: { type: "started" } });
     for (const [index, stopId] of stopIds.entries()) {
       await recordRunEvent(deps, {
@@ -135,7 +145,10 @@ describe("a driver's shift", () => {
   it("refuses to complete while a stop is unresolved, and changes nothing", async () => {
     const { runId } = await shift();
     const at = { tenantId, runId };
-    await recordRunEvent(deps, { ...at, event: { type: "assigned", workerId: "w", vehicleId: "v" } });
+    await recordRunEvent(deps, {
+      ...at,
+      event: { type: "assigned", workerId: "w", vehicleId: "v" },
+    });
     await recordRunEvent(deps, { ...at, event: { type: "started" } });
 
     await expect(recordRunEvent(deps, { ...at, event: { type: "completed" } })).rejects.toThrow(
@@ -149,7 +162,10 @@ describe("a driver's shift", () => {
   it("lets a supervisor force a run closed when a device never syncs", async () => {
     const { runId, stopIds, actionIds } = await shift();
     const at = { tenantId, runId };
-    await recordRunEvent(deps, { ...at, event: { type: "assigned", workerId: "w", vehicleId: "v" } });
+    await recordRunEvent(deps, {
+      ...at,
+      event: { type: "assigned", workerId: "w", vehicleId: "v" },
+    });
     await recordRunEvent(deps, { ...at, event: { type: "started" } });
     await recordRunEvent(deps, {
       ...at,

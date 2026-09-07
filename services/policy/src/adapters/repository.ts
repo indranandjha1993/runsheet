@@ -1,5 +1,11 @@
 import type { Pool } from "pg";
-import type { Decision, DecisionState, ModelExchange, ToolCall, Watermark } from "../domain/decision.js";
+import type {
+  Decision,
+  DecisionState,
+  ModelExchange,
+  ToolCall,
+  Watermark,
+} from "../domain/decision.js";
 import type { Autonomy, Policy, PolicyState } from "../domain/policy.js";
 import type { PolicyRepository } from "../application/ports.js";
 
@@ -47,7 +53,7 @@ interface DecisionRow {
   reversal_reason: string | null;
 }
 
-const orNull = <T,>(value: T | undefined): T | null => value ?? null;
+const orNull = <T>(value: T | undefined): T | null => value ?? null;
 
 function toPolicy(row: PolicyRow): Policy {
   return {
@@ -99,30 +105,53 @@ function toDecision(row: DecisionRow): Decision {
 
 function policyValues(policy: Policy): unknown[] {
   return [
-    policy.id, policy.tenantId, policy.name, policy.version, policy.codeHash, policy.autonomy,
-    policy.triggerEvent, policy.budgetPerDay, policy.state, policy.rolloutPercent,
-    orNull(policy.dryRunDecisions), orNull(policy.shadowDecisions),
-    orNull(policy.agreedWithHumans), orNull(policy.rolledBackBy), orNull(policy.rollbackReason),
+    policy.id,
+    policy.tenantId,
+    policy.name,
+    policy.version,
+    policy.codeHash,
+    policy.autonomy,
+    policy.triggerEvent,
+    policy.budgetPerDay,
+    policy.state,
+    policy.rolloutPercent,
+    orNull(policy.dryRunDecisions),
+    orNull(policy.shadowDecisions),
+    orNull(policy.agreedWithHumans),
+    orNull(policy.rolledBackBy),
+    orNull(policy.rollbackReason),
   ];
 }
 
 function decisionValues(decision: Decision): unknown[] {
   return [
-    decision.id, decision.tenantId, decision.policyId, decision.policyVersion, decision.codeHash,
-    decision.autonomy, decision.subjectType, decision.subjectId, decision.rolloutBucket,
-    decision.rolloutPercent, decision.budgetRemaining, JSON.stringify(decision.readAt),
-    JSON.stringify(decision.toolCalls), JSON.stringify(decision.inputs),
-    JSON.stringify(decision.action), decision.state, decision.proposedAt, decision.shadow,
+    decision.id,
+    decision.tenantId,
+    decision.policyId,
+    decision.policyVersion,
+    decision.codeHash,
+    decision.autonomy,
+    decision.subjectType,
+    decision.subjectId,
+    decision.rolloutBucket,
+    decision.rolloutPercent,
+    decision.budgetRemaining,
+    JSON.stringify(decision.readAt),
+    JSON.stringify(decision.toolCalls),
+    JSON.stringify(decision.inputs),
+    JSON.stringify(decision.action),
+    decision.state,
+    decision.proposedAt,
+    decision.shadow,
     orNull(decision.modelVersion),
     decision.modelExchange === undefined ? null : JSON.stringify(decision.modelExchange),
-    orNull(decision.producedEventIds), orNull(decision.reviewedBy),
+    orNull(decision.producedEventIds),
+    orNull(decision.reviewedBy),
     orNull(decision.reversalReason),
   ];
 }
 
-function policies(
-  pool: Pool,
-): Pick<PolicyRepository, "savePolicy" | "policyById" | "policiesFor"> {
+function policies(pool: Pool): Pick<PolicyRepository, "savePolicy" | "policyById" | "policiesFor"> {
   return {
     async savePolicy(policy) {
       await pool.query(
@@ -220,7 +249,8 @@ function streams(pool: Pool): Pick<PolicyRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

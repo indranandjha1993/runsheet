@@ -55,7 +55,11 @@ describe("resolving an address", () => {
   it("stores an address even when nothing could place it", async () => {
     deps = { ...deps, geocoder: silentGeocoder() };
 
-    const address = await resolve(deps, { tenantId, raw: "somewhere near the lake", countryCode: "IN" });
+    const address = await resolve(deps, {
+      tenantId,
+      raw: "somewhere near the lake",
+      countryCode: "IN",
+    });
 
     expect(address.location).toBeUndefined();
     expect(address.source).toBe("none");

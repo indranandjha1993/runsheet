@@ -99,7 +99,11 @@ describe("the router", () => {
 
   it("matches a path with no captured parts", async () => {
     const plain = createRouter([
-      { method: "GET", path: "/v1/ping", handle: () => Promise.resolve({ status: 200, body: "pong" }) },
+      {
+        method: "GET",
+        path: "/v1/ping",
+        handle: () => Promise.resolve({ status: 200, body: "pong" }),
+      },
     ]);
 
     const response = await plain.handle({

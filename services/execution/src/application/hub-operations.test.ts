@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { recordScanIn, recordScanOut } from "./hub-operations.js";
 import type { ExecutionDeps } from "./ports.js";
-import {
-  countingIds,
-  fixedClock,
-  inMemoryExecution,
-  recordingPublisher,
-} from "./test-doubles.js";
+import { countingIds, fixedClock, inMemoryExecution, recordingPublisher } from "./test-doubles.js";
 
 let deps: ExecutionDeps & { publisher: ReturnType<typeof recordingPublisher> };
 
@@ -116,6 +111,8 @@ describe("recording a hub outscan", () => {
     });
 
     expect(scan.accepted).toBe(false);
-    expect(deps.publisher.published.map((p) => p.event.type)).toEqual(["consignment.hub_exception"]);
+    expect(deps.publisher.published.map((p) => p.event.type)).toEqual([
+      "consignment.hub_exception",
+    ]);
   });
 });

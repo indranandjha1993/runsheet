@@ -17,7 +17,9 @@ describe("exceptions configuration", () => {
   });
 
   it("rejects a port that is not a port", () => {
-    expect(() => exceptionsConfig({ ...minimal, PORT_EXCEPTIONS: "http" })).toThrow(/PORT_EXCEPTIONS/);
+    expect(() => exceptionsConfig({ ...minimal, PORT_EXCEPTIONS: "http" })).toThrow(
+      /PORT_EXCEPTIONS/,
+    );
   });
 
   it("hides the database address when describing itself for the log", () => {

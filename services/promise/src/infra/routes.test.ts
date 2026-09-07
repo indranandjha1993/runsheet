@@ -44,7 +44,11 @@ beforeEach(() => {
   );
 });
 
-const post = (url: string, body: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
 const get = (url: string, headers = {}): Promise<{ status: number; body: unknown }> =>
@@ -191,12 +195,14 @@ describe("the tracking link", () => {
 
     expect((await get(`/track/${token}`)).status).toBe(200);
     expect(
-      (await router.handle({
-        method: "GET",
-        url: `/track/${token}`,
-        headers: {},
-        body: undefined,
-      })).headers?.["cache-control"],
+      (
+        await router.handle({
+          method: "GET",
+          url: `/track/${token}`,
+          headers: {},
+          body: undefined,
+        })
+      ).headers?.["cache-control"],
     ).toBe("no-store");
   });
 

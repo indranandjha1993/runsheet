@@ -50,7 +50,11 @@ describe("asking orders what happened to a consignment", () => {
 
   it("presents its own credential, never the caller's", async () => {
     const call = respondingWith(200, delivered);
-    const source = ordersEvidence({ ordersUrl: "http://orders", credential: "rsk_money", fetch: call });
+    const source = ordersEvidence({
+      ordersUrl: "http://orders",
+      credential: "rsk_money",
+      fetch: call,
+    });
 
     await source.forConsignment("t", "c-1");
 

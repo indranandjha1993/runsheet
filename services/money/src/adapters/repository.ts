@@ -52,7 +52,7 @@ interface SettlementRow {
   payment_reference: string | null;
 }
 
-const orNull = <T,>(value: T | undefined): T | null => value ?? null;
+const orNull = <T>(value: T | undefined): T | null => value ?? null;
 
 function toCard(row: CardRow): RateCard {
   return {
@@ -122,8 +122,13 @@ function cards(pool: Pool): Pick<MoneyRepository, "saveRateCard" | "rateCardsFor
         `INSERT INTO rate_cards (id, tenant_id, carrier_account_id, currency, valid_from,
            valid_until, lanes) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
         [
-          card.id, card.tenantId, card.carrierAccountId, card.currency, card.validFrom,
-          orNull(card.validUntil), JSON.stringify(card.lanes),
+          card.id,
+          card.tenantId,
+          card.carrierAccountId,
+          card.currency,
+          card.validFrom,
+          orNull(card.validUntil),
+          JSON.stringify(card.lanes),
         ],
       );
     },
@@ -192,27 +197,39 @@ function invoices(
   };
 }
 
+async function writeSettlement(pool: Pool, settlement: Settlement): Promise<void> {
+  await pool.query(
+    `INSERT INTO settlements (id, tenant_id, line_id, invoice_id, state, variance_minor,
+       reasons, auto_approved, agreed_minor, note, payment_reference)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+     ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state,
+       agreed_minor = EXCLUDED.agreed_minor, note = EXCLUDED.note,
+       auto_approved = EXCLUDED.auto_approved,
+       payment_reference = EXCLUDED.payment_reference, updated_at = now()`,
+    [
+      settlement.id,
+      settlement.tenantId,
+      settlement.lineId,
+      settlement.invoiceId,
+      settlement.state,
+      settlement.varianceMinor,
+      settlement.reasons,
+      settlement.autoApproved,
+      orNull(settlement.agreedMinor),
+      orNull(settlement.note),
+      orNull(settlement.paymentReference),
+    ],
+  );
+}
+
 function settlements(
   pool: Pool,
 ): Pick<MoneyRepository, "saveSettlement" | "settlementById" | "settlementsFor"> {
   return {
     async saveSettlement(settlement) {
-      await pool.query(
-        `INSERT INTO settlements (id, tenant_id, line_id, invoice_id, state, variance_minor,
-           reasons, auto_approved, agreed_minor, note, payment_reference)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-         ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state,
-           agreed_minor = EXCLUDED.agreed_minor, note = EXCLUDED.note,
-           auto_approved = EXCLUDED.auto_approved,
-           payment_reference = EXCLUDED.payment_reference, updated_at = now()`,
-        [
-          settlement.id, settlement.tenantId, settlement.lineId, settlement.invoiceId,
-          settlement.state, settlement.varianceMinor, settlement.reasons, settlement.autoApproved,
-          orNull(settlement.agreedMinor), orNull(settlement.note),
-          orNull(settlement.paymentReference),
-        ],
-      );
+      await writeSettlement(pool, settlement);
     },
+
     async settlementById(tenantId, id) {
       const result = await pool.query<SettlementRow>(
         "SELECT * FROM settlements WHERE tenant_id = $1 AND id = $2",
@@ -221,6 +238,7 @@ function settlements(
       const row = result.rows[0];
       return row === undefined ? undefined : toSettlement(row);
     },
+
     async settlementsFor(tenantId, invoiceId) {
       const result = await pool.query<SettlementRow>(
         "SELECT * FROM settlements WHERE tenant_id = $1 AND invoice_id = $2 ORDER BY id",
@@ -243,7 +261,8 @@ function streams(pool: Pool): Pick<MoneyRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };
@@ -292,9 +311,19 @@ async function insertEntries(
          merchant_id, delta_minor, amount_minor, currency, reference, approved_by, occurred_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [
-        entry.id, movementKey, entry.tenantId, entry.kind, entry.account, entry.driverId ?? null,
-        entry.merchantId ?? null, entry.deltaMinor, entry.amountMinor, entry.currency,
-        entry.reference, entry.approvedBy ?? null, entry.at,
+        entry.id,
+        movementKey,
+        entry.tenantId,
+        entry.kind,
+        entry.account,
+        entry.driverId ?? null,
+        entry.merchantId ?? null,
+        entry.deltaMinor,
+        entry.amountMinor,
+        entry.currency,
+        entry.reference,
+        entry.approvedBy ?? null,
+        entry.at,
       ],
     );
   }

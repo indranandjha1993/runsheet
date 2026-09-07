@@ -106,18 +106,22 @@ describe("edge cases in delivery", () => {
 
 describe("when to try again", () => {
   it("backs off further each time", () => {
-    const first = nextAttemptAt(1, at).getTime() - at.getTime();
-    const second = nextAttemptAt(2, at).getTime() - at.getTime();
-    const third = nextAttemptAt(3, at).getTime() - at.getTime();
+    const after = (attempt: number): number => {
+      const next = nextAttemptAt(attempt, at);
+      if (next === undefined) throw new Error(`attempt ${String(attempt)} should be retried`);
+      return next.getTime() - at.getTime();
+    };
+    const [first, second, third] = [after(1), after(2), after(3)];
 
     expect(second).toBeGreaterThan(first);
     expect(third).toBeGreaterThan(second);
   });
 
   it("keeps trying for about a day, so an outage overnight is survivable", () => {
-    const last = nextAttemptAt(attemptsFor(), at).getTime() - at.getTime();
+    const last = nextAttemptAt(attemptsFor(), at);
 
-    expect(last / 3_600_000).toBeGreaterThan(20);
+    expect(last).toBeDefined();
+    expect((last?.getTime() ?? 0) - at.getTime()).toBeGreaterThan(20 * 3_600_000);
   });
 
   it("stops after the last attempt rather than trying forever", () => {

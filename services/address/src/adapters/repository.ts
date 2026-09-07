@@ -47,7 +47,7 @@ function toAddress(row: Row): Address {
   };
 }
 
-const orNull = <T,>(value: T | undefined): T | null => value ?? null;
+const orNull = <T>(value: T | undefined): T | null => value ?? null;
 
 function valuesOf(address: Address): unknown[] {
   const { parsed, location } = address;
@@ -106,7 +106,6 @@ function addressQueries(pool: Pool): Omit<AddressRepository, "nextSequence"> {
       const row = result.rows[0];
       return row === undefined ? undefined : toAddress(row);
     },
-
   };
 }
 
@@ -122,7 +121,8 @@ function streamQueries(pool: Pool): Pick<AddressRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

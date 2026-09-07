@@ -31,7 +31,12 @@ describe("capturing proof", () => {
   });
 
   it("treats a failed geofence as falling short of a requirement that needs it", () => {
-    const away = capture({ ...base, requirement: "photo_and_geofence", kinds: ["photo"], geofenceOk: false });
+    const away = capture({
+      ...base,
+      requirement: "photo_and_geofence",
+      kinds: ["photo"],
+      geofenceOk: false,
+    });
 
     expect(away.satisfiesRequirement).toBe(false);
   });
@@ -53,8 +58,8 @@ describe("capturing proof", () => {
   });
 
   it("refuses a photo requirement with no media at all", () => {
-    expect(() => capture({ ...base, kinds: ["photo"], requirement: "photo", mediaIds: [] })).toThrow(
-      "a photo proof needs at least one media reference",
-    );
+    expect(() =>
+      capture({ ...base, kinds: ["photo"], requirement: "photo", mediaIds: [] }),
+    ).toThrow("a photo proof needs at least one media reference");
   });
 });

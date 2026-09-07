@@ -89,7 +89,11 @@ function orderQueries(
   };
 }
 
-async function writeConsignment(pool: Pool, c: Consignment, expectedVersion: number): Promise<void> {
+async function writeConsignment(
+  pool: Pool,
+  c: Consignment,
+  expectedVersion: number,
+): Promise<void> {
   const result = await pool.query(
     `INSERT INTO consignments (id, tenant_id, order_id, service, payment_mode, status,
        attempt_count, pickup_attempts, damaged, cancel_requested, current_hub_id, current_run_id,
@@ -102,9 +106,21 @@ async function writeConsignment(pool: Pool, c: Consignment, expectedVersion: num
        current_run_id = EXCLUDED.current_run_id, version = EXCLUDED.version, updated_at = now()
      WHERE consignments.version = $15`,
     [
-      c.id, c.tenantId, c.orderId, c.service, c.paymentMode, c.status, c.attemptCount,
-      c.pickupAttempts, c.damaged, c.cancelRequested, c.currentHubId ?? null,
-      c.currentRunId ?? null, JSON.stringify(c.guards), expectedVersion + 1, expectedVersion,
+      c.id,
+      c.tenantId,
+      c.orderId,
+      c.service,
+      c.paymentMode,
+      c.status,
+      c.attemptCount,
+      c.pickupAttempts,
+      c.damaged,
+      c.cancelRequested,
+      c.currentHubId ?? null,
+      c.currentRunId ?? null,
+      JSON.stringify(c.guards),
+      expectedVersion + 1,
+      expectedVersion,
     ],
   );
   if (result.rowCount === 0) {
@@ -158,7 +174,6 @@ function consignmentQueries(
       );
       return result.rows.map((row) => toConsignment(row, []));
     },
-
   };
 }
 
@@ -174,7 +189,8 @@ function streamQueries(pool: Pool): Pick<OrdersRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

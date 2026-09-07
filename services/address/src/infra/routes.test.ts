@@ -39,7 +39,11 @@ beforeEach(() => {
   );
 });
 
-const post = (url: string, body: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
 interface Resolved {
@@ -78,11 +82,13 @@ describe("correcting a pin over the api", () => {
   it("moves it and raises the confidence", async () => {
     const first = (await post("/v1/addresses", { raw, country_code: "IN" })).body as Resolved;
 
-    const corrected = (await post(`/v1/addresses/${first.id}/confirm`, {
-      latitude: 12.9712,
-      longitude: 77.6402,
-      worker_id: "w1",
-    })).body as Resolved;
+    const corrected = (
+      await post(`/v1/addresses/${first.id}/confirm`, {
+        latitude: 12.9712,
+        longitude: 77.6402,
+        worker_id: "w1",
+      })
+    ).body as Resolved;
 
     expect(corrected.source).toBe("driver");
     expect(corrected.confidence).toBeGreaterThan(first.confidence);

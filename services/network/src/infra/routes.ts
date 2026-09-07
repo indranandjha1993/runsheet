@@ -34,7 +34,8 @@ function createHubRoute(deps: RouteDeps): Route {
       requireScope(caller, "network:write");
 
       const parsed = hubBody.safeParse(request.body);
-      if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
+      if (!parsed.success)
+        return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
 
       const hub = await registerHub(deps, {
         tenantId: caller.tenantId,
@@ -63,7 +64,8 @@ function serviceabilityRoute(deps: RouteDeps): Route {
 
       const query = Object.fromEntries(new URL(request.url, "http://local").searchParams);
       const parsed = serviceabilityQuery.safeParse(query);
-      if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
+      if (!parsed.success)
+        return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
 
       const answer = await checkServiceability(deps, {
         tenantId: caller.tenantId,

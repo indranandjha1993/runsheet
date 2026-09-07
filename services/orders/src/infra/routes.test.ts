@@ -11,7 +11,9 @@ import {
 const tenantId = "01J8Z0T0000000000000000002";
 const tenant = { authorization: "Bearer rsk_test" };
 
-const lookup = (presented: string): Promise<
+const lookup = (
+  presented: string,
+): Promise<
   { tenantId: string; keyId: string; fingerprint: string; scopes: string[] } | undefined
 > =>
   Promise.resolve(
@@ -90,7 +92,11 @@ describe("booking over the api", () => {
   });
 
   it("applies the defaults a caller did not send", async () => {
-    const created = await book({ ...booking, payment_mode: "prepaid", cod_amount_minor: undefined });
+    const created = await book({
+      ...booking,
+      payment_mode: "prepaid",
+      cod_amount_minor: undefined,
+    });
 
     const read = await router.handle({
       method: "GET",
@@ -216,7 +222,9 @@ describe("recording events over the api", () => {
   it("insists on a reason when an attempt failed", async () => {
     const id = idOf(await book());
 
-    expect((await record(id, { type: "attempted", ndr_reason: "", proof_id: "p" })).status).toBe(400);
+    expect((await record(id, { type: "attempted", ndr_reason: "", proof_id: "p" })).status).toBe(
+      400,
+    );
   });
 
   it("carries the hub through an inscan and the run through a dispatch", async () => {
@@ -367,4 +375,4 @@ describe("printing labels over the api", () => {
 
     expect(response.status).toBe(400);
   });
-})
+});

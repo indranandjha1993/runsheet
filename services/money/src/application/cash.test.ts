@@ -155,10 +155,18 @@ describe("closing a driver's run", () => {
 
   it("refuses to close a run twice, because the deposit would be counted twice", async () => {
     await recordMovement(deps, collection);
-    const close = { tenantId: "t", runId: "run-1", driverId: "d-1", currency: "INR", countedMinor: 50000 };
+    const close = {
+      tenantId: "t",
+      runId: "run-1",
+      driverId: "d-1",
+      currency: "INR",
+      countedMinor: 50000,
+    };
     await closeDriverRun(deps, close);
 
-    await expect(closeDriverRun(deps, close)).rejects.toThrow("that run is already closed for cash");
+    await expect(closeDriverRun(deps, close)).rejects.toThrow(
+      "that run is already closed for cash",
+    );
   });
 });
 

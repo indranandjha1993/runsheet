@@ -6,10 +6,7 @@ const outcome = (state: string, count: number): { state: string; count: number }
 
 describe("reporting how well a policy is calling it", () => {
   it("reports the share of decisions not undone", () => {
-    const report = calibrationOf([
-      ...outcome("executed", 95),
-      ...outcome("reversed", 5),
-    ]);
+    const report = calibrationOf([...outcome("executed", 95), ...outcome("reversed", 5)]);
 
     expect(report.executed).toBe(100);
     expect(report.reversed).toBe(5);
@@ -34,10 +31,7 @@ describe("reporting how well a policy is calling it", () => {
   });
 
   it("ignores shadow decisions, which changed nothing", () => {
-    const report = calibrationOf([
-      ...outcome("executed", 10),
-      ...outcome("shadow_recorded", 500),
-    ]);
+    const report = calibrationOf([...outcome("executed", 10), ...outcome("shadow_recorded", 500)]);
 
     expect(report.executed).toBe(10);
     expect(report.precision).toBe(1);

@@ -48,7 +48,7 @@ function toException(row: Row): Exception {
   };
 }
 
-const orNull = <T,>(value: T | undefined): T | null => value ?? null;
+const orNull = <T>(value: T | undefined): T | null => value ?? null;
 
 function valuesOf(exception: Exception): unknown[] {
   const { clock } = exception;
@@ -138,7 +138,8 @@ function streams(pool: Pool): Pick<ExceptionsRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

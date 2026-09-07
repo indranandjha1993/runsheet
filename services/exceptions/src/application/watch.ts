@@ -47,7 +47,7 @@ const RULES: Record<string, Rule> = {
   "address.resolved": {
     exceptionType: "address_unclear",
     subjectType: "address",
-    applies: (payload) => (payload["confidence"] as number | undefined ?? 1) < 0.3,
+    applies: (payload) => ((payload["confidence"] as number | undefined) ?? 1) < 0.3,
   },
 };
 
@@ -58,19 +58,12 @@ export interface Observation {
 }
 
 // Raising is idempotent by problem and subject, so replaying a stream never produces duplicates.
-export async function observe(
-  deps: ExceptionsDeps,
-  event: ObservedEvent,
-): Promise<Observation> {
+export async function observe(deps: ExceptionsDeps, event: ObservedEvent): Promise<Observation> {
   const rule = RULES[event.type];
   if (rule === undefined) return { raised: false, reason: "no_rule" };
   if (!rule.applies(event.payload)) return { raised: false, reason: "rule_did_not_apply" };
 
-  const open = await deps.repository.openFor(
-    event.tenantId,
-    rule.exceptionType,
-    event.aggregateId,
-  );
+  const open = await deps.repository.openFor(event.tenantId, rule.exceptionType, event.aggregateId);
   if (open !== undefined) return { raised: false, exception: open, reason: "already_open" };
 
   const exception = raise({
