@@ -32,8 +32,8 @@ function runEvent(sequence: number, type: string): ReturnType<typeof envelope> {
 }
 
 beforeEach(async () => {
+  await pool.query("DROP TABLE IF EXISTS outbox, events");
   await pool.query(readFileSync(new URL("../migrations/001-events.sql", import.meta.url), "utf8"));
-  await pool.query("TRUNCATE outbox, events");
 });
 
 afterAll(async () => {
@@ -88,6 +88,47 @@ describe("event store", () => {
     await store.markPublished([first.eventId]);
 
     expect(await store.pendingOutbox(10)).toHaveLength(0);
+  });
+
+  it("passes through a failure that is not a duplicate position", async () => {
+    const tooLong = { ...runEvent(4, "run.planned"), source: "not-a-source" as never };
+
+    await expect(store.append(tooLong, {}, "run")).rejects.toThrow(/violates|invalid/i);
+    expect(await store.readStream(tenantId, runId)).toHaveLength(0);
+  });
+
+  it("does nothing when asked to publish an empty list", async () => {
+    await store.append(runEvent(1, "run.planned"), {}, "run");
+
+    await store.markPublished([]);
+
+    expect(await store.pendingOutbox(10)).toHaveLength(1);
+  });
+
+  it("round-trips causation and confidence through storage", async () => {
+    const cause = runEvent(1, "run.planned");
+    await store.append(cause, {}, "run");
+    const at = new Date("2026-09-07T10:05:00.000Z");
+    const effect = envelope({
+      tenantId,
+      aggregateType: "run",
+      aggregateId: runId,
+      sequence: 2,
+      type: "stop.completed",
+      version: 1,
+      occurredAt: at,
+      recordedAt: at,
+      source: "device",
+      confidence: 0.91,
+      causedBy: cause,
+    });
+
+    await store.append(effect, {}, "run");
+    const stored = (await store.readStream(tenantId, runId))[1];
+
+    expect(stored?.causationId).toBe(cause.eventId);
+    expect(stored?.correlationId).toBe(cause.correlationId);
+    expect(stored?.confidence).toBeCloseTo(0.91);
   });
 
   it("keeps one tenant's stream out of another's", async () => {

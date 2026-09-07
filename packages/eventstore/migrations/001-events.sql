@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS events (
   version        INTEGER     NOT NULL,
   occurred_at    TIMESTAMPTZ NOT NULL,
   recorded_at    TIMESTAMPTZ NOT NULL,
-  source         TEXT        NOT NULL,
+  source         TEXT        NOT NULL
+    CONSTRAINT events_known_source CHECK (source IN ('api','device','connector','policy','operator')),
   correlation_id TEXT        NOT NULL,
   causation_id   TEXT,
   confidence     DOUBLE PRECISION,
