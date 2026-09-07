@@ -18,7 +18,10 @@ const lookup = (
       : undefined,
   );
 
+let windows: { count: number; events: number }[] = [];
+
 const repository: ReportingRepository = {
+  countWindow: () => Promise.resolve(windows.shift() ?? { count: 2000, events: 200 }),
   run: (report) =>
     Promise.resolve({
       columns: headerOf(report),
@@ -29,6 +32,10 @@ const repository: ReportingRepository = {
 let router: ReturnType<typeof createRouter>;
 
 beforeEach(() => {
+  windows = [
+    { count: 2000, events: 400 },
+    { count: 2000, events: 200 },
+  ];
   router = createRouter(
     reportingRoutes({
       lookup,
@@ -109,5 +116,43 @@ describe("running a report", () => {
     const response = await get("/v1/reports/delivery_performance?from=2026-01-01&to=2026-12-31");
 
     expect(response.status).toBe(400);
+  });
+});
+
+describe("measuring against a baseline", () => {
+  const range =
+    "baseline_from=2026-08-01&baseline_to=2026-08-14&measured_from=2026-08-15&measured_to=2026-08-28";
+
+  it("lists the metrics a claim can be made on", async () => {
+    const response = await get("/v1/baselines/metrics");
+
+    expect(response.status).toBe(200);
+    const body = response.body as { metrics: { name: string; better_when: string }[] };
+    expect(body.metrics).toHaveLength(3);
+    expect(body.metrics[0]).toMatchObject({ name: "failed_attempt_rate", better_when: "lower" });
+  });
+
+  it("compares the two windows and says what it found", async () => {
+    const response = await get(`/v1/baselines/comparison?metric=failed_attempt_rate&${range}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ metric: "failed_attempt_rate", verdict: "improved" });
+  });
+
+  it("refuses a metric nobody defined", async () => {
+    expect((await get(`/v1/baselines/comparison?metric=profit&${range}`)).status).toBe(404);
+  });
+
+  it("refuses overlapping windows", async () => {
+    const overlapping =
+      "baseline_from=2026-08-01&baseline_to=2026-08-20&measured_from=2026-08-15&measured_to=2026-08-28";
+
+    expect(
+      (await get(`/v1/baselines/comparison?metric=failed_attempt_rate&${overlapping}`)).status,
+    ).toBe(400);
+  });
+
+  it("insists on both windows rather than guessing one", async () => {
+    expect((await get("/v1/baselines/comparison?metric=failed_attempt_rate")).status).toBe(400);
   });
 });

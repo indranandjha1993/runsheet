@@ -30,5 +30,24 @@ export const reportingSurface: ServiceSurface = {
         notFound,
       ],
     },
+    {
+      method: "GET",
+      path: "/v1/baselines/metrics",
+      summary: "List the metrics a value claim can be measured on",
+      scope: "reports:read",
+      replies: [ok("the metrics and which direction is better"), unauthorized],
+    },
+    {
+      method: "GET",
+      path: "/v1/baselines/comparison",
+      summary: "Compare a measured window against a baseline window",
+      scope: "reports:read",
+      replies: [
+        ok("both rates, the interval around the difference, and whether it is distinguishable"),
+        badRequest,
+        unauthorized,
+        notFound,
+      ],
+    },
   ],
 };

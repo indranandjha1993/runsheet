@@ -77,6 +77,10 @@ describe("the newest services", () => {
     expect(upstreamFor("/v1/hub-scans")?.name).toBe("execution");
   });
 
+  it("sends baseline measurement to the reporting service", () => {
+    expect(upstreamFor("/v1/baselines/comparison")?.name).toBe("reporting");
+  });
+
   it("sends the cash ledger to the money service", () => {
     expect(upstreamFor("/v1/cash/movements")?.name).toBe("money");
   });
