@@ -28,3 +28,7 @@ ps:
 
 clean: down
 	$(COMPOSE) down -v
+
+.PHONY: up-core
+up-core:
+	$(COMPOSE) up -d --wait postgres redis redpanda
