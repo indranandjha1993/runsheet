@@ -1,0 +1,1 @@
+CREATE TABLE gadgets (id TEXT PRIMARY KEY);
