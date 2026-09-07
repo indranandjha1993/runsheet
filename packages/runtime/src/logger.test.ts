@@ -66,6 +66,15 @@ describe("logger", () => {
     });
   });
 
+  it("keeps an error with no cause readable", () => {
+    const sink = capture();
+    const log = createLogger({ service: "execution", write: sink.write });
+
+    log.error("plain failure", { error: new Error("no cause here") });
+
+    expect(sink.lines[0]?.["error"]).toEqual({ name: "Error", message: "no cause here" });
+  });
+
   it("redacts fields that must never reach a log", () => {
     const sink = capture();
     const log = createLogger({ service: "execution", write: sink.write });
@@ -81,6 +90,25 @@ describe("logger", () => {
       addressText: "[redacted]",
       consignmentId: "c-1",
     });
+  });
+
+  it("writes to standard output and stamps the clock when neither is supplied", () => {
+    const written: string[] = [];
+    const original = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk: string): boolean => {
+      written.push(chunk);
+      return true;
+    };
+
+    try {
+      createLogger({ service: "execution" }).info("default sink");
+    } finally {
+      process.stdout.write = original;
+    }
+
+    const line = JSON.parse(written.join("").trim()) as Line;
+    expect(line.message).toBe("default sink");
+    expect(Date.parse(String(line["time"]))).not.toBeNaN();
   });
 
   it("drops lines below the configured level", () => {
