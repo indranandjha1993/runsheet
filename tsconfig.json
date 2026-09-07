@@ -36,6 +36,9 @@
     },
     {
       "path": "services/promise/tsconfig.build.json"
+    },
+    {
+      "path": "services/planning/tsconfig.build.json"
     }
   ]
 }
