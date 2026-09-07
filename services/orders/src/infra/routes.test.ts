@@ -23,6 +23,8 @@ const lookup = (
   );
 const booking = {
   order_reference: "ORD-3001",
+  origin_hub_code: "BLR1",
+  destination_hub_code: "DEL3",
   service: "next_day",
   payment_mode: "cod",
   cod_amount_minor: 249900,

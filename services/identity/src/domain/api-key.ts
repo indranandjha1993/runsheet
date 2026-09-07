@@ -21,6 +21,8 @@ export const SCOPES = [
   "linehaul:write",
   "reports:read",
   "reports:write",
+  // Held by platform services only. Lets one ask about any tenant, on that tenant's behalf.
+  "consignments:read_any",
   "pii:read",
 ] as const;
 

@@ -859,6 +859,14 @@
                     "type": "string",
                     "minLength": 1
                   },
+                  "origin_hub_code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "destination_hub_code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
                   "service": {
                     "type": "string",
                     "minLength": 1
@@ -917,6 +925,8 @@
                 },
                 "required": [
                   "order_reference",
+                  "origin_hub_code",
+                  "destination_hub_code",
                   "service",
                   "payment_mode",
                   "proof_requirement",
@@ -1517,8 +1527,11 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "nothing decided: no policy for the trigger, the subject is outside the rollout, or the budget is spent"
+          },
           "201": {
-            "description": "the decision, or nothing when the subject is outside the rollout"
+            "description": "the decision it made"
           },
           "400": {
             "description": "the request did not validate"

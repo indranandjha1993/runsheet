@@ -1,5 +1,5 @@
--- Projections, not aggregates of aggregates. Each row is one day of one thing, written by the
--- consumers that follow the event streams, so a report is a scan of a narrow table.
+-- Projections, not aggregates of aggregates. Each row is one day of one thing, to be written by
+-- consumers following the event streams, so a report is a scan of a narrow table.
 
 CREATE TABLE IF NOT EXISTS consignment_outcomes (
   tenant_id   TEXT    NOT NULL,

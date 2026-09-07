@@ -1,48 +1,82 @@
 # Runsheet
 
-Runsheet is an open-source execution platform for logistics networks. It plans the day's work,
-runs it in the field, closes the money, and keeps a replayable record of every automated decision
-it makes.
+Runsheet is an execution platform for logistics networks. It plans the day's work, runs it in
+the field, closes the money, and can prove every automated decision it made.
 
-The name is the driver's runsheet: the list of work a courier executes and closes out. In
-Runsheet every unit of work is one of those, whether it is a delivery run, a linehaul trip, a
-settlement batch, or a dispute.
+## The problem it solves
 
-Clone it, run it, deploy it wherever you like. Nothing here assumes a hosted address.
+A courier, postal operator, or distributor moving fifty thousand to two million shipments a
+month runs on a patchwork: a system of record, spreadsheets for rates and settlement, a
+messaging app for exceptions, a routing tool bolted on the side. Three things go wrong every day
+in that gap, and each one costs margin:
 
-## Status
+1. **Deliveries fail or run late** because the address was a landmark, the stops were badly
+   sequenced, or the parcel sat in a hub nobody was watching.
+2. **Money leaks** in carrier invoices nobody has time to check, cash on delivery that does not
+   quite add up at the end of the driver's day, and disputes that are never fought.
+3. **Exceptions are handled at human speed**, so most of them breach the service level before
+   anyone has even seen them.
 
-Pre-alpha. Nine services run and a parcel can be booked, planned onto a run, delivered with
-proof, and the cash accounted for, all through one gateway. It has never carried a real parcel.
+Enterprise platforms solve this for the largest operators, behind a services engagement and a
+closed interface. Smaller tools solve dispatch and stop there. Runsheet is built for the
+operators in between, and it is open source and self-hostable all the way down.
+
+What that means in practice:
+
+| The operator's problem                                             | What Runsheet does about it                                                                                                                          |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A parcel is booked with an address like "near the metro, flat 402" | Parses landmarks and units the way people write them, and raises the confidence every time a driver confirms the pin at the door                     |
+| A hub floor with thousands of parcels and a handful of scanners    | Scan in, scan out to a run, re-weigh; an unexpected parcel is flagged rather than refused, a misread barcode is caught by its check digit            |
+| Freight between cities in sealed bags on trucks                    | Bags, seals, trips, and a manifest the far end checks without opening anything; a bag at the wrong hub is recorded, not turned away                  |
+| A driver with a cracked phone and no signal                        | An app that never waits for the network, and one call that takes a whole shift's work, recorded exactly once however many times it is retried        |
+| Cash collected at the door                                         | A ledger where a driver's shortfall stays owed until a supervisor approves the write-off, and the merchant's payable is always right                 |
+| A carrier invoice with a thousand lines                            | Every line matched four ways: what was ordered, what the rate card says, what actually happened, what was billed. Lines that agree settle themselves |
+| Automation nobody trusts                                           | Every policy runs dry, then in shadow against people, then to a percentage, then live. Every decision is recorded so it can be replayed              |
+| "How did we do?"                                                   | Six operational reports as data or as a file, and a baseline comparison that refuses to call noise an improvement                                    |
+
+## See it run
+
+![One parcel through twelve services, in about a minute](docs/demo.gif)
+
+The recording is `infra/local/demo.sh` running against the local stack; every call in it is a
+real request. A higher-quality copy is at [`docs/demo.mp4`](docs/demo.mp4). Regenerate it with
+`make video`.
 
 ## Run it
 
 You need Docker, Node 24 or later, and pnpm.
 
 ```sh
-git clone <your clone url> runsheet
+git clone https://github.com/indranandjha1993/runsheet.git
 cd runsheet
-make setup
+make setup      # copies .env.example, installs, starts infrastructure, migrates
+make sandbox    # starts every service and prints a tenant and a key to call it with
 ```
 
-That copies `.env.example` to `.env`, installs dependencies, starts the infrastructure, and
-applies migrations. Then:
+Then follow a parcel through the whole platform, checking every step:
 
 ```sh
-make check    # tests, type check, linter
-make sandbox  # start everything, with a tenant and a key to call it with
-make help     # everything else
+bash infra/local/walkthrough.sh
 ```
 
-`make sandbox` prints a tenant identifier and an API key, and creates two hubs so you can book
-against it straight away. It is the fastest way to see the platform work:
+The defaults in `.env.example` work as they are, so a fresh clone runs without editing anything.
+Ports are deliberately unusual, in the 13000 to 19999 range, so the stack does not collide with
+whatever else you have running.
 
-```sh
-curl -s http://localhost:14000/v1/callers/current -H "Authorization: Bearer <the key>"
-```
+## Documentation
 
-With everything running, `http://localhost:14000/health` reports ready only when every service
-behind the gateway is.
+Everything needed to clone this, run it for a real operation, and understand it in detail is in
+[`docs/`](docs/README.md):
+
+- [Getting started](docs/getting-started.md), from clone to first delivery
+- [Concepts](docs/concepts.md): consignment, run, hub, bag, trip, rate card, settlement, policy
+- [Business flows](docs/flows.md): booking to settlement, step by step
+- [The services](docs/services.md), one per bounded context, with every route
+- [The interface](docs/api.md): authentication, tenancy, scopes, errors, the specifications
+- [Events](docs/events.md), every event the platform publishes and what it means
+- [Operations](docs/operations.md): configuration, deployment, migrations, health, logs
+- [The driver app](docs/driver-app.md), [connectors](docs/connectors.md), [reporting](docs/reporting.md)
+- [Questions people ask](docs/faq.md)
 
 ## The interface
 
@@ -54,42 +88,11 @@ validate against, so neither can describe something the code would reject:
 | `spec/openapi.json`     | Every HTTP route, its request body, and its responses |
 | `contracts/events.json` | Every event, its payload, and the topic it goes on    |
 
-Regenerate both with `make spec`. A test fails if either falls behind the code.
+A test fails if either falls behind the code, another fails if a service registers a route the
+specification does not describe, and a third fails if the gateway cannot reach a published route.
 
 Authentication is a bearer API key. The tenant comes from the key and never from a header, so a
 credential cannot be pointed at somebody else's data.
-
-The defaults in `.env.example` work as they are, so a fresh clone runs without editing anything.
-Every setting, including every port, lives there. Change `PUBLIC_BASE_URL` and `SIGNING_SECRET`
-before you deploy anywhere real.
-
-Ports are deliberately unusual, in the 13000 to 19999 range, so the stack does not collide with
-whatever else you have running.
-
-## Connecting a carrier
-
-A carrier integration implements one interface and nothing else. It takes data and returns data:
-it never touches a database, publishes an event, or decides anything, so a badly behaved one
-cannot corrupt the platform.
-
-```ts
-import { referenceCarrier, newRegistry, runCall } from "@runsheet/connector";
-
-const registry = newRegistry([referenceCarrier(), yourCarrier()]);
-const result = await runCall(registry.find("your-carrier"), "book", {
-  context: { tenantId, credentials, idempotencyKey },
-  request: { origin, destination, parcels, reference, service },
-});
-```
-
-The runner gives every connector timeouts, retries with backoff, and the same idempotency key on
-every attempt, so a carrier that lost a reply recognises the retry instead of booking twice. It
-retries only what is worth retrying: an unreachable carrier or one asking us to slow down, never
-a rejection or a bad credential. A connector that throws, hangs, or returns nonsense becomes a
-failure the platform can act on rather than an outage.
-
-`packages/connector/src/reference.ts` is a complete working carrier, small enough to read in one
-sitting. Start by copying it.
 
 ## Principles
 
@@ -103,25 +106,24 @@ sitting. Start by copying it.
 
 | Path                  | What is in it                                                         |
 | --------------------- | --------------------------------------------------------------------- |
-| `packages/kernel`     | Event envelope, identifiers, money                                    |
+| `services/*`          | Twelve services, one per bounded context, each hexagonal inside       |
+| `apps/driver`         | The handset app: offline queue, runsheet, three languages             |
+| `packages/kernel`     | Event envelope, identifiers, money, barcodes                          |
 | `packages/eventstore` | Append-only event stream, transactional outbox, idempotent consumer   |
 | `packages/runtime`    | Configuration, logging, tracing, health, migrations                   |
-| `contracts`           | Event schemas and topic routing, the source of truth between services |
-| `api`                 | How a service describes its routes, and the specification generator   |
-| `spec`                | The published interface specification, composed from every service    |
+| `packages/auth`       | Callers, scopes, and reads on a tenant's behalf                       |
 | `packages/connector`  | The contract a carrier integration implements, and its runner         |
-| `services/*`          | One service per bounded context, each hexagonal inside                |
-| `apps/driver`         | The handset app: offline queue, runsheet, three languages             |
-| `infra/local`         | The local stack: database, cache, broker, analytics                   |
+| `packages/webhooks`   | Signed, replayable deliveries                                         |
+| `contracts`           | Event schemas and topic routing, the source of truth between services |
+| `api`, `spec`         | How a service describes its routes, and the published specification   |
+| `infra/local`         | The local stack, the sandbox, the walkthrough, and the demo           |
+| `docs`                | The documentation                                                     |
 
 ## Contributing
 
-See `CONTRIBUTING.md`. Changes are small, test-first, and merged from a branch per change.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Contributions are taken under the Developer
+Certificate of Origin. Security reports go through [`SECURITY.md`](SECURITY.md).
 
 ## Licence
 
 GNU Affero General Public License v3.0. See `LICENSE`.
-
-In plain terms: use it, change it, and run it for yourself or your company freely. If you offer
-it to other people as a service, you must publish your changes under the same licence. That is
-deliberate. It keeps the project genuinely open and stops the work being taken and closed.

@@ -77,3 +77,13 @@ describe("configuration", () => {
     });
   });
 });
+
+describe("what the start-up line may show", () => {
+  it("never shows a credential, whatever it is called", () => {
+    const schema = z.object({ SERVICE_CREDENTIAL: z.string(), PORT: z.coerce.number() });
+    const shown = loadConfig.describe(schema, { SERVICE_CREDENTIAL: "rsk_live", PORT: 14270 });
+
+    expect(shown["SERVICE_CREDENTIAL"]).toBe("[set]");
+    expect(shown["PORT"]).toBe(14270);
+  });
+});

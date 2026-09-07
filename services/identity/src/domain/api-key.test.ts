@@ -133,7 +133,7 @@ describe("the scopes the platform issues", () => {
   });
 
   it("names every scope as a resource and an action", () => {
-    for (const scope of SCOPES) expect(scope).toMatch(/^[a-z]+:(read|write)$/);
+    for (const scope of SCOPES) expect(scope).toMatch(/^[a-z]+:(read|write|read_any)$/);
   });
 
   it("offers a read scope for every write scope, so a viewer can be created", () => {

@@ -38,6 +38,8 @@ async function booked(packages = 1, paymentMode: "prepaid" | "cod" = "prepaid") 
   return bookConsignment(deps, {
     tenantId: "t",
     orderReference: `ORD-${String(nextReference())}`,
+    originHubCode: "BLR1",
+    destinationHubCode: "DEL3",
     service: "express",
     paymentMode,
     proofRequirement: "signature",
@@ -97,6 +99,8 @@ describe("printing labels for a consignment", () => {
     const consignment = await bookConsignment(deps, {
       tenantId: "t",
       orderReference: "ORD-4472",
+      originHubCode: "BLR1",
+      destinationHubCode: "DEL3",
       service: "express",
       paymentMode: "cod",
       proofRequirement: "signature",
@@ -131,6 +135,8 @@ describe("printing labels for a consignment", () => {
     const consignment = await bookConsignment(deps, {
       tenantId: "t",
       orderReference: "ORD-9001",
+      originHubCode: "BLR1",
+      destinationHubCode: "DEL3",
       service: "express",
       paymentMode: "prepaid",
       proofRequirement: "signature",

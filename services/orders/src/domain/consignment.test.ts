@@ -4,6 +4,7 @@ import {
   book,
   can,
   mustReturn,
+  type BookCommand,
   type Consignment,
   type ConsignmentEvent,
 } from "./consignment.js";
@@ -15,16 +16,19 @@ const guards = {
   codCurrency: "INR",
 };
 
-const booked = (): Consignment =>
-  book({
-    id: "01J8Z0T0000000000000000001",
-    tenantId: "01J8Z0T0000000000000000002",
-    orderId: "01J8Z0T0000000000000000003",
-    service: "next_day",
-    paymentMode: "cod",
-    guards,
-    packages: [{ id: "pkg-1", weightGrams: 1200 }],
-  });
+const bookable: BookCommand = {
+  id: "01J8Z0T0000000000000000001",
+  tenantId: "01J8Z0T0000000000000000002",
+  orderId: "01J8Z0T0000000000000000003",
+  originHubCode: "BLR1",
+  destinationHubCode: "DEL3",
+  service: "next_day",
+  paymentMode: "cod",
+  guards,
+  packages: [{ id: "pkg-1", weightGrams: 1200 }],
+};
+
+const booked = (): Consignment => book(bookable);
 
 function walk(from: Consignment, events: ConsignmentEvent[]): Consignment {
   return events.reduce(apply, from);
@@ -45,6 +49,8 @@ describe("booking a consignment", () => {
         id: "c",
         tenantId: "t",
         orderId: "o",
+        originHubCode: "BLR1",
+        destinationHubCode: "DEL3",
         service: "next_day",
         paymentMode: "cod",
         guards: { proofRequirement: "photo", attemptLimit: 3 },
@@ -59,6 +65,8 @@ describe("booking a consignment", () => {
         id: "c",
         tenantId: "t",
         orderId: "o",
+        originHubCode: "BLR1",
+        destinationHubCode: "DEL3",
         service: "next_day",
         paymentMode: "prepaid",
         guards: { proofRequirement: "photo", attemptLimit: 3 },
@@ -75,6 +83,8 @@ describe("guards frozen at booking", () => {
         id: "c",
         tenantId: "t",
         orderId: "o",
+        originHubCode: "BLR1",
+        destinationHubCode: "DEL3",
         service: "next_day",
         paymentMode: "prepaid",
         guards: { proofRequirement: "photo", attemptLimit: 0 },
@@ -98,6 +108,8 @@ describe("guards frozen at booking", () => {
           id: "c",
           tenantId: "t",
           orderId: "o",
+          originHubCode: "BLR1",
+          destinationHubCode: "DEL3",
           service: "next_day",
           paymentMode: "cod",
           guards: { ...guards, codToleranceMinor: 500 },
@@ -121,6 +133,8 @@ describe("prepaid consignments", () => {
         id: "c",
         tenantId: "t",
         orderId: "o",
+        originHubCode: "BLR1",
+        destinationHubCode: "DEL3",
         service: "next_day",
         paymentMode: "prepaid",
         guards: { proofRequirement: "photo", attemptLimit: 3 },
@@ -342,5 +356,29 @@ describe("things that go wrong in the field", () => {
     ]);
 
     expect(end.status).toBe("rto_delivered");
+  });
+});
+
+describe("what a consignment knows about where it is going", () => {
+  it("carries its origin and destination hubs from the moment it is booked", () => {
+    const booked = book(bookable);
+
+    expect(booked.originHubCode).toBe("BLR1");
+    expect(booked.destinationHubCode).toBe("DEL3");
+  });
+
+  it("refuses a booking with no lane, because it could not be priced or planned", () => {
+    expect(() => book({ ...bookable, originHubCode: "" })).toThrow(
+      "a consignment needs an origin and a destination hub",
+    );
+    expect(() => book({ ...bookable, destinationHubCode: "" })).toThrow(
+      "a consignment needs an origin and a destination hub",
+    );
+  });
+
+  it("refuses a lane that goes nowhere", () => {
+    expect(() => book({ ...bookable, destinationHubCode: "BLR1" })).toThrow(
+      "a consignment cannot be delivered to the hub it starts from",
+    );
   });
 });

@@ -113,3 +113,66 @@ describe("what a caller may do", () => {
     expect(new NotPermitted("runs:read").status).toBe(403);
   });
 });
+
+describe("a service reading on behalf of a tenant", () => {
+  const service = {
+    tenantId: "platform",
+    keyId: "svc",
+    fingerprint: "f",
+    scopes: ["consignments:read_any"],
+  };
+  const lookup = (presented: string) =>
+    Promise.resolve(presented === "rsk_svc" ? service : undefined);
+
+  it("takes the tenant from the header when the key may read any tenant", async () => {
+    const caller = await callerFrom(lookup, {
+      authorization: "Bearer rsk_svc",
+      "x-on-behalf-of-tenant": "tenant-42",
+    });
+
+    expect(caller.tenantId).toBe("tenant-42");
+  });
+
+  it("keeps its own tenant when no header names one", async () => {
+    const caller = await callerFrom(lookup, { authorization: "Bearer rsk_svc" });
+
+    expect(caller.tenantId).toBe("platform");
+  });
+
+  it("ignores the header for a key that may not read any tenant", async () => {
+    const ordinary = (presented: string) =>
+      Promise.resolve(
+        presented === "rsk_t"
+          ? { ...service, tenantId: "tenant-1", scopes: ["consignments:read"] }
+          : undefined,
+      );
+
+    const caller = await callerFrom(ordinary, {
+      authorization: "Bearer rsk_t",
+      "x-on-behalf-of-tenant": "tenant-42",
+    });
+
+    expect(caller.tenantId).toBe("tenant-1");
+  });
+
+  it("refuses a blank tenant in the header rather than reading nobody's data", async () => {
+    await expect(
+      callerFrom(lookup, { authorization: "Bearer rsk_svc", "x-on-behalf-of-tenant": "  " }),
+    ).rejects.toThrow("names no tenant");
+  });
+
+  it("satisfies a read scope with the read-any scope", () => {
+    expect(() => {
+      requireScope(service, "consignments:read");
+    }).not.toThrow();
+  });
+
+  it("does not let read-any stand in for write, or for another resource", () => {
+    expect(() => {
+      requireScope(service, "consignments:write");
+    }).toThrow();
+    expect(() => {
+      requireScope(service, "runs:read");
+    }).toThrow();
+  });
+});

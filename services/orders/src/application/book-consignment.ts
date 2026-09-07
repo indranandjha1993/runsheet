@@ -5,6 +5,8 @@ import type { Order, OrdersDeps } from "./ports.js";
 export interface BookConsignmentCommand {
   readonly tenantId: string;
   readonly orderReference: string;
+  readonly originHubCode: string;
+  readonly destinationHubCode: string;
   readonly service: string;
   readonly paymentMode: "prepaid" | "cod";
   readonly proofRequirement: string;
@@ -49,24 +51,7 @@ async function orderFor(deps: OrdersDeps, command: BookConsignmentCommand): Prom
   return order;
 }
 
-export async function bookConsignment(
-  deps: OrdersDeps,
-  command: BookConsignmentCommand,
-): Promise<Consignment> {
-  const consignment = book({
-    id: deps.ids.next(),
-    tenantId: command.tenantId,
-    orderId: "pending",
-    service: command.service,
-    paymentMode: command.paymentMode,
-    guards: guardsFrom(command),
-    packages: command.packages.map((p) => ({ id: deps.ids.next(), weightGrams: p.weightGrams })),
-  });
-
-  const order = await orderFor(deps, command);
-  const linked = { ...consignment, orderId: order.id };
-  await deps.repository.saveConsignment(linked, 0);
-
+async function announceBooked(deps: OrdersDeps, linked: Consignment, order: Order): Promise<void> {
   await announce(deps, {
     tenantId: linked.tenantId,
     aggregateType: "consignment",
@@ -89,6 +74,28 @@ export async function bookConsignment(
       },
     },
   });
+}
 
+export async function bookConsignment(
+  deps: OrdersDeps,
+  command: BookConsignmentCommand,
+): Promise<Consignment> {
+  const consignment = book({
+    id: deps.ids.next(),
+    tenantId: command.tenantId,
+    orderId: "pending",
+    originHubCode: command.originHubCode,
+    destinationHubCode: command.destinationHubCode,
+    service: command.service,
+    paymentMode: command.paymentMode,
+    guards: guardsFrom(command),
+    packages: command.packages.map((p) => ({ id: deps.ids.next(), weightGrams: p.weightGrams })),
+  });
+
+  const order = await orderFor(deps, command);
+  const linked = { ...consignment, orderId: order.id };
+  await deps.repository.saveConsignment(linked, 0);
+
+  await announceBooked(deps, linked, order);
   return linked;
 }

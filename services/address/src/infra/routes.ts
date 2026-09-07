@@ -41,7 +41,7 @@ function resolveRoute(deps: RouteDeps): Route {
         countryCode: parsed.data.country_code,
       });
 
-      return { status: 200, body: address };
+      return { status: 201, body: address };
     },
   };
 }

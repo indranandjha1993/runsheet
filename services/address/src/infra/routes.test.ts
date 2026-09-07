@@ -58,7 +58,7 @@ describe("resolving over the api", () => {
   it("returns the address with what the parser found", async () => {
     const response = await post("/v1/addresses", { raw, country_code: "IN" });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(201);
     expect((response.body as Resolved).parsed).toMatchObject({
       landmark: "Sai Temple",
       postcode: "560038",

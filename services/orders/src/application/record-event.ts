@@ -48,7 +48,11 @@ export async function recordConsignmentEvent(
     throw new DomainError("not_found", "no consignment with that identifier");
   }
 
-  const next = apply(found.consignment, command.event);
+  const applied = apply(found.consignment, command.event);
+  // The moment of delivery is what a carrier invoice is matched against, so it is stamped here
+  // from the platform clock rather than trusted from anything the caller sent.
+  const next =
+    command.event.type === "delivered" ? { ...applied, deliveredAt: deps.clock.now() } : applied;
   await deps.repository.saveConsignment(next, found.version);
 
   await announce(deps, {

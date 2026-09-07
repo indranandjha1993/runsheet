@@ -11,8 +11,8 @@ export class NotAuthenticated extends Error {
   readonly status = 401;
   readonly code = "unauthorised";
 
-  constructor() {
-    super("the credential presented is not usable");
+  constructor(message = "the credential presented is not usable") {
+    super(message);
     this.name = "NotAuthenticated";
   }
 }
@@ -47,7 +47,20 @@ export async function callerFrom(
 
   const caller = await lookup(presented);
   if (caller === undefined) throw new NotAuthenticated();
-  return caller;
+  return onBehalfOf(caller, headers);
+}
+
+const ON_BEHALF_OF = "x-on-behalf-of-tenant";
+
+// One exception to the rule above, and a narrow one: a platform service holding a read-any
+// scope may say which tenant it is asking about. Nothing else can, and the scope is never
+// implied by anything.
+function onBehalfOf(caller: Caller, headers: Record<string, string | undefined>): Caller {
+  const readsAny = caller.scopes.some((scope) => scope.endsWith(":read_any"));
+  const named = Object.entries(headers).find(([name]) => name.toLowerCase() === ON_BEHALF_OF)?.[1];
+  if (!readsAny || named === undefined) return caller;
+  if (named.trim() === "") throw new NotAuthenticated("the on-behalf-of header names no tenant");
+  return { ...caller, tenantId: named.trim() };
 }
 
 export function requireScope(caller: Caller, needed: string): void {
@@ -55,9 +68,10 @@ export function requireScope(caller: Caller, needed: string): void {
   if (needed === "pii:read") throw new NotPermitted(needed);
 
   const separator = needed.indexOf(":");
+  const resource = needed.slice(0, separator);
   const isRead = needed.slice(separator + 1) === "read";
-  const write = `${needed.slice(0, separator)}:write`;
-  if (isRead && caller.scopes.includes(write)) return;
+  if (isRead && caller.scopes.includes(`${resource}:write`)) return;
+  if (isRead && caller.scopes.includes(`${resource}:read_any`)) return;
 
   throw new NotPermitted(needed);
 }
