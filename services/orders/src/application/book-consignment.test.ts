@@ -7,6 +7,8 @@ import type { OrdersDeps } from "./ports.js";
 const command = {
   tenantId: "01J8Z0T0000000000000000002",
   orderReference: "ORD-1001",
+  originHubCode: "BLR1",
+  destinationHubCode: "DEL3",
   service: "next_day",
   paymentMode: "cod" as const,
   codAmountMinor: 249900,

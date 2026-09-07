@@ -11,6 +11,8 @@ import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 export const bookBody = z
   .object({
     order_reference: z.string().min(1),
+    origin_hub_code: z.string().min(1),
+    destination_hub_code: z.string().min(1),
     service: z.string().min(1),
     payment_mode: z.enum(["prepaid", "cod"]),
     proof_requirement: z.string().min(1).default("photo"),
@@ -109,6 +111,8 @@ function bookRoute(deps: RouteDeps): Route {
       const consignment = await bookConsignment(deps, {
         tenantId: caller.tenantId,
         orderReference: parsed.data.order_reference,
+        originHubCode: parsed.data.origin_hub_code,
+        destinationHubCode: parsed.data.destination_hub_code,
         service: parsed.data.service,
         paymentMode: parsed.data.payment_mode,
         proofRequirement: parsed.data.proof_requirement,

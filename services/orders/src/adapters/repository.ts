@@ -6,6 +6,8 @@ interface ConsignmentRow {
   id: string;
   tenant_id: string;
   order_id: string;
+  origin_hub_code: string;
+  destination_hub_code: string;
   service: string;
   payment_mode: "prepaid" | "cod";
   status: Status;
@@ -15,6 +17,7 @@ interface ConsignmentRow {
   cancel_requested: boolean;
   current_hub_id: string | null;
   current_run_id: string | null;
+  delivered_at: Date | null;
   guards: Guards;
   version: string;
 }
@@ -38,6 +41,9 @@ function toConsignment(row: ConsignmentRow, packages: Package[]): Consignment {
     pickupAttempts: row.pickup_attempts,
     damaged: row.damaged,
     cancelRequested: row.cancel_requested,
+    originHubCode: row.origin_hub_code,
+    destinationHubCode: row.destination_hub_code,
+    ...(row.delivered_at === null ? {} : { deliveredAt: row.delivered_at }),
     ...(row.current_hub_id === null ? {} : { currentHubId: row.current_hub_id }),
     ...(row.current_run_id === null ? {} : { currentRunId: row.current_run_id }),
   };
@@ -89,39 +95,47 @@ function orderQueries(
   };
 }
 
+function consignmentValues(c: Consignment, expectedVersion: number): unknown[] {
+  return [
+    c.id,
+    c.tenantId,
+    c.orderId,
+    c.originHubCode,
+    c.destinationHubCode,
+    c.service,
+    c.paymentMode,
+    c.status,
+    c.attemptCount,
+    c.pickupAttempts,
+    c.damaged,
+    c.cancelRequested,
+    c.currentHubId ?? null,
+    c.currentRunId ?? null,
+    c.deliveredAt ?? null,
+    JSON.stringify(c.guards),
+    expectedVersion + 1,
+    expectedVersion,
+  ];
+}
+
 async function writeConsignment(
   pool: Pool,
   c: Consignment,
   expectedVersion: number,
 ): Promise<void> {
   const result = await pool.query(
-    `INSERT INTO consignments (id, tenant_id, order_id, service, payment_mode, status,
-       attempt_count, pickup_attempts, damaged, cancel_requested, current_hub_id, current_run_id,
-       guards, version)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    `INSERT INTO consignments (id, tenant_id, order_id, origin_hub_code, destination_hub_code,
+       service, payment_mode, status, attempt_count, pickup_attempts, damaged, cancel_requested,
+       current_hub_id, current_run_id, delivered_at, guards, version)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      ON CONFLICT (id) DO UPDATE SET
        status = EXCLUDED.status, attempt_count = EXCLUDED.attempt_count,
        pickup_attempts = EXCLUDED.pickup_attempts, damaged = EXCLUDED.damaged,
        cancel_requested = EXCLUDED.cancel_requested, current_hub_id = EXCLUDED.current_hub_id,
-       current_run_id = EXCLUDED.current_run_id, version = EXCLUDED.version, updated_at = now()
-     WHERE consignments.version = $15`,
-    [
-      c.id,
-      c.tenantId,
-      c.orderId,
-      c.service,
-      c.paymentMode,
-      c.status,
-      c.attemptCount,
-      c.pickupAttempts,
-      c.damaged,
-      c.cancelRequested,
-      c.currentHubId ?? null,
-      c.currentRunId ?? null,
-      JSON.stringify(c.guards),
-      expectedVersion + 1,
-      expectedVersion,
-    ],
+       current_run_id = EXCLUDED.current_run_id, delivered_at = EXCLUDED.delivered_at,
+       version = EXCLUDED.version, updated_at = now()
+     WHERE consignments.version = $18`,
+    consignmentValues(c, expectedVersion),
   );
   if (result.rowCount === 0) {
     throw new Error(`consignment ${c.id} changed while it was being updated`);

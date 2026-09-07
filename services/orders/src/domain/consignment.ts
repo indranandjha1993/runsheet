@@ -31,6 +31,8 @@ export interface BookCommand {
   readonly id: string;
   readonly tenantId: string;
   readonly orderId: string;
+  readonly originHubCode: string;
+  readonly destinationHubCode: string;
   readonly service: string;
   readonly paymentMode: "prepaid" | "cod";
   readonly guards: Guards;
@@ -45,6 +47,7 @@ export interface Consignment extends BookCommand {
   readonly cancelRequested: boolean;
   readonly currentHubId?: string;
   readonly currentRunId?: string;
+  readonly deliveredAt?: Date;
 }
 
 export type ConsignmentEvent =
@@ -118,6 +121,15 @@ export function book(command: BookCommand): Consignment {
   }
   if (command.guards.attemptLimit < 1) {
     throw new DomainError("invalid_input", "the attempt limit must be at least one");
+  }
+  if (command.originHubCode.trim() === "" || command.destinationHubCode.trim() === "") {
+    throw new DomainError("invalid_input", "a consignment needs an origin and a destination hub");
+  }
+  if (command.originHubCode === command.destinationHubCode) {
+    throw new DomainError(
+      "invalid_input",
+      "a consignment cannot be delivered to the hub it starts from",
+    );
   }
 
   return {

@@ -4,9 +4,29 @@ set -e
 cd "$(dirname "$0")/../.."
 set -a; . ./.env; set +a
 
-for service in identity network address orders execution linehaul planning promise exceptions money policy reporting gateway; do
-  node "services/$service/dist/main.js" > "/tmp/runsheet-$service.log" 2>&1 &
+start() {
+  node "services/$1/dist/main.js" > "/tmp/runsheet-$1.log" 2>&1 &
   echo $! >> /tmp/runsheet.pids
+}
+
+# Identity first, because the money service needs a real credential of its own to ask the
+# orders service about consignments. The placeholder in .env is never accepted by anything.
+start identity
+IDENTITY="http://localhost:${PORT_IDENTITY:-14200}"
+for _ in $(seq 1 40); do
+  curl -sf -o /dev/null "$IDENTITY/health" && break
+  sleep 0.25
+done
+PLATFORM=$(curl -sf -X POST "$IDENTITY/v1/tenants" -H 'content-type: application/json' \
+  -d '{"name":"Platform","country_code":"IN","currency":"INR","locale":"en-IN","region":"ap-south"}' |
+  python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')
+SERVICE_CREDENTIAL=$(curl -sf -X POST "$IDENTITY/v1/keys" -H 'content-type: application/json' \
+  -d "{\"tenant_id\":\"$PLATFORM\",\"name\":\"money-service\",\"scopes\":[\"consignments:read_any\"]}" |
+  python3 -c 'import sys,json;print(json.load(sys.stdin)["secret"])')
+export SERVICE_CREDENTIAL
+
+for service in network address orders execution linehaul planning promise exceptions money policy reporting gateway; do
+  start "$service"
 done
 
 for _ in $(seq 1 60); do

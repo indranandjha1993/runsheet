@@ -43,7 +43,10 @@ export const policySurface: ServiceSurface = {
       scope: "policies:write",
       request: considerBody,
       replies: [
-        created("the decision, or nothing when the subject is outside the rollout"),
+        created("the decision it made"),
+        ok(
+          "nothing decided: no policy for the trigger, the subject is outside the rollout, or the budget is spent",
+        ),
         badRequest,
         unauthorized,
       ],

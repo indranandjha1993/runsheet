@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-const SECRET = /password|secret|token|key|url|dsn/i;
+const SECRET = /password|secret|token|key|url|dsn|credential/i;
 
 export type Environment = Record<string, string | undefined>;
 

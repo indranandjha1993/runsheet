@@ -30,8 +30,11 @@ function send(
   body: unknown,
   headers: Record<string, string> = {},
 ): void {
-  response.writeHead(status, { "content-type": "application/json", ...headers });
-  response.end(JSON.stringify(body));
+  const contentType = headers["content-type"] ?? "application/json";
+  response.writeHead(status, { ...headers, "content-type": contentType });
+
+  // A file is already text. Serialising it again would hand the caller a quoted string.
+  response.end(contentType.startsWith("application/json") ? JSON.stringify(body) : String(body));
 }
 
 export function createHttpServer(deps: ServerDeps): ReturnType<typeof createServer> {

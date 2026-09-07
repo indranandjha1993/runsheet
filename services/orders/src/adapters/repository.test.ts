@@ -17,6 +17,8 @@ const sample = (): Consignment =>
     id: "01J8Z0T0000000000000000010",
     tenantId,
     orderId,
+    originHubCode: "BLR1",
+    destinationHubCode: "DEL3",
     service: "next_day",
     paymentMode: "cod",
     guards: {
