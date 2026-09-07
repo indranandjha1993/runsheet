@@ -24,7 +24,10 @@ export default tseslint.config(
   ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
-      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        projectService: { defaultProject: "tsconfig.eslint.json" },
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     plugins: { import: importPlugin },
     rules: {

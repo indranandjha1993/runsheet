@@ -2,13 +2,13 @@
   "files": [],
   "references": [
     {
-      "path": "packages/kernel"
+      "path": "packages/kernel/tsconfig.build.json"
     },
     {
-      "path": "packages/eventstore"
+      "path": "packages/eventstore/tsconfig.build.json"
     },
     {
-      "path": "packages/runtime"
+      "path": "packages/runtime/tsconfig.build.json"
     }
   ]
 }
