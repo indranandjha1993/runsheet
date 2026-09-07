@@ -15,6 +15,8 @@ export const SCOPES = [
   "addresses:write",
   "money:read",
   "money:write",
+  "policies:read",
+  "policies:write",
   "pii:read",
 ] as const;
 

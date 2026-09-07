@@ -31,6 +31,11 @@ describe("finding the service behind a path", () => {
     expect(upstreamFor("/v1/settlements/abc/events")?.name).toBe("money");
   });
 
+  it("sends policies and decisions to policy", () => {
+    expect(upstreamFor("/v1/policies")?.name).toBe("policy");
+    expect(upstreamFor("/v1/decisions/abc/replayable")?.name).toBe("policy");
+  });
+
   it("knows nothing about a path nobody registered", () => {
     expect(upstreamFor("/v1/nothing")).toBeUndefined();
     expect(upstreamFor("/")).toBeUndefined();
@@ -54,6 +59,7 @@ describe("finding the service behind a path", () => {
         "promise",
         "exceptions",
         "money",
+        "policy",
       ]),
     );
   });

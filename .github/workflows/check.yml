@@ -36,7 +36,7 @@ jobs:
 
       - name: Create the databases each test suite owns
         run: |
-          for db in test_runtime test_eventstore test_consumer test_contracts test_network test_orders test_execution test_identity test_address test_exceptions test_promise test_planning test_money; do
+          for db in test_runtime test_eventstore test_consumer test_contracts test_network test_orders test_execution test_identity test_address test_exceptions test_promise test_planning test_money test_policy; do
             PGPASSWORD=runsheet createdb -h localhost -p 15432 -U runsheet "$db"
           done
 

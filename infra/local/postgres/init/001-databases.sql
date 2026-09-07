@@ -26,4 +26,6 @@ CREATE DATABASE test_exceptions;
 CREATE DATABASE test_promise;
 CREATE DATABASE test_planning;
 CREATE DATABASE test_money;
+CREATE DATABASE test_policy;
+CREATE DATABASE policy;
 CREATE DATABASE money;

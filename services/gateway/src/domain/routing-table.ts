@@ -15,6 +15,7 @@ export const UPSTREAMS: readonly Upstream[] = [
   { name: "promise", prefixes: ["/v1/promises"] },
   { name: "promise", prefixes: ["/track"], public: true },
   { name: "exceptions", prefixes: ["/v1/exceptions", "/v1/observations"] },
+  { name: "policy", prefixes: ["/v1/policies", "/v1/decisions"] },
   {
     name: "money",
     prefixes: ["/v1/carrier-accounts", "/v1/rate-cards", "/v1/invoices", "/v1/settlements"],
