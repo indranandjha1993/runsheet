@@ -53,6 +53,8 @@ const networkTopic = { topic: "network", key: "aggregate_id" } as const;
 const exceptionTopic = { topic: "exception", key: "subject_aggregate_id" } as const;
 const promiseTopic = { topic: "promise", key: "consignment_id" } as const;
 const planTopic = { topic: "plan", key: "aggregate_id" } as const;
+const moneyTopic = { topic: "money", key: "aggregate_id" } as const;
+const decisionTopic = { topic: "decision", key: "aggregate_id" } as const;
 
 const scannedInPayload = z.object({
   hub_id: z.string(),
@@ -73,6 +75,31 @@ const hubExceptionPayload = z.object({
   hub_id: z.string(),
   consignment_id: z.string(),
   reason: z.enum(["unexpected_parcel", "weight_differs_from_booking", "not_on_this_run"]),
+});
+
+const cashMovementPayload = z.object({
+  amount_minor: z.number().int().positive(),
+  currency: z.string(),
+  reference: z.string(),
+  driver_id: z.string().optional(),
+  merchant_id: z.string().optional(),
+});
+
+const cashClosePayload = z.object({
+  run_id: z.string(),
+  driver_id: z.string(),
+  currency: z.string(),
+  expectedMinor: z.number().int(),
+  countedMinor: z.number().int().nonnegative(),
+  varianceMinor: z.number().int(),
+  floatAfterMinor: z.number().int(),
+});
+
+const cashVariancePayload = z.object({
+  run_id: z.string(),
+  driver_id: z.string(),
+  currency: z.string(),
+  variance_minor: z.number().int(),
 });
 
 export interface EventDefinition {
@@ -99,12 +126,47 @@ export const eventCatalogue: Record<string, EventDefinition> = {
   "consignment.scanned_in": define(scannedInPayload, consignmentTopic),
   "consignment.scanned_out": define(scannedOutPayload, consignmentTopic),
   "consignment.hub_exception": define(hubExceptionPayload, consignmentTopic),
+  "invoice.received": define(empty, moneyTopic),
+  "settlement.approved": define(empty, moneyTopic),
+  "settlement.disputed": define(empty, moneyTopic),
+  "settlement.dispute_resolved": define(empty, moneyTopic),
+  "settlement.dispute_rejected": define(empty, moneyTopic),
+  "settlement.paid": define(empty, moneyTopic),
+  "settlement.written_off": define(empty, moneyTopic),
+  "cash.collected": define(cashMovementPayload, moneyTopic),
+  "cash.deposited": define(cashMovementPayload, moneyTopic),
+  "cash.remitted": define(cashMovementPayload, moneyTopic),
+  "cash.written_off": define(cashMovementPayload, moneyTopic),
+  "cash.reversed": define(cashMovementPayload, moneyTopic),
+  "cash.run_closed": define(cashClosePayload, moneyTopic),
+  "cash.shortfall_found": define(cashVariancePayload, moneyTopic),
+  "cash.surplus_found": define(cashVariancePayload, moneyTopic),
+  "policy.published": define(empty, decisionTopic),
+  "policy.dry_run_passed": define(empty, decisionTopic),
+  "policy.shadowed": define(empty, decisionTopic),
+  "policy.staged": define(empty, decisionTopic),
+  "policy.went_live": define(empty, decisionTopic),
+  "policy.rolled_back": define(empty, decisionTopic),
+  "policy.retired": define(empty, decisionTopic),
+  "decision.proposed": define(empty, decisionTopic),
+  "decision.approved": define(empty, decisionTopic),
+  "decision.rejected": define(empty, decisionTopic),
+  "decision.executed": define(empty, decisionTopic),
+  "decision.reversed": define(empty, decisionTopic),
+  "decision.failed": define(empty, decisionTopic),
+  "decision.expired": define(empty, decisionTopic),
+  "decision.shadow_recorded": define(empty, decisionTopic),
   "consignment.out_for_delivery": define(empty, consignmentTopic),
   "consignment.attempted": define(attemptedPayload, consignmentTopic),
   "consignment.delivered": define(empty, consignmentTopic),
   "consignment.rto_initiated": define(empty, consignmentTopic),
+  "consignment.rto_out_for_delivery": define(empty, consignmentTopic),
+  "consignment.rto_attempted": define(attemptedPayload, consignmentTopic),
   "consignment.rto_delivered": define(empty, consignmentTopic),
   "consignment.cancelled": define(empty, consignmentTopic),
+  "consignment.cancel_requested": define(empty, consignmentTopic),
+  "consignment.departed_hub": define(empty, consignmentTopic),
+  "consignment.damaged": define(empty, consignmentTopic),
   "consignment.lost": define(empty, consignmentTopic),
   "consignment.found": define(empty, consignmentTopic),
   "run.planned": define(empty, runTopic),
@@ -120,9 +182,12 @@ export const eventCatalogue: Record<string, EventDefinition> = {
   "stop.skipped": define(stopOutcomePayload, runTopic),
   "proof.captured": define(empty, runTopic),
   "proof.media_uploaded": define(empty, runTopic),
-  "cash.collected": define(cashPayload, runTopic),
-  "cash.declared": define(cashPayload, runTopic),
-  "cash.counted": define(cashPayload, runTopic),
+  "run.unassigned": define(empty, runTopic),
+  "run.action_recorded": define(empty, runTopic),
+  "run.cash_declared": define(cashPayload, runTopic),
+  "run.cash_counted": define(cashPayload, runTopic),
+  "run.force_closed": define(empty, runTopic),
+  "run.stop_moved": define(empty, runTopic),
   "device.synced": define(empty, runTopic),
   "plan.requested": define(empty, planTopic),
   "plan.completed": define(empty, planTopic),
@@ -135,6 +200,11 @@ export const eventCatalogue: Record<string, EventDefinition> = {
   "exception.assigned": define(empty, exceptionTopic),
   "exception.resolved": define(empty, exceptionTopic),
   "exception.reopened": define(empty, exceptionTopic),
+  "exception.auto_resolved": define(empty, exceptionTopic),
+  "exception.triaged": define(empty, exceptionTopic),
+  "exception.waiting_on_customer": define(empty, exceptionTopic),
+  "exception.customer_answered": define(empty, exceptionTopic),
+  "exception.sla_checked": define(empty, exceptionTopic),
 };
 
 export function topicFor(type: string): EventDefinition["routing"] | undefined {

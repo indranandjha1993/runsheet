@@ -3,3 +3,4 @@ export { eventCatalogue, parseEvent, topicFor } from "./events.js";
 export type { EventDefinition } from "./events.js";
 export { asyncApiDocument } from "./asyncapi.js";
 export type { AsyncApiDocument, Channel } from "./asyncapi.js";
+export { routingFor } from "./routing.js";

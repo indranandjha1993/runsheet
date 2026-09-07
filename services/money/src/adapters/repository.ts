@@ -1,7 +1,8 @@
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 import type { Lane, RateCard } from "../domain/rate-card.js";
 import type { InvoiceLine, Settlement, SettlementState } from "../domain/settlement.js";
-import type { MoneyRepository } from "../application/ports.js";
+import type { CashHolder, MoneyRepository } from "../application/ports.js";
+import type { CashAccount, CashEntry, MovementKind } from "../domain/cash-ledger.js";
 
 interface CarrierRow {
   id: string;
@@ -248,12 +249,112 @@ function streams(pool: Pool): Pick<MoneyRepository, "nextSequence"> {
   };
 }
 
+interface CashRow {
+  id: string;
+  tenant_id: string;
+  kind: MovementKind;
+  account: CashAccount;
+  driver_id: string | null;
+  merchant_id: string | null;
+  delta_minor: string;
+  amount_minor: string;
+  currency: string;
+  reference: string;
+  approved_by: string | null;
+  occurred_at: Date;
+}
+
+function toCashEntry(row: CashRow): CashEntry {
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    kind: row.kind,
+    account: row.account,
+    ...(row.driver_id === null ? {} : { driverId: row.driver_id }),
+    ...(row.merchant_id === null ? {} : { merchantId: row.merchant_id }),
+    deltaMinor: Number(row.delta_minor),
+    amountMinor: Number(row.amount_minor),
+    currency: row.currency,
+    reference: row.reference,
+    ...(row.approved_by === null ? {} : { approvedBy: row.approved_by }),
+    at: row.occurred_at,
+  };
+}
+
+async function insertEntries(
+  client: PoolClient,
+  movementKey: string,
+  entries: readonly CashEntry[],
+): Promise<void> {
+  for (const entry of entries) {
+    await client.query(
+      `INSERT INTO cash_entries (id, movement_key, tenant_id, kind, account, driver_id,
+         merchant_id, delta_minor, amount_minor, currency, reference, approved_by, occurred_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+      [
+        entry.id, movementKey, entry.tenantId, entry.kind, entry.account, entry.driverId ?? null,
+        entry.merchantId ?? null, entry.deltaMinor, entry.amountMinor, entry.currency,
+        entry.reference, entry.approvedBy ?? null, entry.at,
+      ],
+    );
+  }
+}
+
+function cashQuery(tenantId: string, holder: CashHolder): [string, string] {
+  return "driverId" in holder
+    ? [
+        `SELECT * FROM cash_entries WHERE tenant_id = $1 AND account = 'driver_float'
+           AND driver_id = $2 ORDER BY occurred_at, id`,
+        holder.driverId,
+      ]
+    : [
+        `SELECT * FROM cash_entries WHERE tenant_id = $1 AND account = 'merchant_payable'
+           AND merchant_id = $2 ORDER BY occurred_at, id`,
+        holder.merchantId,
+      ];
+}
+
+function cash(pool: Pool): Pick<MoneyRepository, "saveCashMovement" | "cashEntriesFor"> {
+  return {
+    async saveCashMovement(movementKey, entries) {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const claimed = await client.query(
+          `INSERT INTO cash_movements (movement_key, tenant_id) VALUES ($1, $2)
+           ON CONFLICT (movement_key) DO NOTHING`,
+          [movementKey, entries[0]?.tenantId ?? movementKey.split(":")[0]],
+        );
+        if (claimed.rowCount === 0) {
+          await client.query("ROLLBACK");
+          return false;
+        }
+        await insertEntries(client, movementKey, entries);
+        await client.query("COMMIT");
+        return true;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+
+    async cashEntriesFor(tenantId, holder) {
+      const [text, value] = cashQuery(tenantId, holder);
+      const result = await pool.query<CashRow>(text, [tenantId, value]);
+      return result.rows.map(toCashEntry);
+    },
+  };
+}
+
 export function postgresMoney(pool: Pool): MoneyRepository {
   return {
     ...carriers(pool),
     ...cards(pool),
     ...invoices(pool),
     ...settlements(pool),
+    ...cash(pool),
     ...streams(pool),
   };
 }
