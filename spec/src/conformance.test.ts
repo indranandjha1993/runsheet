@@ -10,6 +10,7 @@ import { ordersRoutes } from "@runsheet/orders";
 import { planningRoutes } from "@runsheet/planning";
 import { policyRoutes } from "@runsheet/policy";
 import { promiseRoutes } from "@runsheet/promise";
+import { reportingRoutes } from "@runsheet/reporting";
 import { SURFACES } from "./surfaces.js";
 
 // The factories only close over their dependencies; nothing is called, so nothing is needed.
@@ -27,6 +28,7 @@ const REGISTERED: Record<string, { method: string; path: string }[]> = {
   exceptions: exceptionsRoutes(nothing),
   money: moneyRoutes(nothing),
   policy: policyRoutes(nothing),
+  reporting: reportingRoutes(nothing),
 };
 
 const signature = (route: { method: string; path: string }): string =>

@@ -6,7 +6,16 @@ const logger = createLogger({ service: "gateway", write: () => undefined });
 const credential = { authorization: "Bearer rsk_test" };
 
 function upstreamReturning(status: number, body: unknown): typeof globalThis.fetch {
-  return vi.fn(() => Promise.resolve(new Response(JSON.stringify(body), { status })));
+  // Every service in the platform declares its content type. The mock does the same, because
+  // the gateway decides whether to parse or pass through from that header.
+  return vi.fn(() =>
+    Promise.resolve(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
+      }),
+    ),
+  );
 }
 
 const addressOf = (): string => "http://service.local";
@@ -202,5 +211,52 @@ describe("holding callers to a rate", () => {
 
     expect(response.headers["ratelimit-limit"]).toBe("100");
     expect(response.headers["ratelimit-remaining"]).toBe("99");
+  });
+});
+
+describe("a service that answers with a file", () => {
+  function proxyReturning(body: string, headers: Record<string, string>): typeof proxy {
+    return createProxy({
+      addressOf,
+      perMinute: 100,
+      logger,
+      fetch: vi.fn(() => Promise.resolve(new Response(body, { status: 200, headers }))),
+      now: () => 0,
+    });
+  }
+
+  it("carries the text through without parsing it as data", async () => {
+    const csv = "day,delivered\n2026-09-07,40\n";
+    const files = proxyReturning(csv, {
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": 'attachment; filename="report.csv"',
+    });
+
+    const response = await files.handle({
+      method: "GET",
+      url: "/v1/reports/delivery_performance?from=2026-09-01&to=2026-09-07",
+      headers: credential,
+      body: undefined,
+    });
+
+    expect(response.body).toBe(csv);
+    expect(response.headers["content-type"]).toContain("text/csv");
+    expect(response.headers["content-disposition"]).toContain("report.csv");
+  });
+
+  it("still parses a normal answer as data", async () => {
+    const data = proxyReturning(JSON.stringify({ ok: true }), {
+      "content-type": "application/json",
+    });
+
+    const response = await data.handle({
+      method: "GET",
+      url: "/v1/reports",
+      headers: credential,
+      body: undefined,
+    });
+
+    expect(response.body).toEqual({ ok: true });
+    expect(response.headers["content-type"]).toBeUndefined();
   });
 });

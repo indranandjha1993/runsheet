@@ -10,6 +10,7 @@ CREATE DATABASE exceptions;
 CREATE DATABASE money;
 CREATE DATABASE policy;
 CREATE DATABASE linehaul;
+CREATE DATABASE reporting;
 CREATE DATABASE connectors;
 
 -- Isolated databases for the test suites. Each suite owns one, so files running in parallel
@@ -29,5 +30,6 @@ CREATE DATABASE test_planning;
 CREATE DATABASE test_money;
 CREATE DATABASE test_policy;
 CREATE DATABASE test_linehaul;
+CREATE DATABASE test_reporting;
 CREATE DATABASE policy;
 CREATE DATABASE money;

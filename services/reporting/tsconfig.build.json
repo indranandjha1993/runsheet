@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true,
+    "noEmit": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../packages/kernel/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/runtime/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/eventstore/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/auth/tsconfig.build.json"
+    },
+    {
+      "path": "../../contracts/tsconfig.build.json"
+    },
+    {
+      "path": "../../api/tsconfig.build.json"
+    }
+  ]
+}

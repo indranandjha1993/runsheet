@@ -417,6 +417,33 @@ importers:
         specifier: ^4.0.0
         version: 4.5.4
 
+  services/reporting:
+    dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
+      '@runsheet/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@runsheet/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@runsheet/eventstore':
+        specifier: workspace:*
+        version: link:../../packages/eventstore
+      '@runsheet/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@runsheet/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.0
+      zod:
+        specifier: ^4.0.0
+        version: 4.5.4
+
   spec:
     dependencies:
       '@runsheet/address':
@@ -455,6 +482,9 @@ importers:
       '@runsheet/promise':
         specifier: workspace:*
         version: link:../services/promise
+      '@runsheet/reporting':
+        specifier: workspace:*
+        version: link:../services/reporting
       zod:
         specifier: ^4.0.0
         version: 4.5.4

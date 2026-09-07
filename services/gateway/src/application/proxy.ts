@@ -133,6 +133,28 @@ function headersToSend(request: GatewayRequest, traceparent: string): Record<str
   return out;
 }
 
+// A service may answer with a file. Parsing that as data would fail, and re-encoding it would
+// hand the caller a quoted string, so anything that is not json is carried through as it is.
+const PASSED_THROUGH = ["content-type", "content-disposition"];
+
+function contentHeadersOf(response: Response): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const name of PASSED_THROUGH) {
+    const value = response.headers.get(name);
+    if (value !== null && !value.startsWith("application/json")) headers[name] = value;
+  }
+  return headers;
+}
+
+async function passThrough(response: Response): Promise<{ body: unknown }> {
+  const contentType = response.headers.get("content-type") ?? "application/json";
+  return {
+    body: contentType.startsWith("application/json")
+      ? await response.json()
+      : await response.text(),
+  };
+}
+
 async function forward(forwarding: ForwardRequest): Promise<GatewayResponse> {
   const { request, traceparent, limitHeaders } = forwarding;
 
@@ -145,8 +167,8 @@ async function forward(forwarding: ForwardRequest): Promise<GatewayResponse> {
 
     return {
       status: response.status,
-      body: await response.json(),
-      headers: limitHeaders,
+      ...(await passThrough(response)),
+      headers: { ...limitHeaders, ...contentHeadersOf(response) },
     };
   } catch (error) {
     // An upstream that is down is a 502, not a 500: the gateway is fine, the service behind it

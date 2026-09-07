@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")/../.."
 set -a; . ./.env; set +a
 
-for service in identity network address orders execution linehaul planning promise exceptions money policy gateway; do
+for service in identity network address orders execution linehaul planning promise exceptions money policy reporting gateway; do
   node "services/$service/dist/main.js" > "/tmp/runsheet-$service.log" 2>&1 &
   echo $! >> /tmp/runsheet.pids
 done

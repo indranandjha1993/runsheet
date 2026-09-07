@@ -10,6 +10,7 @@ import { ordersSurface } from "@runsheet/orders";
 import { planningSurface } from "@runsheet/planning";
 import { policySurface } from "@runsheet/policy";
 import { promiseSurface } from "@runsheet/promise";
+import { reportingSurface } from "@runsheet/reporting";
 
 export const SURFACES: readonly ServiceSurface[] = [
   identitySurface,
@@ -23,4 +24,5 @@ export const SURFACES: readonly ServiceSurface[] = [
   exceptionsSurface,
   moneySurface,
   policySurface,
+  reportingSurface,
 ];
