@@ -151,3 +151,37 @@ describe("a connector that never answers", () => {
     expect(TIMEOUT_MS).toBeLessThanOrEqual(30_000);
   });
 });
+
+describe("a connector that lies about itself", () => {
+  it("is refused rather than crashing when it claims a call it does not have", async () => {
+    // The registry rejects this at start-up, but runCall is reachable without it.
+    const liar = {
+      name: "liar",
+      version: "1.0.0",
+      capabilities: ["track"],
+    } as unknown as Connector;
+
+    const result = await runCall(liar, "track", { context, request, options: quiet });
+
+    expect(result).toMatchObject({ outcome: "failed", kind: "misconfigured" });
+  });
+});
+
+describe("waiting between attempts", () => {
+  it("really waits when nobody supplied a clock", async () => {
+    const track = vi
+      .fn<TrackCall>()
+      .mockResolvedValueOnce({ outcome: "failed", kind: "throttled", retryAfterSeconds: 0.01 })
+      .mockResolvedValueOnce({ outcome: "ok", value: tracking });
+
+    const startedAt = Date.now();
+    const result = await runCall(connectorThat(track), "track", {
+      context,
+      request,
+      options: { attempts: 2 },
+    });
+
+    expect(result.outcome).toBe("ok");
+    expect(Date.now() - startedAt).toBeGreaterThanOrEqual(5);
+  });
+});

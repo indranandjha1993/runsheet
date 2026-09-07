@@ -71,3 +71,21 @@ describe("checking a manifest at the far end", () => {
     expect(result.agreed).toBe(true);
   });
 });
+
+describe("a manifest for a trip nobody has crewed", () => {
+  it("still lists the bags, so the load can be checked before a driver is found", () => {
+    const manifest = manifestFor({ ...trip, vehicleId: undefined, driverId: undefined }, bags);
+
+    expect(manifest.bags).toHaveLength(2);
+    expect(manifest.vehicleId).toBeUndefined();
+    expect(manifest.driverId).toBeUndefined();
+  });
+
+  it("says a bag is unsealed rather than leaving the seal blank", () => {
+    const [first] = bags;
+    if (first === undefined) throw new Error("the fixture has no bags");
+    const manifest = manifestFor(trip, [{ ...first, sealNumber: undefined }]);
+
+    expect(manifest.bags[0]?.sealNumber).toBe("unsealed");
+  });
+});

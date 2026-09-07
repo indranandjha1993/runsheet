@@ -230,3 +230,84 @@ describe("receiving at the far end", () => {
     expect(response.body).toMatchObject({ misrouted: true });
   });
 });
+
+describe("changing a trip's mind before it leaves", () => {
+  it("takes a bag back off a trip that has not departed", async () => {
+    const bagId = await bagged();
+    await post(`/v1/bags/${bagId}/seal`, { seal_number: "SEAL-1" });
+    const tripId = await readyTrip();
+    await post(`/v1/trips/${tripId}/bags`, { bag_id: bagId });
+
+    const response = await post(`/v1/trips/${tripId}/events`, {
+      type: "bag_unloaded",
+      bag_id: bagId,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ bag_ids: [] });
+  });
+
+  it("cancels a trip that has not left, with the reason on it", async () => {
+    const tripId = await readyTrip();
+
+    const response = await post(`/v1/trips/${tripId}/events`, {
+      type: "cancelled",
+      reason: "vehicle broke down",
+    });
+
+    expect(response.body).toMatchObject({ status: "cancelled" });
+  });
+
+  it("refuses to cancel a trip that is already on the road", async () => {
+    const bagId = await bagged();
+    await post(`/v1/bags/${bagId}/seal`, { seal_number: "SEAL-1" });
+    const tripId = await readyTrip();
+    await post(`/v1/trips/${tripId}/bags`, { bag_id: bagId });
+    await post(`/v1/trips/${tripId}/events`, { type: "departed" });
+
+    const response = await post(`/v1/trips/${tripId}/events`, {
+      type: "cancelled",
+      reason: "changed our mind",
+    });
+
+    expect(response.status).toBe(409);
+  });
+
+  it("refuses a cancellation with no reason", async () => {
+    const tripId = await readyTrip();
+
+    expect((await post(`/v1/trips/${tripId}/events`, { type: "cancelled" })).status).toBe(400);
+  });
+});
+
+describe("changing a bag's mind before it is sealed", () => {
+  it("takes a parcel back out of an open bag", async () => {
+    const bagId = await bagged("c-1");
+    await post("/v1/bags/parcels", { ...lane, consignment_id: "c-2" });
+
+    const response = await post(`/v1/bags/${bagId}/events`, {
+      type: "parcel_removed",
+      consignment_id: "c-1",
+    });
+
+    expect(response.body).toMatchObject({ consignment_ids: ["c-2"] });
+  });
+
+  it("refuses to take a parcel out of a sealed bag", async () => {
+    const bagId = await bagged();
+    await post(`/v1/bags/${bagId}/seal`, { seal_number: "SEAL-1" });
+
+    const response = await post(`/v1/bags/${bagId}/events`, {
+      type: "parcel_removed",
+      consignment_id: "c-1",
+    });
+
+    expect(response.status).toBe(409);
+  });
+
+  it("refuses a bag event it does not know", async () => {
+    const bagId = await bagged();
+
+    expect((await post(`/v1/bags/${bagId}/events`, { type: "incinerated" })).status).toBe(400);
+  });
+});
