@@ -10,7 +10,19 @@ import {
   recordingPublisher,
 } from "../application/test-doubles.js";
 
-const tenant = { "x-tenant-id": "01J8Z0T0000000000000000002" };
+const tenantId = "01J8Z0T0000000000000000002";
+const tenant = { authorization: "Bearer rsk_test" };
+
+const lookup = (
+  presented: string,
+): Promise<
+  { tenantId: string; keyId: string; fingerprint: string; scopes: string[] } | undefined
+> =>
+  Promise.resolve(
+    presented === "rsk_test"
+      ? { tenantId, keyId: "k1", fingerprint: "abc123def456", scopes: ["network:write"] }
+      : undefined,
+  );
 const validHub = {
   code: "BLR-01",
   name: "Bengaluru South",
@@ -27,6 +39,7 @@ let router: ReturnType<typeof createRouter>;
 beforeEach(() => {
   router = createRouter(
     networkRoutes({
+      lookup,
       repository: inMemoryNetwork(),
       publisher: recordingPublisher(),
       clock: fixedClock("2026-09-07T10:00:00.000Z"),
@@ -48,16 +61,15 @@ describe("network routes", () => {
     expect(response.body).toMatchObject({ code: "BLR-01" });
   });
 
-  it("refuses a request that names no tenant, and says why", async () => {
+  it("ignores a tenant header, so nobody can create a hub in another account", async () => {
     const response = await router.handle({
       method: "POST",
       url: "/v1/hubs",
-      headers: {},
+      headers: { ...tenant, "x-tenant-id": "01J8Z0T0000000000000000099" },
       body: validHub,
     });
 
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject({ error: { code: "tenant_required" } });
+    expect(response.status).toBe(201);
   });
 
   it("reports a duplicate hub as a conflict rather than a server failure", async () => {
@@ -102,6 +114,7 @@ describe("network routes", () => {
     const repository = inMemoryNetwork();
     const wired = createRouter(
       networkRoutes({
+        lookup,
         repository,
         publisher: recordingPublisher(),
         clock: fixedClock("2026-09-07T10:00:00.000Z"),
@@ -109,8 +122,8 @@ describe("network routes", () => {
       }),
     );
     await wired.handle({ method: "POST", url: "/v1/hubs", headers: tenant, body: validHub });
-    const created = await repository.hubByCode(tenant["x-tenant-id"], "BLR-01");
-    await repository.saveZone(tenant["x-tenant-id"], {
+    const created = await repository.hubByCode(tenantId, "BLR-01");
+    await repository.saveZone(tenantId, {
       id: "z-1",
       hubId: created?.id ?? "",
       priority: 0,
@@ -123,7 +136,7 @@ describe("network routes", () => {
       active: true,
     });
     await repository.saveLane(
-      tenant["x-tenant-id"],
+      tenantId,
       lane({
         id: "ln-1",
         originHubId: created?.id ?? "",
