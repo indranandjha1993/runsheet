@@ -1,0 +1,46 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: runsheet
+          POSTGRES_PASSWORD: runsheet
+          POSTGRES_DB: runsheet
+        ports:
+          - 15432:5432
+        options: >-
+          --health-cmd "pg_isready -U runsheet"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Create the databases each test suite owns
+        run: |
+          for db in test_runtime test_eventstore test_consumer test_contracts test_network; do
+            PGPASSWORD=runsheet createdb -h localhost -p 15432 -U runsheet "$db"
+          done
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm exec vitest run --coverage
