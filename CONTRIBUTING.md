@@ -42,5 +42,28 @@ against them, and a breaking change bumps the version.
 
 ## Licence and contributions
 
-The project is licensed under the GNU Affero General Public License v3.0. By opening a pull
-request you agree your contribution is licensed the same way.
+The project is licensed under the GNU Affero General Public License v3.0.
+
+Contributions are accepted under the Developer Certificate of Origin, which is in the `DCO` file
+at the root. There is no contributor licence agreement to sign and no paperwork to send: you keep
+the copyright in what you write, and you certify that you have the right to contribute it.
+
+Sign off each commit in a pull request:
+
+```sh
+git commit -s -m "Add the thing"
+```
+
+That appends a single line to your commit message:
+
+```
+Signed-off-by: Your Name <you@example.com>
+```
+
+Use the name you would use on legal correspondence and an address that reaches you. Continuous
+integration checks that every commit in a pull request carries one, and will tell you which
+commits are missing it. `git rebase --signoff main` fixes a branch you forgot to sign.
+
+Because the project keeps copyright with its contributors rather than pooling it, relicensing
+would need every contributor to agree. That is the trade the certificate makes: a lower barrier
+to contributing, in exchange for less freedom to change the licence later.
