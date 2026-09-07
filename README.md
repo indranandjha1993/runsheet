@@ -12,8 +12,8 @@ Clone it, run it, deploy it wherever you like. Nothing here assumes a hosted add
 
 ## Status
 
-Pre-alpha. The domain model and architecture are settled and the shared foundations are built and
-tested. The first services are being written. It does not yet do useful work.
+Pre-alpha. Nine services run and a parcel can be booked, planned onto a run, delivered with
+proof, and the cash accounted for, all through one gateway. It has never carried a real parcel.
 
 ## Run it
 
@@ -30,8 +30,12 @@ applies migrations. Then:
 
 ```sh
 make check    # tests, type check, linter
+make run      # build and start every service behind the gateway
 make help     # everything else
 ```
+
+With everything running, `http://localhost:14000/health` reports ready only when all eight
+services behind the gateway are.
 
 The defaults in `.env.example` work as they are, so a fresh clone runs without editing anything.
 Every setting, including every port, lives there. Change `PUBLIC_BASE_URL` and `SIGNING_SECRET`
