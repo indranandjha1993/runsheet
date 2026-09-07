@@ -10,7 +10,7 @@ const pool = new Pool({
   port: 15432,
   user: "runsheet",
   password: "runsheet",
-  database: "orders_consignments",
+  database: "test_contracts",
 });
 const store = eventStore(pool);
 const migration = new URL("../../packages/eventstore/migrations/001-events.sql", import.meta.url);

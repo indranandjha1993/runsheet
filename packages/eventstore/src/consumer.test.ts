@@ -10,7 +10,7 @@ const pool = new Pool({
   port: 15432,
   user: "runsheet",
   password: "runsheet",
-  database: "execution",
+  database: "test_consumer",
 });
 
 const tenantId = "01J8Z0T0000000000000000001";

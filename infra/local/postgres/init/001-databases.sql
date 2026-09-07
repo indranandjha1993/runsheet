@@ -10,3 +10,11 @@ CREATE DATABASE exceptions;
 CREATE DATABASE money;
 CREATE DATABASE policy;
 CREATE DATABASE connectors;
+
+-- Isolated databases for the test suites. Each suite owns one, so files running in parallel
+-- never clobber each other's tables.
+CREATE DATABASE test_runtime;
+CREATE DATABASE test_eventstore;
+CREATE DATABASE test_consumer;
+CREATE DATABASE test_contracts;
+CREATE DATABASE test_network;

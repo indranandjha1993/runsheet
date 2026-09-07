@@ -1,5 +1,15 @@
 # Contributing
 
+## Getting set up
+
+```sh
+make setup    # .env, dependencies, infrastructure, migrations
+make check    # tests, type check, linter
+```
+
+Everything configurable lives in `.env`; `.env.example` documents every variable. Never commit a
+`.env`. Never hardcode a host, a port, or a URL: if it varies by deployment, it is configuration.
+
 ## Branches and history
 
 - `main` is the trunk and always green. Cut a branch per change: `rs-123-short-name`.
@@ -29,3 +39,8 @@
 
 API and event schemas in `contracts/` are the source of truth. Code is generated or validated
 against them, and a breaking change bumps the version.
+
+## Licence and contributions
+
+The project is licensed under the GNU Affero General Public License v3.0. By opening a pull
+request you agree your contribution is licensed the same way.

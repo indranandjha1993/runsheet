@@ -9,6 +9,8 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "zod": "^4.0.0",
+    "@runsheet/kernel": "workspace:*"
   }
 }
