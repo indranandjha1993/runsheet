@@ -56,7 +56,15 @@ jobs:
 
       - name: Create the databases each test suite owns
         run: |
-          for db in test_runtime test_eventstore test_consumer test_contracts test_network test_orders test_execution test_identity test_address test_exceptions test_promise test_planning test_money test_policy; do
+          # Read from the same file the local stack uses, so a new service cannot be added in
+          # one place and forgotten in the other.
+          databases=$(grep -oE 'CREATE DATABASE test_[a-z_]+' infra/local/postgres/init/001-databases.sql |
+            awk '{print $3}')
+          if [ -z "$databases" ]; then
+            echo "No test databases found in the init script."
+            exit 1
+          fi
+          for db in $databases; do
             PGPASSWORD=runsheet createdb -h localhost -p 15432 -U runsheet "$db"
           done
 
