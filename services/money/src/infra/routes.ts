@@ -5,6 +5,7 @@ import { rateCard } from "../domain/rate-card.js";
 import type { Route } from "../adapters/http.js";
 import { receiveInvoice, workSettlement } from "../application/reconcile.js";
 import type { MoneyDeps } from "../application/ports.js";
+import { closeDriverRun, recordMovement, statementFor } from "../application/cash.js";
 import type { SettlementEvent } from "../domain/settlement.js";
 
 const carrierBody = z.object({ name: z.string().min(1), currency: z.string().length(3) });
@@ -209,6 +210,124 @@ function readRoute(deps: RouteDeps): Route {
   };
 }
 
+const movementBody = z.object({
+  kind: z.enum(["collected", "deposited", "remitted", "written_off", "reversed"]),
+  amount_minor: z.number().int().positive(),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  reference: z.string().min(1),
+  driver_id: z.string().min(1).optional(),
+  merchant_id: z.string().min(1).optional(),
+  approved_by: z.string().min(1).optional(),
+});
+
+const closeBody = z.object({
+  driver_id: z.string().min(1),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  counted_minor: z.number().int().nonnegative(),
+});
+
+function movementRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/cash/movements",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:write");
+
+      const parsed = movementBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const balances = await recordMovement(deps, {
+        tenantId: caller.tenantId,
+        kind: parsed.data.kind,
+        amountMinor: parsed.data.amount_minor,
+        currency: parsed.data.currency,
+        reference: parsed.data.reference,
+        ...(parsed.data.driver_id === undefined ? {} : { driverId: parsed.data.driver_id }),
+        ...(parsed.data.merchant_id === undefined ? {} : { merchantId: parsed.data.merchant_id }),
+        ...(parsed.data.approved_by === undefined ? {} : { approvedBy: parsed.data.approved_by }),
+      });
+
+      return {
+        status: 201,
+        body: {
+          driver_float_minor: balances.driverFloatMinor,
+          merchant_payable_minor: balances.merchantPayableMinor,
+        },
+      };
+    },
+  };
+}
+
+function runCloseRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/cash/runs/:id/close",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:write");
+
+      const parsed = closeBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const close = await closeDriverRun(deps, {
+        tenantId: caller.tenantId,
+        runId: request.params["id"] ?? "",
+        driverId: parsed.data.driver_id,
+        currency: parsed.data.currency,
+        countedMinor: parsed.data.counted_minor,
+      });
+
+      return {
+        status: 200,
+        body: {
+          expected_minor: close.expectedMinor,
+          counted_minor: close.countedMinor,
+          variance_minor: close.varianceMinor,
+          float_after_minor: close.floatAfterMinor,
+        },
+      };
+    },
+  };
+}
+
+function statementRoute(deps: RouteDeps, holder: "drivers" | "merchants"): Route {
+  return {
+    method: "GET",
+    path: `/v1/cash/${holder}/:id/statement`,
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:read");
+
+      const currency = request.query["currency"] ?? "";
+      if (!/^[A-Z]{3}$/.test(currency)) return invalid("name the currency of the statement");
+
+      const id = request.params["id"] ?? "";
+      const statement = await statementFor(deps, {
+        tenantId: caller.tenantId,
+        currency,
+        ...(holder === "drivers" ? { driverId: id } : { merchantId: id }),
+      });
+
+      return {
+        status: 200,
+        body: {
+          currency,
+          ...(holder === "drivers"
+            ? { float_minor: statement.floatMinor }
+            : { payable_minor: statement.payableMinor }),
+          entries: statement.entries.map((entry) => ({
+            kind: entry.kind,
+            reference: entry.reference,
+            delta_minor: entry.deltaMinor,
+            occurred_at: entry.at,
+          })),
+        },
+      };
+    },
+  };
+}
+
 export function moneyRoutes(deps: RouteDeps): Route[] {
   return [
     carrierRoute(deps),
@@ -216,5 +335,9 @@ export function moneyRoutes(deps: RouteDeps): Route[] {
     invoiceRoute(deps),
     settlementRoute(deps),
     readRoute(deps),
+    movementRoute(deps),
+    runCloseRoute(deps),
+    statementRoute(deps, "drivers"),
+    statementRoute(deps, "merchants"),
   ];
 }

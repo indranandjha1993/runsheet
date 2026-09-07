@@ -36,8 +36,8 @@ const settlement: Settlement = {
 
 beforeEach(async () => {
   await pool.query(
-    `DROP TABLE IF EXISTS settlements, invoice_lines, invoices, rate_cards, carrier_accounts,
-       aggregate_streams, schema_migrations CASCADE`,
+    `DROP TABLE IF EXISTS cash_entries, cash_movements, settlements, invoice_lines, invoices,
+       rate_cards, carrier_accounts, aggregate_streams, schema_migrations CASCADE`,
   );
   await migrate(pool, migrations);
   await repository.saveCarrier(carrier);
@@ -195,5 +195,78 @@ describe("the money repository", () => {
       await repository.nextSequence(tenantId, "a"),
       await repository.nextSequence(tenantId, "a"),
     ]).toEqual([1, 2]);
+  });
+});
+
+describe("the cash ledger in the database", () => {
+  const entry = {
+    id: "01J8Z0T0000000000000000090:0",
+    tenantId,
+    kind: "collected" as const,
+    account: "driver_float" as const,
+    driverId: "d-1",
+    deltaMinor: 50000,
+    amountMinor: 50000,
+    currency: "INR",
+    reference: "c-1",
+    at: new Date("2026-09-07T10:00:00.000Z"),
+  };
+
+  it("reads back what was posted to a driver", async () => {
+    expect(await repository.saveCashMovement("t:collected:c-1", [entry])).toBe(true);
+
+    const entries = await repository.cashEntriesFor(tenantId, { driverId: "d-1" });
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({ deltaMinor: 50000, reference: "c-1" });
+  });
+
+  it("claims a movement key once, so a repeated report banks nothing twice", async () => {
+    await repository.saveCashMovement("t:collected:c-1", [entry]);
+
+    expect(await repository.saveCashMovement("t:collected:c-1", [entry])).toBe(false);
+    expect(await repository.cashEntriesFor(tenantId, { driverId: "d-1" })).toHaveLength(1);
+  });
+
+  it("leaves no entries behind when one of them cannot be written", async () => {
+    const bad = { ...entry, id: `${entry.id}x`, kind: "written_off" as const };
+
+    await expect(repository.saveCashMovement("t:mixed:c-1", [entry, bad])).rejects.toThrow();
+    expect(await repository.cashEntriesFor(tenantId, { driverId: "d-1" })).toHaveLength(0);
+  });
+
+  it("keeps a driver's entries out of another driver's statement", async () => {
+    await repository.saveCashMovement("t:collected:c-1", [entry]);
+
+    expect(await repository.cashEntriesFor(tenantId, { driverId: "d-2" })).toEqual([]);
+  });
+
+  it("keeps one tenant's cash away from another", async () => {
+    await repository.saveCashMovement("t:collected:c-1", [entry]);
+
+    expect(await repository.cashEntriesFor("other", { driverId: "d-1" })).toEqual([]);
+  });
+
+  it("returns a merchant's payable entries in the order they happened", async () => {
+    const payable = {
+      ...entry,
+      account: "merchant_payable" as const,
+      merchantId: "m-1",
+      driverId: undefined,
+    };
+    await repository.saveCashMovement("t:collected:c-1", [{ ...payable, id: "e-2" }]);
+    await repository.saveCashMovement("t:remitted:p-1", [
+      {
+        ...payable,
+        id: "e-3",
+        kind: "remitted" as const,
+        deltaMinor: -20000,
+        amountMinor: 20000,
+        reference: "p-1",
+        at: new Date("2026-09-07T12:00:00.000Z"),
+      },
+    ]);
+
+    const entries = await repository.cashEntriesFor(tenantId, { merchantId: "m-1" });
+    expect(entries.map((e) => e.deltaMinor)).toEqual([50000, -20000]);
   });
 });

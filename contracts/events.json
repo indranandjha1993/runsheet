@@ -317,6 +317,464 @@
         "required": ["hub_id", "consignment_id", "reason"]
       }
     },
+    "invoice.received": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "settlement.approved": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "settlement.disputed": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "settlement.dispute_resolved": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "settlement.dispute_rejected": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "settlement.paid": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "settlement.written_off": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "cash.collected": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currency": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "merchant_id": {
+            "type": "string"
+          }
+        },
+        "required": ["amount_minor", "currency", "reference"]
+      }
+    },
+    "cash.deposited": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currency": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "merchant_id": {
+            "type": "string"
+          }
+        },
+        "required": ["amount_minor", "currency", "reference"]
+      }
+    },
+    "cash.remitted": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currency": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "merchant_id": {
+            "type": "string"
+          }
+        },
+        "required": ["amount_minor", "currency", "reference"]
+      }
+    },
+    "cash.written_off": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currency": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "merchant_id": {
+            "type": "string"
+          }
+        },
+        "required": ["amount_minor", "currency", "reference"]
+      }
+    },
+    "cash.reversed": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "currency": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "merchant_id": {
+            "type": "string"
+          }
+        },
+        "required": ["amount_minor", "currency", "reference"]
+      }
+    },
+    "cash.run_closed": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "expectedMinor": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "countedMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "varianceMinor": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "floatAfterMinor": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "run_id",
+          "driver_id",
+          "currency",
+          "expectedMinor",
+          "countedMinor",
+          "varianceMinor",
+          "floatAfterMinor"
+        ]
+      }
+    },
+    "cash.shortfall_found": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "variance_minor": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["run_id", "driver_id", "currency", "variance_minor"]
+      }
+    },
+    "cash.surplus_found": {
+      "topic": "money",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "variance_minor": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["run_id", "driver_id", "currency", "variance_minor"]
+      }
+    },
+    "policy.published": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "policy.dry_run_passed": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "policy.shadowed": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "policy.staged": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "policy.went_live": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "policy.rolled_back": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "policy.retired": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.proposed": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.approved": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.rejected": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.executed": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.reversed": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.failed": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.expired": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "decision.shadow_recorded": {
+      "topic": "decision",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
     "consignment.out_for_delivery": {
       "topic": "consignment",
       "key": "aggregate_id",
@@ -371,6 +829,40 @@
         "additionalProperties": {}
       }
     },
+    "consignment.rto_out_for_delivery": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "consignment.rto_attempted": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "ndr_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "proof_id": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "attempt_number": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["ndr_reason", "proof_id", "attempt_number"]
+      }
+    },
     "consignment.rto_delivered": {
       "topic": "consignment",
       "key": "aggregate_id",
@@ -382,6 +874,36 @@
       }
     },
     "consignment.cancelled": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "consignment.cancel_requested": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "consignment.departed_hub": {
+      "topic": "consignment",
+      "key": "aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "consignment.damaged": {
       "topic": "consignment",
       "key": "aggregate_id",
       "payload": {
@@ -604,7 +1126,27 @@
         "additionalProperties": {}
       }
     },
-    "cash.collected": {
+    "run.unassigned": {
+      "topic": "run",
+      "key": "run_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "run.action_recorded": {
+      "topic": "run",
+      "key": "run_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "run.cash_declared": {
       "topic": "run",
       "key": "run_id",
       "payload": {
@@ -629,7 +1171,7 @@
         "required": ["run_id", "amount_minor", "currency"]
       }
     },
-    "cash.declared": {
+    "run.cash_counted": {
       "topic": "run",
       "key": "run_id",
       "payload": {
@@ -654,29 +1196,24 @@
         "required": ["run_id", "amount_minor", "currency"]
       }
     },
-    "cash.counted": {
+    "run.force_closed": {
       "topic": "run",
       "key": "run_id",
       "payload": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
-        "properties": {
-          "run_id": {
-            "type": "string",
-            "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-          },
-          "amount_minor": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "currency": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 3
-          }
-        },
-        "required": ["run_id", "amount_minor", "currency"]
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "run.stop_moved": {
+      "topic": "run",
+      "key": "run_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
       }
     },
     "device.synced": {
@@ -790,6 +1327,56 @@
       }
     },
     "exception.reopened": {
+      "topic": "exception",
+      "key": "subject_aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "exception.auto_resolved": {
+      "topic": "exception",
+      "key": "subject_aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "exception.triaged": {
+      "topic": "exception",
+      "key": "subject_aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "exception.waiting_on_customer": {
+      "topic": "exception",
+      "key": "subject_aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "exception.customer_answered": {
+      "topic": "exception",
+      "key": "subject_aggregate_id",
+      "payload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "exception.sla_checked": {
       "topic": "exception",
       "key": "subject_aggregate_id",
       "payload": {

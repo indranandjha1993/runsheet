@@ -80,7 +80,9 @@ describe("the store and the contracts agree", () => {
     expect([...topics].sort()).toEqual([
       "address",
       "consignment",
+      "decision",
       "exception",
+      "money",
       "network",
       "order",
       "plan",
@@ -96,9 +98,13 @@ describe("the store and the contracts agree", () => {
       const runFamily = ["run", "stop", "proof", "cash", "device"];
       const networkFamily = ["hub", "zone", "serviceability"];
       const promiseFamily = ["promise", "notification"];
+      const moneyFamily = ["invoice", "settlement", "cash"];
+      const decisionFamily = ["policy", "decision"];
       if (topic === "run") return !runFamily.includes(prefix);
       if (topic === "network") return !networkFamily.includes(prefix);
       if (topic === "promise") return !promiseFamily.includes(prefix);
+      if (topic === "money") return !moneyFamily.includes(prefix);
+      if (topic === "decision") return !decisionFamily.includes(prefix);
       return prefix !== topic;
     });
 

@@ -1,4 +1,5 @@
 import { envelope } from "@runsheet/kernel";
+import { routingFor } from "@runsheet/contracts";
 import type { PlanningDeps } from "./ports.js";
 
 export async function announce(
@@ -24,5 +25,6 @@ export async function announce(
     recordedAt: at,
     source: "api",
   });
-  await deps.publisher.publish(event, what.payload, what.topic);
+  const routing = routingFor(what.type, what.topic);
+  await deps.publisher.publish(event, what.payload, routing.topic);
 }

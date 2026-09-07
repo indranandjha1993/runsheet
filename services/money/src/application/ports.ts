@@ -1,6 +1,7 @@
 import type { Envelope } from "@runsheet/kernel";
 import type { Evidence, InvoiceLine, Settlement } from "../domain/settlement.js";
 import type { RateCard } from "../domain/rate-card.js";
+import type { CashEntry } from "../domain/cash-ledger.js";
 
 export interface CarrierAccount {
   readonly id: string;
@@ -28,8 +29,14 @@ export interface MoneyRepository {
   saveSettlement(settlement: Settlement): Promise<void>;
   settlementById(tenantId: string, id: string): Promise<Settlement | undefined>;
   settlementsFor(tenantId: string, invoiceId: string): Promise<Settlement[]>;
+  saveCashMovement(key: string, entries: readonly CashEntry[]): Promise<boolean>;
+  cashEntriesFor(tenantId: string, holder: CashHolder): Promise<CashEntry[]>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;
 }
+
+// A statement is read for one party at a time. Asking for both at once would return two
+// unrelated balances that nobody can act on together.
+export type CashHolder = { readonly driverId: string } | { readonly merchantId: string };
 
 // What the rest of the platform knows about a consignment. The money service never reads
 // another service's database; it asks.

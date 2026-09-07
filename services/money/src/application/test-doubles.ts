@@ -1,8 +1,11 @@
 import type { Envelope } from "@runsheet/kernel";
 import type { RateCard } from "../domain/rate-card.js";
+import type { CashEntry } from "../domain/cash-ledger.js";
 import type { Evidence, InvoiceLine, Settlement } from "../domain/settlement.js";
 import type {
   CarrierAccount,
+  CashHolder,
+  MoneyDeps,
   Clock,
   EventPublisher,
   EvidenceSource,
@@ -10,6 +13,12 @@ import type {
   Invoice,
   MoneyRepository,
 } from "./ports.js";
+
+function holds(entry: CashEntry, holder: CashHolder): boolean {
+  return "driverId" in holder
+    ? entry.account === "driver_float" && entry.driverId === holder.driverId
+    : entry.account === "merchant_payable" && entry.merchantId === holder.merchantId;
+}
 
 /* eslint-disable max-lines-per-function -- one cohesive fake of a repository interface */
 export function inMemoryMoney(): MoneyRepository {
@@ -19,6 +28,7 @@ export function inMemoryMoney(): MoneyRepository {
   const lines = new Map<string, InvoiceLine[]>();
   const settlements = new Map<string, Settlement>();
   const sequences = new Map<string, number>();
+  const movements = new Map<string, CashEntry[]>();
   const key = (tenantId: string, rest: string): string => `${tenantId}:${rest}`;
 
   return {
@@ -55,6 +65,15 @@ export function inMemoryMoney(): MoneyRepository {
         [...settlements.values()].filter(
           (settlement) => settlement.tenantId === tenantId && settlement.invoiceId === invoiceId,
         ),
+      ),
+    saveCashMovement: (movementKey, entries) => {
+      if (movements.has(movementKey)) return Promise.resolve(false);
+      movements.set(movementKey, [...entries]);
+      return Promise.resolve(true);
+    },
+    cashEntriesFor: (tenantId, holder) =>
+      Promise.resolve(
+        [...movements.values()].flat().filter((entry) => entry.tenantId === tenantId && holds(entry, holder)),
       ),
     nextSequence: (tenantId, aggregateId) => {
       const at = key(tenantId, aggregateId);
@@ -111,5 +130,17 @@ export function countingIds(): Identifiers {
       n += 1;
       return `01J8Z0T00000000000000${String(n).padStart(5, "0")}`;
     },
+  };
+}
+
+export function testDeps(): MoneyDeps & { publisher: ReturnType<typeof recordingPublisher> } {
+  return {
+    repository: inMemoryMoney(),
+    evidence: knownEvidence(),
+    publisher: recordingPublisher(),
+    clock: fixedClock("2026-09-07T10:00:00.000Z"),
+    ids: countingIds(),
+    tolerance: { amountMinor: 100, weightGrams: 100 },
+    autoApproveBelowMinor: 5000,
   };
 }
