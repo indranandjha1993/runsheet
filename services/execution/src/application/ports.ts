@@ -13,6 +13,8 @@ export interface ExecutionRepository {
   proofById(tenantId: string, id: string): Promise<Proof | undefined>;
   saveScan(id: string, scan: Scan, direction: ScanDirection, runId?: string): Promise<void>;
   scansFor(tenantId: string, consignmentId: string): Promise<Scan[]>;
+  /** Returns a fresh event id, or nothing when this device already sent this command. */
+  claimCommand(tenantId: string, deviceId: string, commandId: string): Promise<string | undefined>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;
 }
 

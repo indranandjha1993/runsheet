@@ -7,6 +7,7 @@ import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 import type { RunEvent } from "../domain/run.js";
 import type { Scan } from "../domain/hub-floor.js";
 import { recordScanIn, recordScanOut } from "../application/hub-operations.js";
+import { syncRoutes } from "./sync-routes.js";
 
 export const planBody = z.object({
   hub_id: z.string().min(1),
@@ -355,5 +356,6 @@ export function executionRoutes(deps: RouteDeps): Route[] {
     scanInRoute(deps),
     scanOutRoute(deps),
     scanHistoryRoute(deps),
+    ...syncRoutes(deps),
   ];
 }

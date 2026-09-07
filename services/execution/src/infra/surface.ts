@@ -9,6 +9,7 @@ import {
   type ServiceSurface,
 } from "@runsheet/api";
 import { actionBody, eventBody, planBody, proofBody, scanInBody, scanOutBody } from "./routes.js";
+import { syncBody } from "./sync-routes.js";
 
 export const executionSurface: ServiceSurface = {
   service: "execution",
@@ -76,6 +77,19 @@ export const executionSurface: ServiceSurface = {
       scope: "runs:write",
       request: scanOutBody,
       replies: [created("the scan"), badRequest, unauthorized, conflict],
+    },
+    {
+      method: "POST",
+      path: "/v1/sync/batches",
+      summary: "Take a shift's work off a handset in one call",
+      scope: "runs:write",
+      request: syncBody,
+      replies: [
+        ok("what happened to each entry, and any media the server still wants"),
+        badRequest,
+        unauthorized,
+        forbidden,
+      ],
     },
     {
       method: "GET",

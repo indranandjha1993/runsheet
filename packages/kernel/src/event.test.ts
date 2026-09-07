@@ -88,3 +88,31 @@ describe("identifiers", () => {
     expect(earlier.eventId < later.eventId).toBe(true);
   });
 });
+
+describe("an event whose identity was decided before the envelope", () => {
+  it("keeps the identifier it was given", () => {
+    const given = envelope({
+      ...base,
+      recordedAt: new Date("2026-09-07T10:00:02.000Z"),
+      eventId: "01J8Z0T0000000000000000099",
+    });
+
+    expect(given.eventId).toBe("01J8Z0T0000000000000000099");
+  });
+
+  it("still correlates to itself when nothing caused it", () => {
+    const given = envelope({
+      ...base,
+      recordedAt: new Date("2026-09-07T10:00:02.000Z"),
+      eventId: "01J8Z0T0000000000000000099",
+    });
+
+    expect(given.correlationId).toBe(given.eventId);
+  });
+
+  it("mints one when it is not given, so most callers need not think about it", () => {
+    expect(
+      envelope({ ...base, recordedAt: new Date("2026-09-07T10:00:02.000Z") }).eventId,
+    ).toHaveLength(26);
+  });
+});

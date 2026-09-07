@@ -359,3 +359,59 @@ describe("hub scanning over the api", () => {
     expect((response.body as { scans: unknown[] }).scans).toHaveLength(2);
   });
 });
+
+describe("a handset syncing a shift over the api", () => {
+  const batch = {
+    device_id: "device-1",
+    device_boot_id: "boot-1",
+    worker_id: "w1",
+    run_id: "run-1",
+    batch_id: "batch-1",
+    clock: { device_sent_at: "2026-09-07T10:00:00.000Z", device_monotonic_ms: 21600000 },
+    entries: [
+      {
+        command_id: "cmd-1",
+        device_sequence: 1,
+        type: "stop.completed",
+        payload: { stop_id: "s1", consignment_id: "c1" },
+        occurred_at_device: "2026-09-07T09:00:00.000Z",
+        monotonic_ms: 18000000,
+        media: [{ media_id: "m-1", sha256: "a".repeat(64), bytes: 5000, kind: "photo" }],
+      },
+    ],
+  };
+
+  it("takes the batch and reports on every entry", async () => {
+    const response = await post("/v1/sync/batches", batch);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      batch_id: "batch-1",
+      results: [{ command_id: "cmd-1", status: "accepted" }],
+    });
+  });
+
+  it("asks for the photograph separately, so nothing waits on it", async () => {
+    const response = await post("/v1/sync/batches", batch);
+
+    expect((response.body as { uploads: unknown[] }).uploads).toEqual([
+      { media_id: "m-1", sha256: "a".repeat(64) },
+    ]);
+  });
+
+  it("reports the same work sent twice as already recorded", async () => {
+    await post("/v1/sync/batches", batch);
+
+    const again = await post("/v1/sync/batches", { ...batch, batch_id: "batch-2" });
+
+    expect(again.body).toMatchObject({ results: [{ status: "duplicate" }] });
+  });
+
+  it("refuses a batch with no entries at all", async () => {
+    expect((await post("/v1/sync/batches", { ...batch, entries: [] })).status).toBe(400);
+  });
+
+  it("turns away a handset with no credential", async () => {
+    expect((await post("/v1/sync/batches", batch, {})).status).toBe(401);
+  });
+});

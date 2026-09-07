@@ -30,6 +30,8 @@ export interface EnvelopeInput {
   readonly occurredAt: Date;
   readonly recordedAt: Date;
   readonly source: EventSource;
+  /** Set only when the identity was decided before the envelope, as a device command's is. */
+  readonly eventId?: string;
   readonly causedBy?: Envelope;
   readonly confidence?: number;
 }
@@ -57,7 +59,7 @@ export function envelope(input: EnvelopeInput): Envelope {
   assertTiming(input);
   assertConfidence(input);
 
-  const eventId = ulid(input.recordedAt);
+  const eventId = input.eventId ?? ulid(input.recordedAt);
   return {
     eventId,
     tenantId: input.tenantId,
