@@ -70,6 +70,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@runsheet/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       pg:
         specifier: ^8.13.1
         version: 8.23.0
