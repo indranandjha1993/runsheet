@@ -8,7 +8,7 @@ import type { RunEvent } from "../domain/run.js";
 import type { Scan } from "../domain/hub-floor.js";
 import { recordScanIn, recordScanOut } from "../application/hub-operations.js";
 
-const planBody = z.object({
+export const planBody = z.object({
   hub_id: z.string().min(1),
   date: z.iso.date(),
   stops: z
@@ -28,7 +28,7 @@ const planBody = z.object({
     .min(1),
 });
 
-const actionBody = z.object({
+export const actionBody = z.object({
   stop_id: z.string().min(1),
   action_id: z.string().min(1),
   result: z.enum(["done", "failed", "skipped"]),
@@ -37,7 +37,7 @@ const actionBody = z.object({
   cash_collected_minor: z.number().int().optional(),
 });
 
-const eventBody = z.discriminatedUnion("type", [
+export const eventBody = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("assigned"),
     worker_id: z.string().min(1),
@@ -61,7 +61,7 @@ const eventBody = z.discriminatedUnion("type", [
 
 type EventBody = z.infer<typeof eventBody>;
 
-const proofBody = z.object({
+export const proofBody = z.object({
   consignment_id: z.string().min(1),
   requirement: z.string().min(1),
   kinds: z.array(z.enum(["photo", "signature", "otp", "geofence"])),
@@ -214,7 +214,7 @@ function readRoute(deps: RouteDeps): Route {
   };
 }
 
-const scanInBody = z.object({
+export const scanInBody = z.object({
   hub_id: z.string().min(1),
   worker_id: z.string().min(1),
   consignment_id: z.string().min(1),
@@ -231,7 +231,7 @@ const scanInBody = z.object({
     .optional(),
 });
 
-const scanOutBody = z.object({
+export const scanOutBody = z.object({
   hub_id: z.string().min(1),
   worker_id: z.string().min(1),
   consignment_id: z.string().min(1),

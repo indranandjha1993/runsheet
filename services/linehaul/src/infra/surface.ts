@@ -1,0 +1,90 @@
+import {
+  badRequest,
+  conflict,
+  created,
+  forbidden,
+  notFound,
+  ok,
+  unauthorized,
+  type ServiceSurface,
+} from "@runsheet/api";
+import { bagEventBody, bagParcelBody, sealBody, tripBody, tripEventBody } from "./routes.js";
+
+export const linehaulSurface: ServiceSurface = {
+  service: "linehaul",
+  operations: [
+    {
+      method: "POST",
+      path: "/v1/bags/parcels",
+      summary: "Put a parcel in the open bag for a lane",
+      scope: "linehaul:write",
+      request: bagParcelBody,
+      replies: [created("the bag the parcel went into"), badRequest, unauthorized, forbidden],
+    },
+    {
+      method: "POST",
+      path: "/v1/bags/:id/seal",
+      summary: "Seal a bag",
+      scope: "linehaul:write",
+      request: sealBody,
+      replies: [ok("the sealed bag"), badRequest, unauthorized, notFound, conflict],
+    },
+    {
+      method: "POST",
+      path: "/v1/bags/:id/events",
+      summary: "Receive or empty a bag",
+      scope: "linehaul:write",
+      request: bagEventBody,
+      replies: [
+        ok("the bag, with any discrepancy it turned up"),
+        badRequest,
+        unauthorized,
+        notFound,
+        conflict,
+      ],
+    },
+    {
+      method: "GET",
+      path: "/v1/bags/:id",
+      summary: "Read a bag",
+      scope: "linehaul:read",
+      replies: [ok("the bag"), unauthorized, notFound],
+    },
+    {
+      method: "POST",
+      path: "/v1/trips",
+      summary: "Plan a linehaul trip",
+      scope: "linehaul:write",
+      request: tripBody,
+      replies: [created("the trip"), badRequest, unauthorized, forbidden],
+    },
+    {
+      method: "POST",
+      path: "/v1/trips/:id/events",
+      summary: "Crew, run and close a trip",
+      scope: "linehaul:write",
+      request: tripEventBody,
+      replies: [ok("the trip after the event"), badRequest, unauthorized, notFound, conflict],
+    },
+    {
+      method: "POST",
+      path: "/v1/trips/:id/bags",
+      summary: "Load a sealed bag onto a trip",
+      scope: "linehaul:write",
+      replies: [
+        created("the trip and the bag that went on it"),
+        badRequest,
+        unauthorized,
+        notFound,
+        conflict,
+      ],
+    },
+    {
+      method: "GET",
+      path: "/v1/trips/:id/manifest",
+      summary: "The manifest the driver hands over",
+      scope: "linehaul:read",
+      replies: [ok("the bags, their seals and their counts"), badRequest, unauthorized, notFound],
+    },
+  ],
+};

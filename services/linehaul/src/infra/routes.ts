@@ -12,28 +12,28 @@ import {
 import type { LinehaulDeps } from "../application/ports.js";
 import type { TripEvent } from "../domain/trip.js";
 
-const bagParcelBody = z.object({
+export const bagParcelBody = z.object({
   origin_hub_id: z.string().min(1),
   destination_hub_id: z.string().min(1),
   consignment_id: z.string().min(1),
 });
 
-const sealBody = z.object({ seal_number: z.string().min(1) });
+export const sealBody = z.object({ seal_number: z.string().min(1) });
 
-const bagEventBody = z.discriminatedUnion("type", [
+export const bagEventBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("parcel_removed"), consignment_id: z.string().min(1) }),
   z.object({ type: z.literal("received"), hub_id: z.string().min(1), seal_intact: z.boolean() }),
   z.object({ type: z.literal("emptied"), scanned_ids: z.array(z.string().min(1)) }),
 ]);
 
-const tripBody = z.object({
+export const tripBody = z.object({
   origin_hub_id: z.string().min(1),
   destination_hub_id: z.string().min(1),
   departs_on: z.iso.date(),
   capacity_bags: z.number().int().positive(),
 });
 
-const tripEventBody = z.discriminatedUnion("type", [
+export const tripEventBody = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("crewed"),
     vehicle_id: z.string().min(1),

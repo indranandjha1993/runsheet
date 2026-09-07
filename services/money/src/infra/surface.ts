@@ -1,0 +1,107 @@
+import {
+  badRequest,
+  conflict,
+  created,
+  forbidden,
+  notFound,
+  ok,
+  unauthorized,
+  type ServiceSurface,
+} from "@runsheet/api";
+import {
+  carrierBody,
+  closeBody,
+  invoiceBody,
+  movementBody,
+  rateCardBody,
+  settlementBody,
+} from "./routes.js";
+
+export const moneySurface: ServiceSurface = {
+  service: "money",
+  operations: [
+    {
+      method: "POST",
+      path: "/v1/carrier-accounts",
+      summary: "Register a carrier you settle with",
+      scope: "money:write",
+      request: carrierBody,
+      replies: [created("the carrier account"), badRequest, unauthorized, forbidden],
+    },
+    {
+      method: "POST",
+      path: "/v1/rate-cards",
+      summary: "Publish a rate card",
+      scope: "money:write",
+      request: rateCardBody,
+      replies: [created("the rate card"), badRequest, unauthorized, notFound],
+    },
+    {
+      method: "POST",
+      path: "/v1/invoices",
+      summary: "Take in a carrier invoice and match every line",
+      scope: "money:write",
+      request: invoiceBody,
+      replies: [
+        created("the invoice and how each line matched"),
+        badRequest,
+        unauthorized,
+        notFound,
+      ],
+    },
+    {
+      method: "POST",
+      path: "/v1/settlements/:id/events",
+      summary: "Approve, dispute or pay a settlement",
+      scope: "money:write",
+      request: settlementBody,
+      replies: [ok("the settlement after the event"), badRequest, unauthorized, notFound, conflict],
+    },
+    {
+      method: "GET",
+      path: "/v1/invoices/:id/settlements",
+      summary: "List the settlements on an invoice",
+      scope: "money:read",
+      replies: [ok("the settlements"), unauthorized, notFound],
+    },
+    {
+      method: "POST",
+      path: "/v1/cash/movements",
+      summary: "Record cash collected, banked, paid out or written off",
+      scope: "money:write",
+      request: movementBody,
+      replies: [
+        created("what the driver holds and what the merchant is owed"),
+        badRequest,
+        unauthorized,
+      ],
+    },
+    {
+      method: "POST",
+      path: "/v1/cash/runs/:id/close",
+      summary: "Close a run against what the driver handed in",
+      scope: "money:write",
+      request: closeBody,
+      replies: [
+        ok("the variance and what is still outstanding"),
+        badRequest,
+        unauthorized,
+        conflict,
+      ],
+    },
+    {
+      method: "GET",
+      path: "/v1/cash/drivers/:id/statement",
+      summary: "What a driver is still holding",
+      scope: "money:read",
+      replies: [ok("the float and the entries behind it"), badRequest, unauthorized],
+    },
+    {
+      method: "GET",
+      path: "/v1/cash/merchants/:id/statement",
+      summary: "What a merchant is owed",
+      scope: "money:read",
+      replies: [ok("the payable and the entries behind it"), badRequest, unauthorized],
+    },
+  ],
+};

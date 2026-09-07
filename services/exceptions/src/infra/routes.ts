@@ -7,13 +7,13 @@ import { work } from "../application/work.js";
 import type { ExceptionsDeps } from "../application/ports.js";
 import type { ExceptionEvent } from "../domain/exception.js";
 
-const observedBody = z.object({
+export const observedBody = z.object({
   type: z.string().min(1),
   aggregate_id: z.string().min(1),
   payload: z.record(z.string(), z.unknown()).default({}),
 });
 
-const workBody = z.discriminatedUnion("type", [
+export const workBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("triaged"), by: z.string().min(1) }),
   z.object({ type: z.literal("assigned"), to: z.string().min(1) }),
   z.object({ type: z.literal("resolved"), by: z.string().min(1), note: z.string() }),

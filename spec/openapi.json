@@ -1,0 +1,4538 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Runsheet",
+    "version": "0.1.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API key issued to a tenant. The tenant comes from the key, never from a header."
+      }
+    }
+  },
+  "paths": {
+    "/track/{token}": {
+      "get": {
+        "tags": [
+          "promise"
+        ],
+        "summary": "Follow a parcel with no credential at all",
+        "operationId": "getTrackToken}",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "what the recipient is allowed to see"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/addresses": {
+      "post": {
+        "tags": [
+          "address"
+        ],
+        "summary": "Resolve a written address to a point",
+        "operationId": "postV1Addresses",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "raw": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  }
+                },
+                "required": [
+                  "raw",
+                  "country_code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the resolved address and how much it is trusted"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "addresses:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/addresses/{id}": {
+      "get": {
+        "tags": [
+          "address"
+        ],
+        "summary": "Read a resolved address",
+        "operationId": "getV1AddressesId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the address"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "addresses:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/addresses/{id}/confirm": {
+      "post": {
+        "tags": [
+          "address"
+        ],
+        "summary": "Confirm a pin a driver stood on",
+        "operationId": "postV1AddressesIdConfirm",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "worker_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "worker_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the address, with its confidence raised"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "addresses:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/bags/{id}": {
+      "get": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Read a bag",
+        "operationId": "getV1BagsId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the bag"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/bags/{id}/events": {
+      "post": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Receive or empty a bag",
+        "operationId": "postV1BagsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "parcel_removed"
+                      },
+                      "consignment_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "consignment_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "received"
+                      },
+                      "hub_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "seal_intact": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "hub_id",
+                      "seal_intact"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "emptied"
+                      },
+                      "scanned_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "scanned_ids"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the bag, with any discrepancy it turned up"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/bags/{id}/seal": {
+      "post": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Seal a bag",
+        "operationId": "postV1BagsIdSeal",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "seal_number": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "seal_number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the sealed bag"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/bags/parcels": {
+      "post": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Put a parcel in the open bag for a lane",
+        "operationId": "postV1BagsParcels",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "origin_hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "destination_hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "consignment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "origin_hub_id",
+                  "destination_hub_id",
+                  "consignment_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the bag the parcel went into"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/callers/current": {
+      "get": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Report who the presented credential belongs to",
+        "operationId": "getV1CallersCurrent",
+        "responses": {
+          "200": {
+            "description": "the caller, its tenant and its scopes"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/carrier-accounts": {
+      "post": {
+        "tags": [
+          "money"
+        ],
+        "summary": "Register a carrier you settle with",
+        "operationId": "postV1CarrierAccounts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "name",
+                  "currency"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the carrier account"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/cash/drivers/{id}/statement": {
+      "get": {
+        "tags": [
+          "money"
+        ],
+        "summary": "What a driver is still holding",
+        "operationId": "getV1CashDriversIdStatement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the float and the entries behind it"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/cash/merchants/{id}/statement": {
+      "get": {
+        "tags": [
+          "money"
+        ],
+        "summary": "What a merchant is owed",
+        "operationId": "getV1CashMerchantsIdStatement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the payable and the entries behind it"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/cash/movements": {
+      "post": {
+        "tags": [
+          "money"
+        ],
+        "summary": "Record cash collected, banked, paid out or written off",
+        "operationId": "postV1CashMovements",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "collected",
+                      "deposited",
+                      "remitted",
+                      "written_off",
+                      "reversed"
+                    ]
+                  },
+                  "amount_minor": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  },
+                  "reference": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "driver_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "merchant_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "approved_by": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "amount_minor",
+                  "currency",
+                  "reference"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "what the driver holds and what the merchant is owed"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/cash/runs/{id}/close": {
+      "post": {
+        "tags": [
+          "money"
+        ],
+        "summary": "Close a run against what the driver handed in",
+        "operationId": "postV1CashRunsIdClose",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "driver_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  },
+                  "counted_minor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "driver_id",
+                  "currency",
+                  "counted_minor"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the variance and what is still outstanding"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/consignments": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Book a consignment",
+        "operationId": "postV1Consignments",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "order_reference": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "service": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "payment_mode": {
+                    "type": "string",
+                    "enum": [
+                      "prepaid",
+                      "cod"
+                    ]
+                  },
+                  "proof_requirement": {
+                    "default": "photo",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "attempt_limit": {
+                    "default": 3,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "cod_amount_minor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "cod_currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "cod_tolerance_minor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "packages": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weight_grams": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "weight_grams"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "order_reference",
+                  "service",
+                  "payment_mode",
+                  "proof_requirement",
+                  "attempt_limit",
+                  "packages"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the consignment as booked"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/consignments/{id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Read a consignment",
+        "operationId": "getV1ConsignmentsId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the consignment"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/consignments/{id}/events": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Record what happened to a consignment",
+        "operationId": "postV1ConsignmentsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "picked_up"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "pickup_attempted"
+                      },
+                      "ndr_reason": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "proof_id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "ndr_reason",
+                      "proof_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "inscanned"
+                      },
+                      "hub_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "hub_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "departed_hub"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "out_for_delivery"
+                      },
+                      "run_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "run_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "attempted"
+                      },
+                      "ndr_reason": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "proof_id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "ndr_reason",
+                      "proof_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "delivered"
+                      },
+                      "proof_id": {
+                        "type": "string"
+                      },
+                      "cash_collected_minor": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "proof_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "rto_initiated"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "rto_out_for_delivery"
+                      },
+                      "run_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "run_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "rto_delivered"
+                      },
+                      "proof_id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "proof_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "cancelled"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "cancel_requested"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "lost"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "found"
+                      },
+                      "hub_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "hub_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "damaged"
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the consignment after the event"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/consignments/{id}/labels": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Print labels, one per package",
+        "operationId": "postV1ConsignmentsIdLabels",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "origin": {
+                    "type": "object",
+                    "properties": {
+                      "hub_code": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "hub_code",
+                      "city"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "destination": {
+                    "type": "object",
+                    "properties": {
+                      "hub_code": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "line": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "locality": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "postcode": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "hub_code",
+                      "name",
+                      "line",
+                      "city",
+                      "postcode"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "sort_code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "service_level": {
+                    "type": "string",
+                    "enum": [
+                      "same_day",
+                      "next_day",
+                      "standard",
+                      "economy"
+                    ]
+                  },
+                  "format": {
+                    "default": "json",
+                    "type": "string",
+                    "enum": [
+                      "json",
+                      "zpl"
+                    ]
+                  }
+                },
+                "required": [
+                  "origin",
+                  "destination",
+                  "sort_code",
+                  "service_level",
+                  "format"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the labels, as data or as printer commands"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/decisions": {
+      "post": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Ask a policy to decide",
+        "operationId": "postV1Decisions",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "trigger_event": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject_type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subject_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "inputs": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  "action": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  "read_at": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "topic": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "partition": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "offset": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "topic",
+                        "partition",
+                        "offset"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "trigger_event",
+                  "subject_type",
+                  "subject_id",
+                  "inputs",
+                  "action",
+                  "read_at"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the decision, or nothing when the subject is outside the rollout"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/decisions/{id}/events": {
+      "post": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Record what happened to a decision",
+        "operationId": "postV1DecisionsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "approved"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "rejected"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "executed"
+                      },
+                      "produced_event_ids": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "produced_event_ids"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "reversed"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "failed"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "shadow_recorded"
+                      },
+                      "would_have_done": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "would_have_done"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the decision after the outcome"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/decisions/{id}/replayable": {
+      "get": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Whether the decision could be reproduced today",
+        "operationId": "getV1DecisionsIdReplayable",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "what is present and what is missing for a replay"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/exceptions": {
+      "get": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "List the open exceptions",
+        "operationId": "getV1Exceptions",
+        "responses": {
+          "200": {
+            "description": "the open exceptions, worst first"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/exceptions/{id}": {
+      "get": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Read an exception",
+        "operationId": "getV1ExceptionsId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the exception"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/exceptions/{id}/events": {
+      "post": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Work an exception",
+        "operationId": "postV1ExceptionsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "triaged"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "assigned"
+                      },
+                      "to": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "resolved"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "auto_resolved"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "reopened"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "waiting_on_customer"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "customer_answered"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "sla_checked"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the exception after the event"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/hub-scans": {
+      "get": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "List every hub scan of one parcel",
+        "operationId": "getV1HubScans",
+        "responses": {
+          "200": {
+            "description": "the scans, oldest first"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/hub-scans/in": {
+      "post": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Scan a parcel into a hub",
+        "operationId": "postV1HubScansIn",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "consignment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "barcode": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "expected": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "weight_grams": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "booked_weight_grams": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "dimensions_mm": {
+                    "type": "object",
+                    "properties": {
+                      "length": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "width": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "height": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "length",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "hub_id",
+                  "worker_id",
+                  "consignment_id",
+                  "barcode",
+                  "expected"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the scan, with any exception it raised"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/hub-scans/out": {
+      "post": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Scan a parcel out to a run",
+        "operationId": "postV1HubScansOut",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "consignment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "barcode": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "run_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "on_run": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "hub_id",
+                  "worker_id",
+                  "consignment_id",
+                  "barcode",
+                  "run_id",
+                  "on_run"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the scan"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/hubs": {
+      "post": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Register a hub",
+        "operationId": "postV1Hubs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  },
+                  "time_zone": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "opens_minutes_of_day": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "closes_minutes_of_day": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "code",
+                  "name",
+                  "country_code",
+                  "time_zone",
+                  "latitude",
+                  "longitude",
+                  "opens_minutes_of_day",
+                  "closes_minutes_of_day"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the hub, with the identifier the rest of the platform uses"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "network:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/invoices": {
+      "post": {
+        "tags": [
+          "money"
+        ],
+        "summary": "Take in a carrier invoice and match every line",
+        "operationId": "postV1Invoices",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "carrier_account_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "number": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "lines": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "consignment_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "billed_minor": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "billed_weight_grams": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "consignment_id",
+                        "billed_minor",
+                        "billed_weight_grams"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "carrier_account_id",
+                  "number",
+                  "currency",
+                  "lines"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the invoice and how each line matched"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/invoices/{id}/settlements": {
+      "get": {
+        "tags": [
+          "money"
+        ],
+        "summary": "List the settlements on an invoice",
+        "operationId": "getV1InvoicesIdSettlements",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the settlements"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/keys": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Issue an API key. The secret is shown once and never again",
+        "operationId": "postV1Keys",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "scopes": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "tenant_id",
+                  "name",
+                  "scopes"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the key and its secret"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/keys/{id}/revoke": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Revoke a key at once",
+        "operationId": "postV1KeysIdRevoke",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the key is revoked"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/observations": {
+      "post": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Report something that looks wrong",
+        "operationId": "postV1Observations",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "aggregate_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "payload": {
+                    "default": {},
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "type",
+                  "aggregate_id",
+                  "payload"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the exception, raised or already open"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/plans": {
+      "post": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Ask for a plan for a hub and a day",
+        "operationId": "postV1Plans",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "hub_latitude": {
+                    "type": "number"
+                  },
+                  "hub_longitude": {
+                    "type": "number"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "vehicles": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "max_stops": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "max_weight_grams": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "shift_minutes": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "max_stops",
+                        "max_weight_grams",
+                        "shift_minutes"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "jobs": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "weight_grams": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "service_minutes": {
+                          "default": 5,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "weight_grams",
+                        "service_minutes",
+                        "latitude",
+                        "longitude"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "hub_id",
+                  "hub_latitude",
+                  "hub_longitude",
+                  "date",
+                  "vehicles",
+                  "jobs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the plan, its runs, and what would not fit"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "plans:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/plans/{hubId}/{date}": {
+      "get": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Read the plan for a hub and a day",
+        "operationId": "getV1PlansHubIdDate}",
+        "parameters": [
+          {
+            "name": "hubId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the plan"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "plans:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/policies": {
+      "post": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Publish a policy",
+        "operationId": "postV1Policies",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "code_hash": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "autonomy": {
+                    "type": "string",
+                    "enum": [
+                      "act",
+                      "act_and_notify",
+                      "propose",
+                      "human_first"
+                    ]
+                  },
+                  "trigger_event": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "budget_per_day": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "name",
+                  "version",
+                  "code_hash",
+                  "autonomy",
+                  "trigger_event",
+                  "budget_per_day"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the policy"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/policies/{id}/calibration": {
+      "get": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "How often the policy agreed with people",
+        "operationId": "getV1PoliciesIdCalibration",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the calibration report"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/policies/{id}/events": {
+      "post": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Move a policy along its rollout",
+        "operationId": "postV1PoliciesIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "dry_run_passed"
+                      },
+                      "decisions": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "decisions"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "shadowed"
+                      },
+                      "decisions": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "agreed_with_humans": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "decisions",
+                      "agreed_with_humans"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "staged"
+                      },
+                      "percent": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "percent"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "went_live"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "rolled_back"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "retired"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the policy after the move"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/promises": {
+      "post": {
+        "tags": [
+          "promise"
+        ],
+        "summary": "Promise a delivery window",
+        "operationId": "postV1Promises",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "consignment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "window_start": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "window_end": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "locale": {
+                    "default": "en-IN",
+                    "type": "string",
+                    "minLength": 2
+                  }
+                },
+                "required": [
+                  "consignment_id",
+                  "window_start",
+                  "window_end",
+                  "locale"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the promise and its tracking token"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/promises/{id}/eta": {
+      "post": {
+        "tags": [
+          "promise"
+        ],
+        "summary": "Revise the estimate on a promise",
+        "operationId": "postV1PromisesIdEta",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "eta": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "locale": {
+                    "default": "en-IN",
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "channel": {
+                    "default": "whatsapp",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "eta",
+                  "locale",
+                  "channel"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the promise after the revision"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/promises/{id}/settle": {
+      "post": {
+        "tags": [
+          "promise"
+        ],
+        "summary": "Settle a promise as kept or missed",
+        "operationId": "postV1PromisesIdSettle",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "milestone": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "locale": {
+                    "default": "en-IN",
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "channel": {
+                    "default": "whatsapp",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "milestone",
+                  "locale",
+                  "channel"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the settled promise"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/proofs": {
+      "post": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Capture proof of an attempt",
+        "operationId": "postV1Proofs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "consignment_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requirement": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kinds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "photo",
+                        "signature",
+                        "otp",
+                        "geofence"
+                      ]
+                    }
+                  },
+                  "media_ids": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "geofence_ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "consignment_id",
+                  "requirement",
+                  "kinds",
+                  "media_ids"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the proof, and whether it satisfies the requirement"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/rate-cards": {
+      "post": {
+        "tags": [
+          "money"
+        ],
+        "summary": "Publish a rate card",
+        "operationId": "postV1RateCards",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "carrier_account_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "valid_from": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "valid_until": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "lanes": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "origin": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "destination": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "service": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "bands": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "up_to_grams": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "price_minor": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "up_to_grams",
+                              "price_minor"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "surcharges": {
+                          "default": [],
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "percent": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "percent"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "origin",
+                        "destination",
+                        "service",
+                        "bands",
+                        "surcharges"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "carrier_account_id",
+                  "currency",
+                  "valid_from",
+                  "lanes"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the rate card"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/runs": {
+      "post": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Plan a run with its stops",
+        "operationId": "postV1Runs",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "stops": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "sequence": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "actions": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "deliver",
+                                  "pickup",
+                                  "return"
+                                ]
+                              },
+                              "consignment_id": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "consignment_id"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "sequence",
+                        "actions"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "hub_id",
+                  "date",
+                  "stops"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the run and its stops"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/runs/{id}": {
+      "get": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Read a run",
+        "operationId": "getV1RunsId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the run"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/runs/{id}/actions": {
+      "post": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Record the outcome of one stop action",
+        "operationId": "postV1RunsIdActions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "stop_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "action_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "done",
+                      "failed",
+                      "skipped"
+                    ]
+                  },
+                  "ndr_reason": {
+                    "type": "string"
+                  },
+                  "proof_id": {
+                    "type": "string"
+                  },
+                  "cash_collected_minor": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "stop_id",
+                  "action_id",
+                  "result"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the run after the action"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/runs/{id}/events": {
+      "post": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "Move a run through its day",
+        "operationId": "postV1RunsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "assigned"
+                      },
+                      "worker_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "vehicle_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "worker_id",
+                      "vehicle_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "unassigned"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "started"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "suspended"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "stop_moved"
+                      },
+                      "stop_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "to_run_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "stop_id",
+                      "to_run_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "completed"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "cash_declared"
+                      },
+                      "amount_minor": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "amount_minor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "cash_counted"
+                      },
+                      "amount_minor": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "amount_minor"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "closed"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "force_closed"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "cancelled"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the run after the event"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/serviceability": {
+      "get": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Ask whether a point can be served",
+        "operationId": "getV1Serviceability",
+        "responses": {
+          "200": {
+            "description": "whether the point is serviceable, and by which zone"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "network:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/settlements/{id}/events": {
+      "post": {
+        "tags": [
+          "money"
+        ],
+        "summary": "Approve, dispute or pay a settlement",
+        "operationId": "postV1SettlementsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "approved"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "disputed"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "dispute_resolved"
+                      },
+                      "agreed_minor": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "agreed_minor",
+                      "by"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "dispute_rejected"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "paid"
+                      },
+                      "reference": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "reference"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "written_off"
+                      },
+                      "by": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "note": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "by",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the settlement after the event"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/tenants": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Create a tenant",
+        "operationId": "postV1Tenants",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "locale": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "region": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name",
+                  "country_code",
+                  "currency",
+                  "locale",
+                  "region"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the tenant"
+          },
+          "400": {
+            "description": "the request did not validate"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/tenants/{id}": {
+      "get": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Read a tenant",
+        "operationId": "getV1TenantsId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the tenant"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/tenants/{id}/keys": {
+      "get": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "List a tenant's keys without their secrets",
+        "operationId": "getV1TenantsIdKeys",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the keys"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/trips": {
+      "post": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Plan a linehaul trip",
+        "operationId": "postV1Trips",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "origin_hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "destination_hub_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "departs_on": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "capacity_bags": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "origin_hub_id",
+                  "destination_hub_id",
+                  "departs_on",
+                  "capacity_bags"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "the trip"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/bags": {
+      "post": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Load a sealed bag onto a trip",
+        "operationId": "postV1TripsIdBags",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "the trip and the bag that went on it"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/events": {
+      "post": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "Crew, run and close a trip",
+        "operationId": "postV1TripsIdEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "crewed"
+                      },
+                      "vehicle_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "driver_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "vehicle_id",
+                      "driver_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "bag_unloaded"
+                      },
+                      "bag_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "bag_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "departed"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "arrived"
+                      },
+                      "hub_id": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "hub_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "closed"
+                      },
+                      "received_bag_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "received_bag_ids"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "cancelled"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "the trip after the event"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          },
+          "409": {
+            "description": "the change is not allowed from here"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:write"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/trips/{id}/manifest": {
+      "get": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "The manifest the driver hands over",
+        "operationId": "getV1TripsIdManifest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the bags, their seals and their counts"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:read"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

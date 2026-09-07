@@ -1,0 +1,27 @@
+{
+  "name": "@runsheet/spec",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "generate": "tsc -b tsconfig.build.json && node --experimental-strip-types scripts/generate.ts"
+  },
+  "dependencies": {
+    "@runsheet/api": "workspace:*",
+    "zod": "^4.0.0",
+    "@runsheet/address": "workspace:*",
+    "@runsheet/exceptions": "workspace:*",
+    "@runsheet/execution": "workspace:*",
+    "@runsheet/identity": "workspace:*",
+    "@runsheet/linehaul": "workspace:*",
+    "@runsheet/money": "workspace:*",
+    "@runsheet/network": "workspace:*",
+    "@runsheet/orders": "workspace:*",
+    "@runsheet/planning": "workspace:*",
+    "@runsheet/policy": "workspace:*",
+    "@runsheet/promise": "workspace:*"
+  }
+}

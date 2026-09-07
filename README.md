@@ -30,12 +30,34 @@ applies migrations. Then:
 
 ```sh
 make check    # tests, type check, linter
-make run      # build and start every service behind the gateway
+make sandbox  # start everything, with a tenant and a key to call it with
 make help     # everything else
 ```
 
-With everything running, `http://localhost:14000/health` reports ready only when all eight
-services behind the gateway are.
+`make sandbox` prints a tenant identifier and an API key, and creates two hubs so you can book
+against it straight away. It is the fastest way to see the platform work:
+
+```sh
+curl -s http://localhost:14000/v1/callers/current -H "Authorization: Bearer <the key>"
+```
+
+With everything running, `http://localhost:14000/health` reports ready only when every service
+behind the gateway is.
+
+## The interface
+
+Two specifications ship with the repository and are generated from the same schemas the services
+validate against, so neither can describe something the code would reject:
+
+| File                    | What it describes                                     |
+| ----------------------- | ----------------------------------------------------- |
+| `spec/openapi.json`     | Every HTTP route, its request body, and its responses |
+| `contracts/events.json` | Every event, its payload, and the topic it goes on    |
+
+Regenerate both with `make spec`. A test fails if either falls behind the code.
+
+Authentication is a bearer API key. The tenant comes from the key and never from a header, so a
+credential cannot be pointed at somebody else's data.
 
 The defaults in `.env.example` work as they are, so a fresh clone runs without editing anything.
 Every setting, including every port, lives there. Change `PUBLIC_BASE_URL` and `SIGNING_SECRET`
@@ -60,6 +82,8 @@ whatever else you have running.
 | `packages/eventstore` | Append-only event stream, transactional outbox, idempotent consumer   |
 | `packages/runtime`    | Configuration, logging, tracing, health, migrations                   |
 | `contracts`           | Event schemas and topic routing, the source of truth between services |
+| `api`                 | How a service describes its routes, and the specification generator   |
+| `spec`                | The published interface specification, composed from every service    |
 | `services/*`          | One service per bounded context, each hexagonal inside                |
 | `infra/local`         | The local stack: database, cache, broker, analytics                   |
 

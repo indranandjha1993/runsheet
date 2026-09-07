@@ -5,12 +5,12 @@ import type { Route } from "../adapters/http.js";
 import { confirm, resolve } from "../application/resolve.js";
 import type { AddressDeps } from "../application/ports.js";
 
-const resolveBody = z.object({
+export const resolveBody = z.object({
   raw: z.string().min(1),
   country_code: z.string().length(2),
 });
 
-const confirmBody = z.object({
+export const confirmBody = z.object({
   latitude: z.number(),
   longitude: z.number(),
   worker_id: z.string().min(1),
