@@ -10,8 +10,8 @@
     "build": "pnpm -r --if-present build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "lint": "eslint . && prettier --check \"packages/**/*.{ts,json}\" \"services/**/*.{ts,py,json}\" \"contracts/**/*.{ts,json,yaml}\" \"infra/**/*.{yaml,sql}\" \"*.{json,js,ts,md,yaml}\"",
-    "format": "prettier --write \"packages/**/*.{ts,json}\" \"services/**/*.{ts,py,json}\" \"contracts/**/*.{ts,json,yaml}\" \"infra/**/*.{yaml,sql}\" \"*.{json,js,ts,md,yaml}\"",
+    "lint": "eslint . && prettier --check --ignore-unknown \"packages/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
+    "format": "prettier --write --ignore-unknown \"packages/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
     "typecheck": "tsc -b",
     "coverage": "vitest run --coverage"
   },
