@@ -1,6 +1,6 @@
 COMPOSE = docker compose -p runsheet -f infra/local/compose.yaml
 
-.PHONY: help setup install up up-core down logs ps migrate dev test lint typecheck check clean
+.PHONY: help setup install up up-core down logs ps migrate dev test lint typecheck check clean spec sandbox sandbox-stop
 
 help:
 	@echo "Runsheet"
@@ -11,6 +11,8 @@ help:
 	@echo "  make down       stop infrastructure, keeping data"
 	@echo "  make clean      stop infrastructure and delete its data"
 	@echo "  make migrate    apply every service's migrations"
+	@echo "  make sandbox    start every service with a tenant and a key to call it with"
+	@echo "  make spec       regenerate the published interface and event specifications"
 	@echo "  make check      run tests, type check, and linter"
 	@echo "  make logs       follow infrastructure logs"
 	@echo ""
@@ -53,6 +55,17 @@ lint:
 
 typecheck:
 	pnpm typecheck
+
+spec:
+	pnpm --filter @runsheet/contracts run generate
+	pnpm --filter @runsheet/spec run generate
+
+sandbox:
+	pnpm build
+	bash infra/local/sandbox.sh
+
+sandbox-stop:
+	bash infra/local/stop-all.sh
 
 check: test typecheck lint
 

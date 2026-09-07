@@ -4,7 +4,7 @@ import type { Route } from "../adapters/http.js";
 import { planDay } from "../application/plan-day.js";
 import type { PlanningDeps } from "../application/ports.js";
 
-const planBody = z.object({
+export const planBody = z.object({
   hub_id: z.string().min(1),
   hub_latitude: z.number(),
   hub_longitude: z.number(),

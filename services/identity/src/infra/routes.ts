@@ -5,7 +5,7 @@ import { authenticate } from "../application/authenticate.js";
 import { issueKey, listKeys, registerTenant, revokeKey } from "../application/manage-keys.js";
 import type { IdentityDeps } from "../application/ports.js";
 
-const tenantBody = z.object({
+export const tenantBody = z.object({
   name: z.string().min(1),
   country_code: z.string().length(2),
   currency: z.string().length(3),
@@ -13,7 +13,7 @@ const tenantBody = z.object({
   region: z.string().min(1),
 });
 
-const keyBody = z.object({
+export const keyBody = z.object({
   tenant_id: z.string().min(1),
   name: z.string().min(1),
   scopes: z.array(z.string().min(1)).min(1),

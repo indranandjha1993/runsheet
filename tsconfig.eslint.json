@@ -4,5 +4,11 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["packages/*/src/**/*", "contracts/src/**/*", "services/*/src/**/*"]
+  "include": [
+    "packages/*/src/**/*",
+    "contracts/src/**/*",
+    "services/*/src/**/*",
+    "api/src/**/*",
+    "spec/src/**/*"
+  ]
 }

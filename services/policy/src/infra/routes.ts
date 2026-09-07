@@ -12,7 +12,7 @@ import {
 } from "../application/decide.js";
 import type { PolicyDeps } from "../application/ports.js";
 
-const publishBody = z.object({
+export const publishBody = z.object({
   name: z.string().min(1),
   version: z.number().int().positive(),
   code_hash: z.string().min(1),
@@ -21,7 +21,7 @@ const publishBody = z.object({
   budget_per_day: z.number().int().positive(),
 });
 
-const moveBody = z.discriminatedUnion("type", [
+export const moveBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("dry_run_passed"), decisions: z.number().int().nonnegative() }),
   z.object({
     type: z.literal("shadowed"),
@@ -34,7 +34,7 @@ const moveBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("retired") }),
 ]);
 
-const considerBody = z.object({
+export const considerBody = z.object({
   trigger_event: z.string().min(1),
   subject_type: z.string().min(1),
   subject_id: z.string().min(1),
@@ -51,7 +51,7 @@ const considerBody = z.object({
     .min(1),
 });
 
-const outcomeBody = z.discriminatedUnion("type", [
+export const outcomeBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("approved"), by: z.string().min(1) }),
   z.object({ type: z.literal("rejected"), by: z.string().min(1), reason: z.string().min(1) }),
   z.object({ type: z.literal("executed"), produced_event_ids: z.array(z.string()).default([]) }),

@@ -1,0 +1,56 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true,
+    "noEmit": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/**/*.test.ts"
+  ],
+  "references": [
+    {
+      "path": "../api/tsconfig.build.json"
+    },
+    {
+      "path": "../services/address/tsconfig.build.json"
+    },
+    {
+      "path": "../services/exceptions/tsconfig.build.json"
+    },
+    {
+      "path": "../services/execution/tsconfig.build.json"
+    },
+    {
+      "path": "../services/identity/tsconfig.build.json"
+    },
+    {
+      "path": "../services/linehaul/tsconfig.build.json"
+    },
+    {
+      "path": "../services/money/tsconfig.build.json"
+    },
+    {
+      "path": "../services/network/tsconfig.build.json"
+    },
+    {
+      "path": "../services/orders/tsconfig.build.json"
+    },
+    {
+      "path": "../services/planning/tsconfig.build.json"
+    },
+    {
+      "path": "../services/policy/tsconfig.build.json"
+    },
+    {
+      "path": "../services/promise/tsconfig.build.json"
+    }
+  ]
+}

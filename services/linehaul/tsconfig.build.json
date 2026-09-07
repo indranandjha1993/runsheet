@@ -24,6 +24,9 @@
     },
     {
       "path": "../../contracts/tsconfig.build.json"
+    },
+    {
+      "path": "../../api/tsconfig.build.json"
     }
   ]
 }

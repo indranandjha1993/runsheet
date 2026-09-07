@@ -5,20 +5,20 @@ import type { Route } from "../adapters/http.js";
 import { promiseDelivery, reportEta, settle, viewByToken } from "../application/track.js";
 import type { PromiseDeps } from "../application/ports.js";
 
-const promiseBody = z.object({
+export const promiseBody = z.object({
   consignment_id: z.string().min(1),
   window_start: z.iso.datetime(),
   window_end: z.iso.datetime(),
   locale: z.string().min(2).default("en-IN"),
 });
 
-const etaBody = z.object({
+export const etaBody = z.object({
   eta: z.iso.datetime(),
   locale: z.string().min(2).default("en-IN"),
   channel: z.string().min(1).default("whatsapp"),
 });
 
-const settleBody = z.object({
+export const settleBody = z.object({
   milestone: z.string().min(1),
   reason: z.string().optional(),
   locale: z.string().min(2).default("en-IN"),

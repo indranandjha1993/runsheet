@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "api/tsconfig.build.json"
+    },
+    {
       "path": "packages/webhooks/tsconfig.build.json"
     },
     {
@@ -54,6 +57,9 @@
     },
     {
       "path": "services/linehaul/tsconfig.build.json"
+    },
+    {
+      "path": "spec/tsconfig.build.json"
     }
   ]
 }

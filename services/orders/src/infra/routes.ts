@@ -8,7 +8,7 @@ import { printLabels } from "../application/print-labels.js";
 import { toZpl } from "../adapters/zpl.js";
 import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 
-const bookBody = z
+export const bookBody = z
   .object({
     order_reference: z.string().min(1),
     service: z.string().min(1),
@@ -24,7 +24,7 @@ const bookBody = z
     message: "cod_amount_minor is required when payment is on delivery",
   });
 
-const eventBody = z.discriminatedUnion("type", [
+export const eventBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("picked_up") }),
   z.object({
     type: z.literal("pickup_attempted"),
@@ -176,7 +176,7 @@ export interface RouteDeps extends OrdersDeps {
   readonly lookup: CallerLookup;
 }
 
-const labelBody = z.object({
+export const labelBody = z.object({
   origin: z.object({ hub_code: z.string().min(1), city: z.string().min(1) }),
   destination: z.object({
     hub_code: z.string().min(1),

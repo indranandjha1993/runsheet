@@ -45,6 +45,15 @@ importers:
         specifier: ^4.5.4
         version: 4.5.4
 
+  api:
+    dependencies:
+      '@runsheet/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      zod:
+        specifier: ^4.0.0
+        version: 4.5.4
+
   contracts:
     dependencies:
       '@runsheet/eventstore':
@@ -86,6 +95,9 @@ importers:
 
   services/address:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -110,6 +122,9 @@ importers:
 
   services/exceptions:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -134,6 +149,9 @@ importers:
 
   services/execution:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -182,6 +200,9 @@ importers:
 
   services/identity:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -203,6 +224,9 @@ importers:
 
   services/linehaul:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -227,6 +251,9 @@ importers:
 
   services/money:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -251,6 +278,9 @@ importers:
 
   services/network:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -275,6 +305,9 @@ importers:
 
   services/orders:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -299,6 +332,9 @@ importers:
 
   services/planning:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -323,6 +359,9 @@ importers:
 
   services/policy:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -347,6 +386,9 @@ importers:
 
   services/promise:
     dependencies:
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../../api
       '@runsheet/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -365,6 +407,48 @@ importers:
       pg:
         specifier: ^8.13.1
         version: 8.23.0
+      zod:
+        specifier: ^4.0.0
+        version: 4.5.4
+
+  spec:
+    dependencies:
+      '@runsheet/address':
+        specifier: workspace:*
+        version: link:../services/address
+      '@runsheet/api':
+        specifier: workspace:*
+        version: link:../api
+      '@runsheet/exceptions':
+        specifier: workspace:*
+        version: link:../services/exceptions
+      '@runsheet/execution':
+        specifier: workspace:*
+        version: link:../services/execution
+      '@runsheet/identity':
+        specifier: workspace:*
+        version: link:../services/identity
+      '@runsheet/linehaul':
+        specifier: workspace:*
+        version: link:../services/linehaul
+      '@runsheet/money':
+        specifier: workspace:*
+        version: link:../services/money
+      '@runsheet/network':
+        specifier: workspace:*
+        version: link:../services/network
+      '@runsheet/orders':
+        specifier: workspace:*
+        version: link:../services/orders
+      '@runsheet/planning':
+        specifier: workspace:*
+        version: link:../services/planning
+      '@runsheet/policy':
+        specifier: workspace:*
+        version: link:../services/policy
+      '@runsheet/promise':
+        specifier: workspace:*
+        version: link:../services/promise
       zod:
         specifier: ^4.0.0
         version: 4.5.4

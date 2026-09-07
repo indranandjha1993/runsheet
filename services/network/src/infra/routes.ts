@@ -4,7 +4,7 @@ import { checkServiceability } from "../application/check-serviceability.js";
 import { registerHub, type RegisterHubDeps } from "../application/register-hub.js";
 import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 
-const hubBody = z.object({
+export const hubBody = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
   country_code: z.string().length(2),

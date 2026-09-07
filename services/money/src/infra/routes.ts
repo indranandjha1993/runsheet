@@ -8,9 +8,9 @@ import type { MoneyDeps } from "../application/ports.js";
 import { closeDriverRun, recordMovement, statementFor } from "../application/cash.js";
 import type { SettlementEvent } from "../domain/settlement.js";
 
-const carrierBody = z.object({ name: z.string().min(1), currency: z.string().length(3) });
+export const carrierBody = z.object({ name: z.string().min(1), currency: z.string().length(3) });
 
-const rateCardBody = z.object({
+export const rateCardBody = z.object({
   carrier_account_id: z.string().min(1),
   currency: z.string().length(3),
   valid_from: z.iso.datetime(),
@@ -35,7 +35,7 @@ const rateCardBody = z.object({
     .min(1),
 });
 
-const invoiceBody = z.object({
+export const invoiceBody = z.object({
   carrier_account_id: z.string().min(1),
   number: z.string().min(1),
   currency: z.string().length(3),
@@ -50,7 +50,7 @@ const invoiceBody = z.object({
     .min(1),
 });
 
-const settlementBody = z.discriminatedUnion("type", [
+export const settlementBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("approved"), by: z.string().min(1) }),
   z.object({ type: z.literal("disputed"), by: z.string().min(1), note: z.string() }),
   z.object({
@@ -212,7 +212,7 @@ function readRoute(deps: RouteDeps): Route {
   };
 }
 
-const movementBody = z.object({
+export const movementBody = z.object({
   kind: z.enum(["collected", "deposited", "remitted", "written_off", "reversed"]),
   amount_minor: z.number().int().positive(),
   currency: z.string().regex(/^[A-Z]{3}$/),
@@ -222,7 +222,7 @@ const movementBody = z.object({
   approved_by: z.string().min(1).optional(),
 });
 
-const closeBody = z.object({
+export const closeBody = z.object({
   driver_id: z.string().min(1),
   currency: z.string().regex(/^[A-Z]{3}$/),
   counted_minor: z.number().int().nonnegative(),
