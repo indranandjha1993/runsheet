@@ -75,6 +75,7 @@ walkthrough:
 
 docs:
 	python3 infra/local/reference-docs.py
+	pnpm exec prettier --write "docs/reference/*.md" > /dev/null
 
 video:
 	vhs docs/demo.tape

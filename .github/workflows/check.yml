@@ -76,6 +76,7 @@ jobs:
       - name: The reference documentation is current
         run: |
           python3 infra/local/reference-docs.py
+          pnpm exec prettier --write "docs/reference/*.md" > /dev/null
           if ! git diff --quiet -- docs/reference; then
             echo "docs/reference is behind the specifications. Run: make docs"
             git --no-pager diff --stat -- docs/reference
