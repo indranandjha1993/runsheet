@@ -34,7 +34,9 @@ afterEach(async () => {
 
 describe("the service logger", () => {
   it("builds a logger at the level the configuration asked for", () => {
-    expect(() => serviceLogger("network", "warn").warn("started")).not.toThrow();
+    expect(() => {
+      serviceLogger("network", "warn").warn("started");
+    }).not.toThrow();
   });
 });
 
