@@ -3,8 +3,14 @@ export interface GeoPoint {
   readonly longitude: number;
 }
 
+export interface Edge {
+  readonly from: GeoPoint;
+  readonly to: GeoPoint;
+}
+
 export interface Polygon {
   readonly ring: readonly GeoPoint[];
+  readonly edges: readonly Edge[];
 }
 
 const EPSILON = 1e-9;
@@ -27,11 +33,20 @@ function isClosed(ring: readonly GeoPoint[]): boolean {
 
 export function polygon(points: readonly (readonly [number, number])[]): Polygon {
   const ring = points.map(([latitude, longitude]) => point(latitude, longitude));
-  const distinct = isClosed(ring) ? ring.slice(0, -1) : ring;
-  if (distinct.length < 3) {
+  const [first, ...rest] = isClosed(ring) ? ring.slice(0, -1) : ring;
+  if (first === undefined || rest.length < 2) {
     throw new Error("a polygon needs at least three points");
   }
-  return { ring: distinct };
+
+  const edges: Edge[] = [];
+  let previous = first;
+  for (const current of rest) {
+    edges.push({ from: previous, to: current });
+    previous = current;
+  }
+  edges.push({ from: previous, to: first });
+
+  return { ring: [first, ...rest], edges };
 }
 
 function onSegment(a: GeoPoint, b: GeoPoint, p: GeoPoint): boolean {
@@ -60,15 +75,10 @@ function crossesRay(a: GeoPoint, b: GeoPoint, p: GeoPoint): boolean {
 // A point on the boundary counts as inside, so two zones sharing an edge leave no gap between
 // them. Everything else is the standard ray cast.
 export function contains(shape: Polygon, p: GeoPoint): boolean {
-  const ring = shape.ring;
   let inside = false;
-
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
-    const a = ring[i];
-    const b = ring[j];
-    if (a === undefined || b === undefined) continue;
-    if (onSegment(a, b, p)) return true;
-    if (crossesRay(a, b, p)) inside = !inside;
+  for (const edge of shape.edges) {
+    if (onSegment(edge.from, edge.to, p)) return true;
+    if (crossesRay(edge.from, edge.to, p)) inside = !inside;
   }
   return inside;
 }

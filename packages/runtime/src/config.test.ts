@@ -54,6 +54,18 @@ describe("configuration", () => {
     expect(message).not.toContain("hunter2");
   });
 
+  it("explains a rule that spans several variables", () => {
+    const paired = z
+      .object({ HOST: z.string(), PORT: z.coerce.number() })
+      .refine((c) => c.PORT !== 80 || c.HOST === "localhost", {
+        message: "port 80 is only allowed on localhost",
+      });
+
+    expect(() => loadConfig(paired, { HOST: "example.test", PORT: "80" })).toThrow(
+      /value is invalid: port 80 is only allowed on localhost/,
+    );
+  });
+
   it("lists what it read, with secret values masked, so start-up logs are useful", () => {
     const config = loadConfig(schema, valid);
 
