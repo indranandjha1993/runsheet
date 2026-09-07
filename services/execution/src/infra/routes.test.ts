@@ -415,3 +415,30 @@ describe("a handset syncing a shift over the api", () => {
     expect((await post("/v1/sync/batches", batch, {})).status).toBe(401);
   });
 });
+
+describe("listing the day's runs over the api", () => {
+  it("lists the open runs at a hub on a day", async () => {
+    await planned();
+
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/runs?hub_id=hub-1&date=2026-09-07",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+    expect((response.body as { runs: unknown[] }).runs).toHaveLength(1);
+  });
+
+  it("insists on a hub and a day rather than listing everything", async () => {
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/runs?hub_id=hub-1",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(400);
+  });
+});

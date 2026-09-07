@@ -195,3 +195,18 @@ describe("the decision ledger", () => {
     ]).toEqual([1, 2]);
   });
 });
+
+describe("listing every policy", () => {
+  it("lists a tenant's policies and nobody else's", async () => {
+    await repository.savePolicy(policy());
+    await repository.savePolicy({
+      ...policy(),
+      id: "01J8Z0T0000000000000000099",
+      tenantId: "other",
+    });
+
+    const mine = await repository.allPolicies(tenantId);
+
+    expect(mine).toHaveLength(1);
+  });
+});

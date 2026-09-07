@@ -73,6 +73,20 @@ jobs:
       - run: pnpm lint
       - run: pnpm exec vitest run --coverage
 
+      - name: No applied migration was edited
+        if: github.event_name == 'pull_request'
+        run: |
+          status=0
+          for f in $(git diff --diff-filter=MD --name-only "origin/${{ github.base_ref }}...HEAD" -- '*/migrations/*.sql'); do
+            now=$(git rev-parse -q --verify "HEAD:$f" 2>/dev/null || echo deleted)
+            # Restoring a version that was committed before is the one allowed change.
+            if ! git log --format=%H "origin/${{ github.base_ref }}" -- "$f" | xargs -I{} git rev-parse -q --verify "{}:$f" 2>/dev/null | grep -qx "$now"; then
+              echo "$f is an applied migration and was changed. Add a new one instead."
+              status=1
+            fi
+          done
+          exit $status
+
       - name: The reference documentation is current
         run: |
           python3 infra/local/reference-docs.py

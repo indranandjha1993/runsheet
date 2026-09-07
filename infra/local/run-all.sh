@@ -29,6 +29,12 @@ for service in network address orders execution linehaul planning promise except
   start "$service"
 done
 
+# The console and the driver app, served from their build with platform calls forwarded to the
+# gateway. Built here if nobody has built it yet.
+[ -f apps/web/dist/index.html ] || pnpm --filter @runsheet/web build > /tmp/runsheet-web-build.log 2>&1
+node apps/web/serve.js > /tmp/runsheet-web.log 2>&1 &
+echo $! >> /tmp/runsheet.pids
+
 for _ in $(seq 1 60); do
   if curl -s -o /dev/null "http://localhost:${PORT_GATEWAY:-14000}/health"; then break; fi
   sleep 0.5

@@ -179,6 +179,17 @@ Scope: `addresses:write`
 
 ## orders
 
+### `GET /v1/consignments`
+
+List the consignments that are still moving.
+
+Scope: `consignments:read`
+
+| Status | Meaning                                            |
+| ------ | -------------------------------------------------- |
+| 200    | the open consignments, most recently changed first |
+| 401    | no usable credential                               |
+
 ### `POST /v1/consignments`
 
 Book a consignment.
@@ -333,6 +344,18 @@ Scope: `runs:write`
 | 400    | the request did not validate                        |
 | 401    | no usable credential                                |
 
+### `GET /v1/runs`
+
+List the runs still open at a hub on a day.
+
+Scope: `runs:read`
+
+| Status | Meaning                      |
+| ------ | ---------------------------- |
+| 200    | the runs and their stops     |
+| 400    | the request did not validate |
+| 401    | no usable credential         |
+
 ### `POST /v1/runs`
 
 Plan a run with its stops.
@@ -426,6 +449,18 @@ Scope: `runs:write`
 
 ## linehaul
 
+### `GET /v1/bags`
+
+List the bags open or sealed at a hub, waiting to travel.
+
+Scope: `linehaul:read`
+
+| Status | Meaning                      |
+| ------ | ---------------------------- |
+| 200    | the bags                     |
+| 400    | the request did not validate |
+| 401    | no usable credential         |
+
 ### `POST /v1/bags/parcels`
 
 Put a parcel in the open bag for a lane.
@@ -488,6 +523,17 @@ Scope: `linehaul:write`
 | 401    | no usable credential                |
 | 404    | no such resource                    |
 | 409    | the change is not allowed from here |
+
+### `GET /v1/trips`
+
+List the trips that have not yet closed.
+
+Scope: `linehaul:read`
+
+| Status | Meaning                        |
+| ------ | ------------------------------ |
+| 200    | the trips and the bags on them |
+| 401    | no usable credential           |
 
 ### `POST /v1/trips`
 
@@ -798,6 +844,17 @@ Scope: `money:write`
 | 401    | no usable credential                       |
 | 409    | the change is not allowed from here        |
 
+### `GET /v1/invoices`
+
+List the carrier invoices taken in.
+
+Scope: `money:read`
+
+| Status | Meaning                    |
+| ------ | -------------------------- |
+| 200    | the invoices, newest first |
+| 401    | no usable credential       |
+
 ### `POST /v1/invoices`
 
 Take in a carrier invoice and match every line.
@@ -850,6 +907,18 @@ Scope: `money:write`
 | 400    | the request did not validate |
 | 401    | no usable credential         |
 | 404    | no such resource             |
+
+### `GET /v1/settlements`
+
+List the settlements in one state, for working a queue.
+
+Scope: `money:read`
+
+| Status | Meaning                      |
+| ------ | ---------------------------- |
+| 200    | the settlements              |
+| 400    | the request did not validate |
+| 401    | no usable credential         |
 
 ### `POST /v1/settlements/{id}/events`
 
@@ -914,6 +983,17 @@ Scope: `policies:read`
 | 200    | what is present and what is missing for a replay |
 | 401    | no usable credential                             |
 | 404    | no such resource                                 |
+
+### `GET /v1/policies`
+
+List every policy and where it is in its rollout.
+
+Scope: `policies:read`
+
+| Status | Meaning              |
+| ------ | -------------------- |
+| 200    | the policies         |
+| 401    | no usable credential |
 
 ### `POST /v1/policies`
 

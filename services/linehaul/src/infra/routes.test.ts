@@ -311,3 +311,33 @@ describe("changing a bag's mind before it is sealed", () => {
     expect((await post(`/v1/bags/${bagId}/events`, { type: "incinerated" })).status).toBe(400);
   });
 });
+
+describe("listing what is waiting at a hub", () => {
+  it("lists the bags open or sealed at a hub", async () => {
+    await bagged("c-1");
+    const other = await post("/v1/bags/parcels", {
+      origin_hub_id: "hub-9",
+      destination_hub_id: "hub-2",
+      consignment_id: "c-2",
+    });
+    expect(other.status).toBe(201);
+
+    const response = await get("/v1/bags?hub_id=hub-1");
+
+    expect(response.status).toBe(200);
+    expect((response.body as { bags: unknown[] }).bags).toHaveLength(1);
+  });
+
+  it("insists on a hub", async () => {
+    expect((await get("/v1/bags")).status).toBe(400);
+  });
+
+  it("lists the trips that have not closed", async () => {
+    await readyTrip();
+
+    const response = await get("/v1/trips");
+
+    expect(response.status).toBe(200);
+    expect((response.body as { trips: unknown[] }).trips).toHaveLength(1);
+  });
+});

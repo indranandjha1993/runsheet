@@ -11,8 +11,10 @@ export interface LinehaulRepository {
     originHubId: string,
     destinationHubId: string,
   ): Promise<Bag | undefined>;
+  bagsAtHub(tenantId: string, hubId: string): Promise<Bag[]>;
   saveTrip(trip: Trip, expectedVersion: number): Promise<void>;
   tripById(tenantId: string, id: string): Promise<{ trip: Trip; version: number } | undefined>;
+  openTrips(tenantId: string): Promise<Trip[]>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;
 }
 

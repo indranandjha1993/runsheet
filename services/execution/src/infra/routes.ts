@@ -200,6 +200,25 @@ function proofRoute(deps: RouteDeps): Route {
   };
 }
 
+function listRunsRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/runs",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:read");
+
+      const hubId = request.query["hub_id"] ?? "";
+      const date = request.query["date"] ?? "";
+      if (hubId === "" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return invalid("name the hub and the day");
+      }
+      const runs = await deps.repository.openRuns(caller.tenantId, hubId, date);
+      return { status: 200, body: { runs } };
+    },
+  };
+}
+
 function readRoute(deps: RouteDeps): Route {
   return {
     method: "GET",
@@ -353,6 +372,7 @@ export function executionRoutes(deps: RouteDeps): Route[] {
     actionRoute(deps),
     proofRoute(deps),
     readRoute(deps),
+    listRunsRoute(deps),
     scanInRoute(deps),
     scanOutRoute(deps),
     scanHistoryRoute(deps),

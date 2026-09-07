@@ -1,0 +1,116 @@
+/* The design foundations as code. Every screen reads from these; nobody re-decides a colour. */
+
+:root {
+  /* Type: one superfamily across three scripts, with the taller leading Devanagari and Arabic need. */
+  --font-sans: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Arabic", system-ui, sans-serif;
+  --text-caption: 12px / 18px var(--font-sans);
+  --text-body-s: 13px / 20px var(--font-sans);
+  --text-body: 14px / 20px var(--font-sans);
+  --text-body-l: 16px / 24px var(--font-sans);
+  --text-heading-s: 600 18px / 26px var(--font-sans);
+  --text-heading-m: 600 20px / 28px var(--font-sans);
+  --text-heading-l: 600 24px / 32px var(--font-sans);
+  --text-numeric: 600 32px / 40px var(--font-sans);
+
+  /* Spacing on a 4px base. */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Warm neutrals, never blue-grey, and never pure white for the canvas. */
+  --canvas: #f6f6f4;
+  --surface: #ffffff;
+  --sunken: #ededea;
+  --border-subtle: #e4e4e0;
+  --border-default: #d2d2cd;
+  --border-strong: #9a9a93;
+  --text-primary: #16181c;
+  --text-secondary: #5a5f66;
+  --text-disabled: #8b9099;
+  --action-primary: #0b4a8f;
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #0b4a8f;
+
+  /* Status is ink, tint, and a mark: never hue alone. */
+  --status-pending-ink: #33383f;
+  --status-pending-tint: #ecedef;
+  --status-active-ink: #0b4a8f;
+  --status-active-tint: #e1edfb;
+  --status-at-risk-ink: #6e4600;
+  --status-at-risk-tint: #fcefd3;
+  --status-breached-ink: #96122a;
+  --status-breached-tint: #fbe3e6;
+  --status-done-ink: #14562f;
+  --status-done-tint: #e1f1e6;
+
+  /* Console is compact: dense rows for somebody triaging all day. */
+  --row-height: 32px;
+  --control-height: 28px;
+  --cell-padding: 6px 8px;
+  --radius: 4px;
+}
+
+/* The driver holds a cracked phone in one hand in the sun. Everything is bigger, and the
+   primary action sits where a thumb reaches. */
+[data-surface="driver"] {
+  --row-height: 72px;
+  --control-height: 56px;
+  --control-height-primary: 64px;
+  --cell-padding: 16px;
+  --text-body: 16px / 24px var(--font-sans);
+  --text-body-l: 18px / 28px var(--font-sans);
+}
+
+[dir="rtl"] {
+  --text-caption: 12px / 22px var(--font-sans);
+  --text-body-s: 13px / 24px var(--font-sans);
+  --text-body: 14px / 24px var(--font-sans);
+  --text-body-l: 16px / 28px var(--font-sans);
+}
+
+html {
+  background: var(--canvas);
+  color: var(--text-primary);
+  font: var(--text-body);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* An identifier is one unbreakable word. It wraps at any character rather than widening the
+   screen it is on. */
+bdi,
+[data-surface="driver"] h1,
+[data-surface="driver"] p {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  min-width: 0;
+}
+
+/* A grid or flex child defaults to its content's minimum width, which for an identifier is the
+   whole identifier. Nothing on the handset may claim more than the screen. */
+[data-surface="driver"] * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

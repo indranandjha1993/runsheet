@@ -99,7 +99,7 @@ function queueRoute(deps: RouteDeps): Route {
         filter.success ? filter.data : undefined,
       );
 
-      return { status: 200, body: queue };
+      return { status: 200, body: { exceptions: queue } };
     },
   };
 }

@@ -40,6 +40,13 @@ export const executionSurface: ServiceSurface = {
     },
     {
       method: "GET",
+      path: "/v1/runs",
+      summary: "List the runs still open at a hub on a day",
+      scope: "runs:read",
+      replies: [ok("the runs and their stops"), badRequest, unauthorized],
+    },
+    {
+      method: "GET",
       path: "/v1/runs/:id",
       summary: "Read a run",
       scope: "runs:read",

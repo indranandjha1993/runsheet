@@ -16,6 +16,8 @@ export function inMemoryPolicies(): PolicyRepository {
       return Promise.resolve();
     },
     policyById: (tenantId, id) => Promise.resolve(policies.get(key(tenantId, id))),
+    allPolicies: (tenantId) =>
+      Promise.resolve([...policies.values()].filter((policy) => policy.tenantId === tenantId)),
     policiesFor: (tenantId, triggerEvent) =>
       Promise.resolve(
         [...policies.values()].filter(

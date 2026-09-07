@@ -60,6 +60,14 @@ export function inMemoryMoney(): MoneyRepository {
       return Promise.resolve();
     },
     settlementById: (tenantId, id) => Promise.resolve(settlements.get(key(tenantId, id))),
+    invoicesFor: (tenantId) =>
+      Promise.resolve([...invoices.values()].filter((invoice) => invoice.tenantId === tenantId)),
+    settlementsInState: (tenantId, state) =>
+      Promise.resolve(
+        [...settlements.values()].filter(
+          (settlement) => settlement.tenantId === tenantId && settlement.state === state,
+        ),
+      ),
     settlementsFor: (tenantId, invoiceId) =>
       Promise.resolve(
         [...settlements.values()].filter(

@@ -205,6 +205,33 @@
         ]
       }
     },
+    "/v1/bags": {
+      "get": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "List the bags open or sealed at a hub, waiting to travel",
+        "operationId": "getV1Bags",
+        "responses": {
+          "200": {
+            "description": "the bags"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:read"
+            ]
+          }
+        ]
+      }
+    },
     "/v1/bags/{id}": {
       "get": {
         "tags": [
@@ -956,6 +983,28 @@
           {
             "apiKey": [
               "consignments:write"
+            ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List the consignments that are still moving",
+        "operationId": "getV1Consignments",
+        "responses": {
+          "200": {
+            "description": "the open consignments, most recently changed first"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "consignments:read"
             ]
           }
         ]
@@ -2401,6 +2450,28 @@
             ]
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "money"
+        ],
+        "summary": "List the carrier invoices taken in",
+        "operationId": "getV1Invoices",
+        "responses": {
+          "200": {
+            "description": "the invoices, newest first"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:read"
+            ]
+          }
+        ]
       }
     },
     "/v1/invoices/{id}/settlements": {
@@ -2849,6 +2920,28 @@
           {
             "apiKey": [
               "policies:write"
+            ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "List every policy and where it is in its rollout",
+        "operationId": "getV1Policies",
+        "responses": {
+          "200": {
+            "description": "the policies"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "policies:read"
             ]
           }
         ]
@@ -3662,6 +3755,31 @@
             ]
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "execution"
+        ],
+        "summary": "List the runs still open at a hub on a day",
+        "operationId": "getV1Runs",
+        "responses": {
+          "200": {
+            "description": "the runs and their stops"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "runs:read"
+            ]
+          }
+        ]
       }
     },
     "/v1/runs/{id}": {
@@ -4052,6 +4170,33 @@
           {
             "apiKey": [
               "network:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/settlements": {
+      "get": {
+        "tags": [
+          "money"
+        ],
+        "summary": "List the settlements in one state, for working a queue",
+        "operationId": "getV1Settlements",
+        "responses": {
+          "200": {
+            "description": "the settlements"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "money:read"
             ]
           }
         ]
@@ -4526,6 +4671,28 @@
       }
     },
     "/v1/trips": {
+      "get": {
+        "tags": [
+          "linehaul"
+        ],
+        "summary": "List the trips that have not yet closed",
+        "operationId": "getV1Trips",
+        "responses": {
+          "200": {
+            "description": "the trips and the bags on them"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "linehaul:read"
+            ]
+          }
+        ]
+      },
       "post": {
         "tags": [
           "linehaul"

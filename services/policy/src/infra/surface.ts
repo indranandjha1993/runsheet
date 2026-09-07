@@ -22,6 +22,13 @@ export const policySurface: ServiceSurface = {
       replies: [created("the policy"), badRequest, unauthorized, forbidden],
     },
     {
+      method: "GET",
+      path: "/v1/policies",
+      summary: "List every policy and where it is in its rollout",
+      scope: "policies:read",
+      replies: [ok("the policies"), unauthorized],
+    },
+    {
       method: "POST",
       path: "/v1/policies/:id/events",
       summary: "Move a policy along its rollout",

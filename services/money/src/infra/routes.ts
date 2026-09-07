@@ -65,6 +65,46 @@ export const settlementBody = z.discriminatedUnion("type", [
 
 type SettlementBody = z.infer<typeof settlementBody>;
 
+const SETTLEMENT_STATES = [
+  "matched",
+  "mismatched",
+  "missing_evidence",
+  "approved",
+  "disputed",
+  "paid",
+  "written_off",
+] as const;
+
+function invoicesRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/invoices",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:read");
+
+      const invoices = await deps.repository.invoicesFor(caller.tenantId);
+      return { status: 200, body: { invoices } };
+    },
+  };
+}
+
+function settlementsRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/settlements",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:read");
+
+      const parsed = z.enum(SETTLEMENT_STATES).safeParse(request.query["state"]);
+      if (!parsed.success) return invalid("name a settlement state");
+      const settlements = await deps.repository.settlementsInState(caller.tenantId, parsed.data);
+      return { status: 200, body: { settlements } };
+    },
+  };
+}
+
 export interface RouteDeps extends MoneyDeps {
   readonly lookup: CallerLookup;
 }
@@ -337,6 +377,8 @@ export function moneyRoutes(deps: RouteDeps): Route[] {
     invoiceRoute(deps),
     settlementRoute(deps),
     readRoute(deps),
+    invoicesRoute(deps),
+    settlementsRoute(deps),
     movementRoute(deps),
     runCloseRoute(deps),
     statementRoute(deps, "drivers"),

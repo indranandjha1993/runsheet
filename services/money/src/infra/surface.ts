@@ -59,6 +59,20 @@ export const moneySurface: ServiceSurface = {
     },
     {
       method: "GET",
+      path: "/v1/invoices",
+      summary: "List the carrier invoices taken in",
+      scope: "money:read",
+      replies: [ok("the invoices, newest first"), unauthorized],
+    },
+    {
+      method: "GET",
+      path: "/v1/settlements",
+      summary: "List the settlements in one state, for working a queue",
+      scope: "money:read",
+      replies: [ok("the settlements"), badRequest, unauthorized],
+    },
+    {
+      method: "GET",
       path: "/v1/invoices/:id/settlements",
       summary: "List the settlements on an invoice",
       scope: "money:read",

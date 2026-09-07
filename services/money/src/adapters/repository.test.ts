@@ -284,3 +284,55 @@ describe("the cash ledger in the database", () => {
     expect(entries.map((e) => e.deltaMinor)).toEqual([50000, -20000]);
   });
 });
+
+describe("listing invoices and settlements", () => {
+  it("lists a tenant's invoices and nobody else's", async () => {
+    await repository.saveInvoice(
+      { id: "inv-1", tenantId, carrierAccountId: carrier.id, number: "INV-1", currency: "INR" },
+      [],
+    );
+    await repository.saveInvoice(
+      {
+        id: "inv-2",
+        tenantId: "other",
+        carrierAccountId: carrier.id,
+        number: "INV-2",
+        currency: "INR",
+      },
+      [],
+    );
+
+    const mine = await repository.invoicesFor(tenantId);
+
+    expect(mine.map((i) => i.number)).toEqual(["INV-1"]);
+  });
+
+  it("lists settlements in one state only", async () => {
+    const line = (id: string) => ({
+      id,
+      invoiceId: "inv-1",
+      consignmentId: `c-${id}`,
+      billedMinor: 100,
+      currency: "INR",
+      billedWeightGrams: 100,
+    });
+    await repository.saveInvoice(
+      { id: "inv-1", tenantId, carrierAccountId: carrier.id, number: "INV-1", currency: "INR" },
+      [line("line-1"), line("line-2")],
+    );
+    const base = {
+      tenantId,
+      lineId: "line-1",
+      invoiceId: "inv-1",
+      varianceMinor: 0,
+      reasons: [],
+      autoApproved: false,
+    };
+    await repository.saveSettlement({ ...base, id: "s-1", state: "matched" });
+    await repository.saveSettlement({ ...base, id: "s-2", lineId: "line-2", state: "mismatched" });
+
+    const queue = await repository.settlementsInState(tenantId, "mismatched");
+
+    expect(queue.map((s) => s.id)).toEqual(["s-2"]);
+  });
+});

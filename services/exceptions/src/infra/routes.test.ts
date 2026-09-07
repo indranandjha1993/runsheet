@@ -164,7 +164,7 @@ describe("reading the queue", () => {
     const response = await get("/v1/exceptions");
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(1);
+    expect((response.body as { exceptions: unknown[] }).exceptions).toHaveLength(1);
   });
 
   it("filters to one severity", async () => {
@@ -175,14 +175,21 @@ describe("reading the queue", () => {
       payload: {},
     });
 
-    expect((await get("/v1/exceptions?severity=high")).body).toHaveLength(1);
-    expect((await get("/v1/exceptions?severity=low")).body).toHaveLength(0);
+    expect(
+      ((await get("/v1/exceptions?severity=high")).body as { exceptions: unknown[] }).exceptions,
+    ).toHaveLength(1);
+    expect(
+      ((await get("/v1/exceptions?severity=low")).body as { exceptions: unknown[] }).exceptions,
+    ).toHaveLength(0);
   });
 
   it("ignores a severity nobody defined rather than failing", async () => {
     await raised();
 
-    expect((await get("/v1/exceptions?severity=catastrophic")).body).toHaveLength(1);
+    expect(
+      ((await get("/v1/exceptions?severity=catastrophic")).body as { exceptions: unknown[] })
+        .exceptions,
+    ).toHaveLength(1);
   });
 
   it("returns one exception in full", async () => {

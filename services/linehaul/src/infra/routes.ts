@@ -160,6 +160,36 @@ function bagEventRoute(deps: RouteDeps): Route {
   };
 }
 
+function bagsAtHubRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/bags",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "linehaul:read");
+
+      const hubId = request.query["hub_id"] ?? "";
+      if (hubId === "") return invalid("name the hub");
+      const bags = await deps.repository.bagsAtHub(caller.tenantId, hubId);
+      return { status: 200, body: { bags: bags.map(bagView) } };
+    },
+  };
+}
+
+function openTripsRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/trips",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "linehaul:read");
+
+      const trips = await deps.repository.openTrips(caller.tenantId);
+      return { status: 200, body: { trips } };
+    },
+  };
+}
+
 function bagReadRoute(deps: RouteDeps): Route {
   return {
     method: "GET",
@@ -276,6 +306,8 @@ export function linehaulRoutes(deps: RouteDeps): Route[] {
     sealRoute(deps),
     bagEventRoute(deps),
     bagReadRoute(deps),
+    bagsAtHubRoute(deps),
+    openTripsRoute(deps),
     tripRoute(deps),
     tripEventRoute(deps),
     loadRoute(deps),

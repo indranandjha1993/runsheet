@@ -5,3 +5,8 @@ packages:
   - contracts
   - api
   - spec
+
+# Vite's bundler ships a native binary that its install script fetches. Nothing else in the
+# tree is allowed to run install scripts.
+allowBuilds:
+  esbuild: true
