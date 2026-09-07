@@ -2,10 +2,13 @@ import type { Envelope } from "@runsheet/kernel";
 import type { Consignment } from "../domain/consignment.js";
 import type { Clock, EventPublisher, Identifiers, Order, OrdersRepository } from "./ports.js";
 
+/* eslint-disable max-lines-per-function -- one cohesive fake of a repository interface */
 export function inMemoryOrders(): OrdersRepository {
   const orders = new Map<string, Order>();
   const consignments = new Map<string, { consignment: Consignment; version: number }>();
   const sequences = new Map<string, number>();
+  const serials = new Map<string, number>();
+  let nextSerial = 1;
   const key = (tenantId: string, rest: string): string => `${tenantId}:${rest}`;
 
   return {
@@ -15,6 +18,10 @@ export function inMemoryOrders(): OrdersRepository {
     },
     orderByReference: (tenantId, reference) =>
       Promise.resolve(orders.get(key(tenantId, reference))),
+    orderById: (tenantId, id) =>
+      Promise.resolve(
+        [...orders.values()].find((order) => order.tenantId === tenantId && order.id === id),
+      ),
     saveConsignment: (consignment, expectedVersion) => {
       consignments.set(key(consignment.tenantId, consignment.id), {
         consignment,
@@ -30,6 +37,15 @@ export function inMemoryOrders(): OrdersRepository {
           .filter((c) => c.tenantId === tenantId)
           .slice(0, limit),
       ),
+    serialFor: (tenantId, consignmentId, pieces) => {
+      const at = `${tenantId}:${consignmentId}`;
+      const existing = serials.get(at);
+      if (existing !== undefined) return Promise.resolve(existing);
+      const first = nextSerial;
+      nextSerial += pieces;
+      serials.set(at, first);
+      return Promise.resolve(first);
+    },
     nextSequence: (tenantId, aggregateId) => {
       const at = key(tenantId, aggregateId);
       const next = (sequences.get(at) ?? 0) + 1;
@@ -38,6 +54,7 @@ export function inMemoryOrders(): OrdersRepository {
     },
   };
 }
+/* eslint-enable max-lines-per-function */
 
 export interface Published {
   event: Envelope;

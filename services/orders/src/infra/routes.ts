@@ -4,6 +4,8 @@ import type { Route } from "../adapters/http.js";
 import { bookConsignment } from "../application/book-consignment.js";
 import { recordConsignmentEvent } from "../application/record-event.js";
 import type { OrdersDeps } from "../application/ports.js";
+import { printLabels } from "../application/print-labels.js";
+import { toZpl } from "../adapters/zpl.js";
 import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 
 const bookBody = z
@@ -172,6 +174,61 @@ export interface RouteDeps extends OrdersDeps {
   readonly lookup: CallerLookup;
 }
 
+const labelBody = z.object({
+  origin: z.object({ hub_code: z.string().min(1), city: z.string().min(1) }),
+  destination: z.object({
+    hub_code: z.string().min(1),
+    name: z.string().min(1),
+    line: z.string().min(1),
+    locality: z.string().min(1).optional(),
+    city: z.string().min(1),
+    postcode: z.string().min(1),
+  }),
+  sort_code: z.string().min(1),
+  service_level: z.enum(["same_day", "next_day", "standard", "economy"]),
+  format: z.enum(["json", "zpl"]).default("json"),
+});
+
+function labelRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/consignments/:id/labels",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "consignments:write");
+
+      const parsed = labelBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const { destination, origin } = parsed.data;
+      const labels = await printLabels(deps, {
+        tenantId: caller.tenantId,
+        consignmentId: request.params["id"] ?? "",
+        origin: { hubCode: origin.hub_code, city: origin.city },
+        destination: {
+          hubCode: destination.hub_code,
+          name: destination.name,
+          line: destination.line,
+          city: destination.city,
+          postcode: destination.postcode,
+          ...(destination.locality === undefined ? {} : { locality: destination.locality }),
+        },
+        sortCode: parsed.data.sort_code,
+        serviceLevel: parsed.data.service_level,
+      });
+
+      if (parsed.data.format === "zpl") {
+        return {
+          status: 200,
+          body: labels.map(toZpl).join(""),
+          headers: { "content-type": "application/vnd.zebra.zpl" },
+        };
+      }
+      return { status: 200, body: { labels } };
+    },
+  };
+}
+
 export function ordersRoutes(deps: RouteDeps): Route[] {
-  return [bookRoute(deps), eventRoute(deps), readRoute(deps)];
+  return [bookRoute(deps), eventRoute(deps), readRoute(deps), labelRoute(deps)];
 }

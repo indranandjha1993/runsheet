@@ -1,7 +1,5 @@
+import { isValidBarcode } from "@runsheet/kernel";
 import { DomainError } from "./errors.js";
-
-// Our own labels. Anything else at a hub belongs to somebody, but not to us.
-const BARCODE = /^RS[0-9]{10}$/;
 
 // How much heavier a parcel may weigh at the hub than at booking before somebody checks. Under
 // this, it is scales and packaging. Over it, either the booking was wrong or the parcel is not
@@ -49,7 +47,7 @@ function assertScannable(consignmentId: string, barcode: string): void {
   if (consignmentId.trim() === "") {
     throw new DomainError("invalid_input", "a scan needs a consignment");
   }
-  if (!BARCODE.test(barcode)) {
+  if (!isValidBarcode(barcode)) {
     throw new DomainError("invalid_input", "that barcode is not a Runsheet label");
   }
 }

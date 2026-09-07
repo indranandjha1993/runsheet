@@ -302,7 +302,7 @@ describe("hub scanning over the api", () => {
     hub_id: "hub-1",
     worker_id: "w1",
     consignment_id: "c1",
-    barcode: "RS0000000001",
+    barcode: "RS0000000013",
     expected: true,
   };
 
@@ -325,7 +325,7 @@ describe("hub scanning over the api", () => {
       hub_id: "hub-1",
       worker_id: "w1",
       consignment_id: "c1",
-      barcode: "RS0000000001",
+      barcode: "RS0000000013",
       run_id: "run-1",
       on_run: false,
     });

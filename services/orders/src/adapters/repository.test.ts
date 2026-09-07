@@ -25,7 +25,7 @@ const sample = (): Consignment =>
   });
 
 beforeEach(async () => {
-  await pool.query("DROP TABLE IF EXISTS packages, consignments, orders, aggregate_streams, schema_migrations CASCADE");
+  await pool.query("DROP TABLE IF EXISTS consignment_serials, parcel_serials, packages, consignments, orders,\n       aggregate_streams, schema_migrations CASCADE");
   await migrate(pool, migrations);
   await repository.saveOrder({ id: orderId, tenantId, reference: "ORD-1001", paymentMode: "cod" });
 });
@@ -92,5 +92,35 @@ describe("the orders repository", () => {
       await repository.nextSequence(tenantId, "a"),
       await repository.nextSequence(tenantId, "b"),
     ]).toEqual([1, 2, 1]);
+  });
+});
+
+describe("reserving barcode serials", () => {
+  it("gives a consignment the same block every time it is asked", async () => {
+    const first = await repository.serialFor(tenantId, "c-1", 3);
+
+    expect(await repository.serialFor(tenantId, "c-1", 3)).toBe(first);
+  });
+
+  it("leaves room for every piece before the next consignment starts", async () => {
+    const first = await repository.serialFor(tenantId, "c-1", 3);
+    const second = await repository.serialFor(tenantId, "c-2", 1);
+
+    expect(second).toBeGreaterThanOrEqual(first + 3);
+  });
+
+  it("never gives two consignments the same starting serial", async () => {
+    const blocks = await Promise.all(
+      ["c-1", "c-2", "c-3", "c-4", "c-5"].map((id) => repository.serialFor(tenantId, id, 2)),
+    );
+
+    expect(new Set(blocks).size).toBe(blocks.length);
+  });
+
+  it("keeps blocks apart across tenants, because a hub sorts everyone's parcels together", async () => {
+    const mine = await repository.serialFor(tenantId, "c-1", 1);
+    const theirs = await repository.serialFor("other", "c-1", 1);
+
+    expect(theirs).not.toBe(mine);
   });
 });
