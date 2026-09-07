@@ -188,3 +188,54 @@ describe("what a hub has waiting, and what is on the road", () => {
     expect(open[0]?.bagIds).toEqual(["bag-1"]);
   });
 });
+
+describe("the far end of a bag's journey, in the database", () => {
+  it("keeps where a bag was received", async () => {
+    const travelled = apply(
+      apply(apply(bag(), { type: "sealed", sealNumber: "S" }), { type: "loaded", tripId: "t1" }),
+      { type: "received", hubId: "hub-9", sealIntact: false },
+    );
+    await repository.saveBag(travelled, 0);
+
+    const found = await repository.bagById(tenantId, travelled.id);
+
+    expect(found?.bag).toMatchObject({
+      receivedAtHubId: "hub-9",
+      misrouted: true,
+      sealBroken: true,
+    });
+  });
+
+  it("finds nothing for a bag nobody opened", async () => {
+    expect(await repository.bagById(tenantId, "nowhere")).toBeUndefined();
+  });
+
+  it("keeps where a trip arrived, where it was diverted, and why it was cancelled", async () => {
+    const crewed = applyToTrip(trip(), { type: "crewed", vehicleId: "v", driverId: "d" });
+    const loaded = applyToTrip(crewed, { type: "bag_loaded", bagId: "b1" });
+    const diverted = applyToTrip(applyToTrip(loaded, { type: "departed" }), {
+      type: "arrived",
+      hubId: "hub-9",
+    });
+    await repository.saveTrip(diverted, 0);
+    const cancelled = applyToTrip(
+      { ...trip(), id: "01J8Z0T0000000000000000022" },
+      { type: "cancelled", reason: "broke down" },
+    );
+    await repository.saveTrip(cancelled, 0);
+
+    const first = await repository.tripById(tenantId, diverted.id);
+    const second = await repository.tripById(tenantId, cancelled.id);
+
+    expect(first?.trip).toMatchObject({ arrivedAtHubId: "hub-9", divertedTo: "hub-9" });
+    expect(second?.trip).toMatchObject({ cancelReason: "broke down" });
+  });
+
+  it("refuses a trip write that raced another one", async () => {
+    await repository.saveTrip(trip(), 0);
+
+    await expect(repository.saveTrip(trip(), 0)).rejects.toThrow(
+      "changed while it was being updated",
+    );
+  });
+});

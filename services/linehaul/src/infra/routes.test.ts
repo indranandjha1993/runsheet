@@ -341,3 +341,25 @@ describe("listing what is waiting at a hub", () => {
     expect((response.body as { trips: unknown[] }).trips).toHaveLength(1);
   });
 });
+
+describe("the edges of the linehaul api", () => {
+  it("refuses a parcel with no destination", async () => {
+    expect(
+      (await post("/v1/bags/parcels", { origin_hub_id: "hub-1", consignment_id: "c-1" })).status,
+    ).toBe(400);
+  });
+
+  it("refuses a seal with no number", async () => {
+    const id = await bagged();
+
+    expect((await post(`/v1/bags/${id}/seal`, {})).status).toBe(400);
+  });
+
+  it("refuses a trip with no capacity", async () => {
+    expect((await post("/v1/trips", { ...lane, departs_on: "2026-09-08" })).status).toBe(400);
+  });
+
+  it("reports a bag that is not there", async () => {
+    expect((await get("/v1/bags/nowhere")).status).toBe(404);
+  });
+});

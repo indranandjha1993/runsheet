@@ -406,3 +406,44 @@ describe("listing consignments over the api", () => {
     expect(response.status).toBe(200);
   });
 });
+
+describe("the edges of the booking api", () => {
+  it("takes a cash booking with a tolerance", async () => {
+    const response = await book({ ...booking, cod_tolerance_minor: 500 });
+
+    expect(response.status).toBe(201);
+  });
+
+  it("prints a label with a locality line", async () => {
+    const id = await bookedId();
+
+    const response = await post(`/v1/consignments/${id}/labels`, {
+      origin: { hub_code: "BLR1", city: "Bengaluru" },
+      destination: {
+        hub_code: "DEL3",
+        name: "A",
+        line: "1 Road",
+        locality: "Sector 62",
+        city: "Noida",
+        postcode: "201309",
+      },
+      sort_code: "DEL3-N-04",
+      service_level: "next_day",
+    });
+
+    expect((response.body as { labels: { address: string[] }[] }).labels[0]?.address).toContain(
+      "Sector 62",
+    );
+  });
+
+  it("falls back to a sensible page size when the limit is not a number", async () => {
+    const response = await router.handle({
+      method: "GET",
+      url: "/v1/consignments?limit=lots",
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect(response.status).toBe(200);
+  });
+});
