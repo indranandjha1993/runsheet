@@ -65,4 +65,8 @@ See `CONTRIBUTING.md`. Changes are small, test-first, and merged from a branch p
 
 ## Licence
 
-Not yet chosen. Until a licence file exists, all rights are reserved.
+GNU Affero General Public License v3.0. See `LICENSE`.
+
+In plain terms: use it, change it, and run it for yourself or your company freely. If you offer
+it to other people as a service, you must publish your changes under the same licence. That is
+deliberate. It keeps the project genuinely open and stops the work being taken and closed.

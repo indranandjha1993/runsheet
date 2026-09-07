@@ -39,3 +39,8 @@ Everything configurable lives in `.env`; `.env.example` documents every variable
 
 API and event schemas in `contracts/` are the source of truth. Code is generated or validated
 against them, and a breaking change bumps the version.
+
+## Licence and contributions
+
+The project is licensed under the GNU Affero General Public License v3.0. By opening a pull
+request you agree your contribution is licensed the same way.
