@@ -9,7 +9,7 @@ const pool = new Pool({
   port: 15432,
   user: "runsheet",
   password: "runsheet",
-  database: "execution",
+  database: "test_eventstore",
 });
 
 const store = eventStore(pool);

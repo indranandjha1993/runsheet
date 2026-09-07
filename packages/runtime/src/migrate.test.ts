@@ -7,7 +7,7 @@ const pool = new Pool({
   port: 15432,
   user: "runsheet",
   password: "runsheet",
-  database: "network",
+  database: "test_runtime",
 });
 
 const dir = new URL("../test-migrations", import.meta.url).pathname;
