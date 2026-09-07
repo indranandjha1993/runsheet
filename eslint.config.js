@@ -41,5 +41,9 @@ export default tseslint.config(
     },
   },
   { files: ["**/*.test.ts"], rules: { "max-lines-per-function": "off" } },
-  { files: ["*.js", "*.ts"], rules: { "@typescript-eslint/no-unsafe-assignment": "off" } },
+  {
+    files: ["*.js", "*.ts"],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: { parserOptions: { projectService: false, project: null } },
+  },
 );
