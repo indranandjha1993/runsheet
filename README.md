@@ -66,6 +66,31 @@ before you deploy anywhere real.
 Ports are deliberately unusual, in the 13000 to 19999 range, so the stack does not collide with
 whatever else you have running.
 
+## Connecting a carrier
+
+A carrier integration implements one interface and nothing else. It takes data and returns data:
+it never touches a database, publishes an event, or decides anything, so a badly behaved one
+cannot corrupt the platform.
+
+```ts
+import { referenceCarrier, newRegistry, runCall } from "@runsheet/connector";
+
+const registry = newRegistry([referenceCarrier(), yourCarrier()]);
+const result = await runCall(registry.find("your-carrier"), "book", {
+  context: { tenantId, credentials, idempotencyKey },
+  request: { origin, destination, parcels, reference, service },
+});
+```
+
+The runner gives every connector timeouts, retries with backoff, and the same idempotency key on
+every attempt, so a carrier that lost a reply recognises the retry instead of booking twice. It
+retries only what is worth retrying: an unreachable carrier or one asking us to slow down, never
+a rejection or a bad credential. A connector that throws, hangs, or returns nonsense becomes a
+failure the platform can act on rather than an outage.
+
+`packages/connector/src/reference.ts` is a complete working carrier, small enough to read in one
+sitting. Start by copying it.
+
 ## Principles
 
 - Act, do not watch. Dashboards are not the product; closed loops are.
@@ -84,7 +109,9 @@ whatever else you have running.
 | `contracts`           | Event schemas and topic routing, the source of truth between services |
 | `api`                 | How a service describes its routes, and the specification generator   |
 | `spec`                | The published interface specification, composed from every service    |
+| `packages/connector`  | The contract a carrier integration implements, and its runner         |
 | `services/*`          | One service per bounded context, each hexagonal inside                |
+| `apps/driver`         | The handset app: offline queue, runsheet, three languages             |
 | `infra/local`         | The local stack: database, cache, broker, analytics                   |
 
 ## Contributing
