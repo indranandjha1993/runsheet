@@ -8,7 +8,17 @@ import {
   recordingPublisher,
 } from "../application/test-doubles.js";
 
-const tenant = { "x-tenant-id": "01J8Z0T0000000000000000002" };
+const tenantId = "01J8Z0T0000000000000000002";
+const tenant = { authorization: "Bearer rsk_test" };
+
+const lookup = (presented: string): Promise<
+  { tenantId: string; keyId: string; fingerprint: string; scopes: string[] } | undefined
+> =>
+  Promise.resolve(
+    presented === "rsk_test"
+      ? { tenantId, keyId: "k1", fingerprint: "abc123def456", scopes: ["consignments:write"] }
+      : undefined,
+  );
 const booking = {
   order_reference: "ORD-3001",
   service: "next_day",
@@ -23,6 +33,7 @@ let router: ReturnType<typeof createRouter>;
 beforeEach(() => {
   router = createRouter(
     ordersRoutes({
+      lookup,
       repository: inMemoryOrders(),
       publisher: recordingPublisher(),
       clock: fixedClock("2026-09-07T10:00:00.000Z"),
@@ -80,7 +91,7 @@ describe("booking over the api", () => {
     expect(read.body).toMatchObject({ guards: { attemptLimit: 3, proofRequirement: "photo" } });
   });
 
-  it("names the tenant or refuses", async () => {
+  it("refuses a request with no credential", async () => {
     const response = await router.handle({
       method: "POST",
       url: "/v1/consignments",
@@ -88,8 +99,66 @@ describe("booking over the api", () => {
       body: booking,
     });
 
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject({ error: { code: "tenant_required" } });
+    expect(response.status).toBe(401);
+    expect(response.body).toMatchObject({ error: { code: "unauthorised" } });
+  });
+
+  it("refuses a credential nobody issued", async () => {
+    const response = await router.handle({
+      method: "POST",
+      url: "/v1/consignments",
+      headers: { authorization: "Bearer rsk_forged" },
+      body: booking,
+    });
+
+    expect(response.status).toBe(401);
+  });
+
+  it("ignores a tenant header, so nobody can book into someone else's account", async () => {
+    const response = await router.handle({
+      method: "POST",
+      url: "/v1/consignments",
+      headers: { ...tenant, "x-tenant-id": "01J8Z0T0000000000000000099" },
+      body: booking,
+    });
+    const created = (response.body as { id: string }).id;
+
+    const read = await router.handle({
+      method: "GET",
+      url: `/v1/consignments/${created}`,
+      headers: tenant,
+      body: undefined,
+    });
+
+    expect((read.body as { tenantId: string }).tenantId).toBe(tenantId);
+  });
+
+  it("refuses a credential without the scope the route needs", async () => {
+    const readOnly = createRouter(
+      ordersRoutes({
+        lookup: () =>
+          Promise.resolve({
+            tenantId,
+            keyId: "k2",
+            fingerprint: "def",
+            scopes: ["consignments:read"],
+          }),
+        repository: inMemoryOrders(),
+        publisher: recordingPublisher(),
+        clock: fixedClock("2026-09-07T10:00:00.000Z"),
+        ids: countingIds(),
+      }),
+    );
+
+    const response = await readOnly.handle({
+      method: "POST",
+      url: "/v1/consignments",
+      headers: tenant,
+      body: booking,
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toMatchObject({ error: { code: "forbidden" } });
   });
 });
 

@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import { migrate, ulid } from "@runsheet/runtime";
+import { remoteLookup } from "@runsheet/auth";
 import { createRouter } from "./adapters/http.js";
 import { postgresOrders } from "./adapters/repository.js";
 import { describeConfig, ordersConfig } from "./infra/config.js";
@@ -15,6 +16,7 @@ if (applied.length > 0) logger.info("migrations applied", { count: applied.lengt
 
 const router = createRouter(
   ordersRoutes({
+    lookup: remoteLookup({ identityUrl: config.IDENTITY_URL }),
     repository: postgresOrders(pool),
     publisher: {
       publish: (event, payload, topic) => {

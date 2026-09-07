@@ -24,9 +24,6 @@
     },
     {
       "path": "../../packages/eventstore/tsconfig.build.json"
-    },
-    {
-      "path": "../../packages/auth/tsconfig.build.json"
     }
   ]
 }

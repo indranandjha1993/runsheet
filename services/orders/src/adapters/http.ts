@@ -1,5 +1,10 @@
 import { newTraceContext, toTraceparent } from "@runsheet/runtime";
 import { isDomainError } from "../domain/errors.js";
+import { NotAuthenticated, NotPermitted } from "@runsheet/auth";
+
+function isRefusal(error: unknown): error is NotAuthenticated | NotPermitted {
+  return error instanceof NotAuthenticated || error instanceof NotPermitted;
+}
 
 export interface HttpRequest {
   readonly method: string;
@@ -79,7 +84,7 @@ export function createRouter(routes: readonly Route[]): {
         const response = await match.route.handle({ ...request, params });
         return { ...response, headers: { ...headers, ...response.headers } };
       } catch (error) {
-        if (isDomainError(error)) {
+        if (isDomainError(error) || isRefusal(error)) {
           return { ...fail(error.status, error.code, error.message), headers };
         }
         // An unexpected failure is logged with the trace identifier; the caller gets no detail.
