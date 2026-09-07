@@ -3427,6 +3427,73 @@
         ]
       }
     },
+    "/v1/reports": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "List the reports that can be run, and what each one shows",
+        "operationId": "getV1Reports",
+        "responses": {
+          "200": {
+            "description": "the reports, their columns, and whether they take a hub"
+          },
+          "401": {
+            "description": "no usable credential"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "reports:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/reports/{name}": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "Run a report over a date range, as data or as a file",
+        "operationId": "getV1ReportsName}",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the rows, or a comma-separated file when one was asked for"
+          },
+          "400": {
+            "description": "the request did not validate"
+          },
+          "401": {
+            "description": "no usable credential"
+          },
+          "403": {
+            "description": "the key lacks the scope"
+          },
+          "404": {
+            "description": "no such resource"
+          }
+        },
+        "security": [
+          {
+            "apiKey": [
+              "reports:read"
+            ]
+          }
+        ]
+      }
+    },
     "/v1/runs": {
       "post": {
         "tags": [

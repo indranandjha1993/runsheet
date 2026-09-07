@@ -42,8 +42,9 @@ function send(
   body: unknown,
   headers: Record<string, string>,
 ): void {
-  response.writeHead(status, { "content-type": "application/json", ...headers });
-  response.end(JSON.stringify(body));
+  const contentType = headers["content-type"] ?? "application/json";
+  response.writeHead(status, { ...headers, "content-type": contentType });
+  response.end(contentType.startsWith("application/json") ? JSON.stringify(body) : String(body));
 }
 
 const server = createServer((incoming, outgoing) => {

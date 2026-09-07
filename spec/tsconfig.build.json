@@ -51,6 +51,9 @@
     },
     {
       "path": "../services/promise/tsconfig.build.json"
+    },
+    {
+      "path": "../services/reporting/tsconfig.build.json"
     }
   ]
 }

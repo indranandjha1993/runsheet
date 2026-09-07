@@ -61,6 +61,7 @@ describe("finding the service behind a path", () => {
         "money",
         "policy",
         "linehaul",
+        "reporting",
       ]),
     );
   });

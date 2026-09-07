@@ -59,10 +59,13 @@
       "path": "services/linehaul/tsconfig.build.json"
     },
     {
-      "path": "spec/tsconfig.build.json"
+      "path": "apps/driver/tsconfig.build.json"
     },
     {
-      "path": "apps/driver/tsconfig.build.json"
+      "path": "services/reporting/tsconfig.build.json"
+    },
+    {
+      "path": "spec/tsconfig.build.json"
     }
   ]
 }
