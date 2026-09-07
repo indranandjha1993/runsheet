@@ -21,3 +21,4 @@ CREATE DATABASE test_network;
 CREATE DATABASE test_orders;
 CREATE DATABASE test_execution;
 CREATE DATABASE test_identity;
+CREATE DATABASE test_address;
