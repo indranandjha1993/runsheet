@@ -1,0 +1,220 @@
+import { z } from "zod";
+import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
+import { DomainError } from "../domain/errors.js";
+import { rateCard } from "../domain/rate-card.js";
+import type { Route } from "../adapters/http.js";
+import { receiveInvoice, workSettlement } from "../application/reconcile.js";
+import type { MoneyDeps } from "../application/ports.js";
+import type { SettlementEvent } from "../domain/settlement.js";
+
+const carrierBody = z.object({ name: z.string().min(1), currency: z.string().length(3) });
+
+const rateCardBody = z.object({
+  carrier_account_id: z.string().min(1),
+  currency: z.string().length(3),
+  valid_from: z.iso.datetime(),
+  valid_until: z.iso.datetime().optional(),
+  lanes: z
+    .array(
+      z.object({
+        origin: z.string().min(1),
+        destination: z.string().min(1),
+        service: z.string().min(1),
+        bands: z
+          .array(
+            z.object({
+              up_to_grams: z.number().int().positive(),
+              price_minor: z.number().int().nonnegative(),
+            }),
+          )
+          .min(1),
+        surcharges: z
+          .array(z.object({ code: z.string().min(1), percent: z.number() }))
+          .default([]),
+      }),
+    )
+    .min(1),
+});
+
+const invoiceBody = z.object({
+  carrier_account_id: z.string().min(1),
+  number: z.string().min(1),
+  currency: z.string().length(3),
+  lines: z
+    .array(
+      z.object({
+        consignment_id: z.string().min(1),
+        billed_minor: z.number().int(),
+        billed_weight_grams: z.number().int().nonnegative(),
+      }),
+    )
+    .min(1),
+});
+
+const settlementBody = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("approved"), by: z.string().min(1) }),
+  z.object({ type: z.literal("disputed"), by: z.string().min(1), note: z.string() }),
+  z.object({ type: z.literal("dispute_resolved"), agreed_minor: z.number().int(), by: z.string().min(1) }),
+  z.object({ type: z.literal("dispute_rejected"), by: z.string().min(1) }),
+  z.object({ type: z.literal("paid"), reference: z.string().min(1) }),
+  z.object({ type: z.literal("written_off"), by: z.string().min(1), note: z.string() }),
+]);
+
+type SettlementBody = z.infer<typeof settlementBody>;
+
+export interface RouteDeps extends MoneyDeps {
+  readonly lookup: CallerLookup;
+}
+
+function invalid(message: string): { status: number; body: unknown } {
+  return { status: 400, body: { error: { code: "invalid_request", message } } };
+}
+
+function toEvent(body: SettlementBody): SettlementEvent {
+  if (body.type === "approved") return { type: "approved", by: body.by, automatic: false };
+  if (body.type === "dispute_resolved") {
+    return { type: "dispute_resolved", agreedMinor: body.agreed_minor, by: body.by };
+  }
+  return body;
+}
+
+function carrierRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/carrier-accounts",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:write");
+
+      const parsed = carrierBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const account = {
+        id: deps.ids.next(),
+        tenantId: caller.tenantId,
+        name: parsed.data.name,
+        currency: parsed.data.currency,
+      };
+      await deps.repository.saveCarrier(account);
+      return { status: 201, body: account };
+    },
+  };
+}
+
+function rateCardRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/rate-cards",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:write");
+
+      const parsed = rateCardBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const card = rateCard({
+        id: deps.ids.next(),
+        tenantId: caller.tenantId,
+        carrierAccountId: parsed.data.carrier_account_id,
+        currency: parsed.data.currency,
+        validFrom: new Date(parsed.data.valid_from),
+        ...(parsed.data.valid_until === undefined
+          ? {}
+          : { validUntil: new Date(parsed.data.valid_until) }),
+        lanes: parsed.data.lanes.map((lane) => ({
+          origin: lane.origin,
+          destination: lane.destination,
+          service: lane.service,
+          bands: lane.bands.map((band) => ({
+            upToGrams: band.up_to_grams,
+            priceMinor: band.price_minor,
+          })),
+          surcharges: lane.surcharges,
+        })),
+      });
+
+      await deps.repository.saveRateCard(card);
+      return { status: 201, body: card };
+    },
+  };
+}
+
+function invoiceRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/invoices",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:write");
+
+      const parsed = invoiceBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const result = await receiveInvoice(deps, {
+        tenantId: caller.tenantId,
+        carrierAccountId: parsed.data.carrier_account_id,
+        number: parsed.data.number,
+        currency: parsed.data.currency,
+        lines: parsed.data.lines.map((line) => ({
+          consignmentId: line.consignment_id,
+          billedMinor: line.billed_minor,
+          billedWeightGrams: line.billed_weight_grams,
+        })),
+      });
+
+      return { status: result.alreadyReceived ? 200 : 201, body: result };
+    },
+  };
+}
+
+function settlementRoute(deps: RouteDeps): Route {
+  return {
+    method: "POST",
+    path: "/v1/settlements/:id/events",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:write");
+
+      const parsed = settlementBody.safeParse(request.body);
+      if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
+
+      const settlement = await workSettlement(deps, {
+        tenantId: caller.tenantId,
+        settlementId: request.params["id"] ?? "",
+        event: toEvent(parsed.data),
+      });
+
+      return { status: 200, body: settlement };
+    },
+  };
+}
+
+function readRoute(deps: RouteDeps): Route {
+  return {
+    method: "GET",
+    path: "/v1/invoices/:id/settlements",
+    handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "money:read");
+
+      const settlements = await deps.repository.settlementsFor(
+        caller.tenantId,
+        request.params["id"] ?? "",
+      );
+      if (settlements.length === 0) {
+        throw new DomainError("not_found", "no settlements for that invoice");
+      }
+      return { status: 200, body: settlements };
+    },
+  };
+}
+
+export function moneyRoutes(deps: RouteDeps): Route[] {
+  return [
+    carrierRoute(deps),
+    rateCardRoute(deps),
+    invoiceRoute(deps),
+    settlementRoute(deps),
+    readRoute(deps),
+  ];
+}

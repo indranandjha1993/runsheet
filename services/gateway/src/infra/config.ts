@@ -16,6 +16,7 @@ const schema = z.object({
   PLANNING_URL: url(14240),
   PROMISE_URL: url(14250),
   EXCEPTIONS_URL: url(14260),
+  MONEY_URL: url(14270),
 });
 
 export type GatewayConfig = z.infer<typeof schema>;
@@ -38,6 +39,7 @@ export function addressOf(config: GatewayConfig, name: string): string | undefin
     planning: config.PLANNING_URL,
     promise: config.PROMISE_URL,
     exceptions: config.EXCEPTIONS_URL,
+    money: config.MONEY_URL,
   };
   return addresses[name];
 }

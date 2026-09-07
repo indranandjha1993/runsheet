@@ -13,6 +13,8 @@ export const SCOPES = [
   "network:write",
   "addresses:read",
   "addresses:write",
+  "money:read",
+  "money:write",
   "pii:read",
 ] as const;
 

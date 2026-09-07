@@ -42,6 +42,9 @@
     },
     {
       "path": "services/gateway/tsconfig.build.json"
+    },
+    {
+      "path": "services/money/tsconfig.build.json"
     }
   ]
 }
