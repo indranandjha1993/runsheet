@@ -1,3 +1,4 @@
+import { DomainError } from "./errors.js";
 import { point, type GeoPoint } from "./geo.js";
 
 const CODE = /^[A-Z0-9-]+$/;
@@ -31,27 +32,27 @@ function knownTimeZone(candidate: string): boolean {
 
 function assertCode(code: string): string {
   const normalised = code.trim().toUpperCase();
-  if (normalised === "") throw new Error("code is required");
+  if (normalised === "") throw new DomainError("invalid_input", "code is required");
   if (!CODE.test(normalised)) {
-    throw new Error("code may contain only letters, digits, and hyphens");
+    throw new DomainError("invalid_input", "code may contain only letters, digits, and hyphens");
   }
   return normalised;
 }
 
 function assertHours(opens: number, closes: number): void {
   if (opens < 0 || closes > MINUTES_IN_DAY) {
-    throw new Error("opening hours must fall within the day");
+    throw new DomainError("invalid_input", "opening hours must fall within the day");
   }
-  if (opens >= closes) throw new Error("a hub must open before it closes");
+  if (opens >= closes) throw new DomainError("invalid_input", "a hub must open before it closes");
 }
 
 export function hub(input: HubInput): Hub {
   const code = assertCode(input.code);
-  if (input.name.trim() === "") throw new Error("name is required");
+  if (input.name.trim() === "") throw new DomainError("invalid_input", "name is required");
   if (!COUNTRY.test(input.countryCode)) {
-    throw new Error("countryCode must be a two-letter code");
+    throw new DomainError("invalid_input", "countryCode must be a two-letter code");
   }
-  if (!knownTimeZone(input.timeZone)) throw new Error(`unknown time zone: ${input.timeZone}`);
+  if (!knownTimeZone(input.timeZone)) throw new DomainError("invalid_input", `unknown time zone: ${input.timeZone}`);
   assertHours(input.opensMinutesOfDay, input.closesMinutesOfDay);
 
   return {

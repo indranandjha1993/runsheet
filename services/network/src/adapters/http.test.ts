@@ -97,6 +97,42 @@ describe("the router", () => {
     expect(response.headers?.["traceparent"]).toContain("4bf92f3577b34da6a3ce929d0e0e4736");
   });
 
+  it("matches a path with no captured parts", async () => {
+    const plain = createRouter([
+      { method: "GET", path: "/v1/ping", handle: () => Promise.resolve({ status: 200, body: "pong" }) },
+    ]);
+
+    const response = await plain.handle({
+      method: "GET",
+      url: "/v1/ping",
+      headers: {},
+      body: undefined,
+    });
+
+    expect(response.body).toBe("pong");
+  });
+
+  it("lets a handler set its own headers alongside the trace", async () => {
+    const custom = createRouter([
+      {
+        method: "GET",
+        path: "/v1/thing",
+        handle: () =>
+          Promise.resolve({ status: 200, body: {}, headers: { "cache-control": "no-store" } }),
+      },
+    ]);
+
+    const response = await custom.handle({
+      method: "GET",
+      url: "/v1/thing",
+      headers: {},
+      body: undefined,
+    });
+
+    expect(response.headers?.["cache-control"]).toBe("no-store");
+    expect(response.headers?.["traceparent"]).toBeDefined();
+  });
+
   it("ignores a query string when matching", async () => {
     const response = await router.handle({
       method: "GET",

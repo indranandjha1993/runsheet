@@ -1,4 +1,5 @@
 import { envelope } from "@runsheet/kernel";
+import { DomainError } from "../domain/errors.js";
 import { hub, type Hub } from "../domain/hub.js";
 import type { Clock, EventPublisher, Identifiers, NetworkRepository } from "./ports.js";
 
@@ -55,7 +56,7 @@ export async function registerHub(
   const candidate = proposedHub(command, deps.ids.next());
   const existing = await deps.repository.hubByCode(candidate.tenantId, candidate.code);
   if (existing !== undefined) {
-    throw new Error(`a hub with code ${candidate.code} already exists`);
+    throw new DomainError("already_exists", `a hub with code ${candidate.code} already exists`);
   }
 
   await deps.repository.saveHub(candidate);

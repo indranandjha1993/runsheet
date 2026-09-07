@@ -1,4 +1,5 @@
 import { newTraceContext, toTraceparent } from "@runsheet/runtime";
+import { isDomainError } from "../domain/errors.js";
 
 export interface HttpRequest {
   readonly method: string;
@@ -51,7 +52,7 @@ export function createRouter(routes: readonly Route[]): {
     async handle(request) {
       const trace = newTraceContext(request.headers["traceparent"]);
       const headers = { traceparent: toTraceparent(trace) };
-      const path = request.url.split("?")[0] ?? request.url;
+      const path = new URL(request.url, "http://router.local").pathname;
 
       const matches = compiled
         .map((route) => ({ route, found: route.pattern.exec(path) }))
@@ -69,16 +70,19 @@ export function createRouter(routes: readonly Route[]): {
         };
       }
 
-      const params: Record<string, string> = {};
-      match.route.names.forEach((name, index) => {
-        params[name] = match.found?.[index + 1] ?? "";
-      });
+      const captured = match.found === null ? [] : match.found.slice(1);
+      const params = Object.fromEntries(
+        captured.map((value, index) => [match.route.names[index] ?? String(index), value]),
+      );
 
       try {
         const response = await match.route.handle({ ...request, params });
         return { ...response, headers: { ...headers, ...response.headers } };
-      } catch {
-        // The cause is logged with the trace identifier; the caller gets the identifier only.
+      } catch (error) {
+        if (isDomainError(error)) {
+          return { ...fail(error.status, error.code, error.message), headers };
+        }
+        // An unexpected failure is logged with the trace identifier; the caller gets no detail.
         return { ...fail(500, "internal_error", "the request could not be completed"), headers };
       }
     },

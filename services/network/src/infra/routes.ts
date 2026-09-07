@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DomainError } from "../domain/errors.js";
 import type { Route } from "../adapters/http.js";
 import { checkServiceability } from "../application/check-serviceability.js";
 import { registerHub, type RegisterHubDeps } from "../application/register-hub.js";
@@ -23,7 +24,7 @@ const serviceabilityQuery = z.object({
 function tenantOf(headers: Record<string, string | undefined>): string {
   const tenant = headers["x-tenant-id"];
   if (tenant === undefined || tenant === "") {
-    throw new Error("x-tenant-id header is required");
+    throw new DomainError("tenant_required", "the x-tenant-id header is required");
   }
   return tenant;
 }
@@ -38,7 +39,7 @@ function createHubRoute(deps: RegisterHubDeps): Route {
     path: "/v1/hubs",
     handle: async (request) => {
       const parsed = hubBody.safeParse(request.body);
-      if (!parsed.success) return invalid(parsed.error.issues[0]?.message ?? "invalid body");
+      if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
 
       const hub = await registerHub(deps, {
         tenantId: tenantOf(request.headers),
@@ -64,7 +65,7 @@ function serviceabilityRoute(deps: RegisterHubDeps): Route {
     handle: async (request) => {
       const query = Object.fromEntries(new URL(request.url, "http://local").searchParams);
       const parsed = serviceabilityQuery.safeParse(query);
-      if (!parsed.success) return invalid(parsed.error.issues[0]?.message ?? "invalid query");
+      if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
 
       const answer = await checkServiceability(deps, {
         tenantId: tenantOf(request.headers),
