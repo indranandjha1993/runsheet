@@ -30,6 +30,9 @@
     },
     {
       "path": "services/address/tsconfig.build.json"
+    },
+    {
+      "path": "services/exceptions/tsconfig.build.json"
     }
   ]
 }

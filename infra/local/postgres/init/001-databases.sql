@@ -22,3 +22,4 @@ CREATE DATABASE test_orders;
 CREATE DATABASE test_execution;
 CREATE DATABASE test_identity;
 CREATE DATABASE test_address;
+CREATE DATABASE test_exceptions;
