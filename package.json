@@ -10,8 +10,8 @@
     "build": "pnpm -r --if-present build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "lint": "eslint . && prettier --check --ignore-unknown \"packages/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
-    "format": "prettier --write --ignore-unknown \"packages/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
+    "lint": "eslint . && prettier --check --ignore-unknown \"packages/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
+    "format": "prettier --write --ignore-unknown \"packages/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
     "typecheck": "tsc -b",
     "coverage": "vitest run --coverage"
   },
@@ -26,6 +26,7 @@
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.69.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "zod": "^4.5.4"
   }
 }
