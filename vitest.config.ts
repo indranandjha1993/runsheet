@@ -8,6 +8,7 @@ export default defineConfig({
       "contracts/**/*.test.ts",
       "api/**/*.test.ts",
       "spec/**/*.test.ts",
+      "apps/**/*.test.ts",
     ],
     coverage: {
       provider: "v8",

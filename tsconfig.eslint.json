@@ -9,6 +9,7 @@
     "contracts/src/**/*",
     "services/*/src/**/*",
     "api/src/**/*",
-    "spec/src/**/*"
+    "spec/src/**/*",
+    "apps/*/src/**/*"
   ]
 }
