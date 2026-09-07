@@ -21,8 +21,8 @@ export interface CashMovement {
 
 export interface Posting {
   readonly account: CashAccount;
-  readonly driverId?: string;
-  readonly merchantId?: string;
+  readonly driverId?: string | undefined;
+  readonly merchantId?: string | undefined;
   readonly deltaMinor: number;
 }
 
@@ -31,8 +31,8 @@ export interface CashEntry {
   readonly tenantId: string;
   readonly kind: MovementKind;
   readonly account: CashAccount;
-  readonly driverId?: string;
-  readonly merchantId?: string;
+  readonly driverId?: string | undefined;
+  readonly merchantId?: string | undefined;
   readonly deltaMinor: number;
   readonly amountMinor: number;
   readonly currency: string;

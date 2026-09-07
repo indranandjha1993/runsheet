@@ -73,7 +73,8 @@ function windowText(promise: DeliveryPromise): string {
 // the message about a four-hour one.
 export async function reportEta(deps: PromiseDeps, command: EtaCommand): Promise<DeliveryPromise> {
   const known = await deps.repository.byConsignment(command.tenantId, command.consignmentId);
-  if (known === undefined) throw new DomainError("not_found", "nothing was promised for that consignment");
+  if (known === undefined)
+    throw new DomainError("not_found", "nothing was promised for that consignment");
 
   const updated = updateEta(known, { eta: command.eta, at: deps.clock.now() });
   await deps.repository.save(updated);
@@ -99,7 +100,10 @@ interface NotifyRequest {
   readonly values: Record<string, string>;
 }
 
-function recordOf(request: NotifyRequest, id: string): Omit<Notification, "sentAt" | "failedReason"> {
+function recordOf(
+  request: NotifyRequest,
+  id: string,
+): Omit<Notification, "sentAt" | "failedReason"> {
   return {
     id,
     tenantId: request.promise.tenantId,
@@ -159,7 +163,8 @@ export interface SettleCommand {
 
 export async function settle(deps: PromiseDeps, command: SettleCommand): Promise<DeliveryPromise> {
   const known = await deps.repository.byConsignment(command.tenantId, command.consignmentId);
-  if (known === undefined) throw new DomainError("not_found", "nothing was promised for that consignment");
+  if (known === undefined)
+    throw new DomainError("not_found", "nothing was promised for that consignment");
 
   const settled = { ...known, settled: true, lastMilestone: command.milestone, notifiable: false };
   await deps.repository.save(settled);

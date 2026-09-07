@@ -61,7 +61,8 @@ export type ExceptionEvent =
 
 export function severityOf(type: string): Severity {
   const known = TYPES[type];
-  if (known === undefined) throw new DomainError("invalid_input", `unknown exception type: ${type}`);
+  if (known === undefined)
+    throw new DomainError("invalid_input", `unknown exception type: ${type}`);
   return known.severity;
 }
 

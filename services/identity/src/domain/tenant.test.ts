@@ -37,8 +37,8 @@ describe("a tenant", () => {
   });
 
   it("supports the launch markets", () => {
-    expect(createTenant({ ...valid, countryCode: "AE", currency: "AED", locale: "ar-AE" }).locale).toBe(
-      "ar-AE",
-    );
+    expect(
+      createTenant({ ...valid, countryCode: "AE", currency: "AED", locale: "ar-AE" }).locale,
+    ).toBe("ar-AE");
   });
 });

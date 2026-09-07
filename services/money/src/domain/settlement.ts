@@ -15,7 +15,7 @@ export interface Evidence {
   readonly expectedMinor: number;
   readonly currency: string;
   readonly shippedWeightGrams: number;
-  readonly deliveredAt?: Date;
+  readonly deliveredAt?: Date | undefined;
   readonly proofSatisfiesRequirement: boolean;
   readonly origin?: string;
   readonly destination?: string;
@@ -83,12 +83,7 @@ export function match(
 }
 
 export type SettlementState =
-  | MatchOutcome
-  | "disputed"
-  | "approved"
-  | "paid"
-  | "rejected"
-  | "written_off";
+  MatchOutcome | "disputed" | "approved" | "paid" | "rejected" | "written_off";
 
 export interface Settlement {
   readonly id: string;
@@ -171,10 +166,7 @@ function assertNoted(event: SettlementEvent): void {
   }
 }
 
-export function applyToSettlement(
-  settlement: Settlement,
-  event: SettlementEvent,
-): Settlement {
+export function applyToSettlement(settlement: Settlement, event: SettlementEvent): Settlement {
   if (!ALLOWED[event.type].includes(settlement.state)) {
     throw new DomainError(
       "transition_not_allowed",

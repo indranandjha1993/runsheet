@@ -20,7 +20,10 @@ function closest(from: Location, jobs: readonly Job[]): Job | undefined {
   for (const job of jobs) {
     const candidate = distance(from, job.location);
     // A tie falls back to the identifier so the plan never depends on the order rows arrived.
-    if (candidate < bestDistance || (candidate === bestDistance && best !== undefined && job.id < best.id)) {
+    if (
+      candidate < bestDistance ||
+      (candidate === bestDistance && best !== undefined && job.id < best.id)
+    ) {
       best = job;
       bestDistance = candidate;
     }

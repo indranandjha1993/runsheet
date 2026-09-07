@@ -38,11 +38,19 @@ const actionBody = z.object({
 });
 
 const eventBody = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("assigned"), worker_id: z.string().min(1), vehicle_id: z.string().min(1) }),
+  z.object({
+    type: z.literal("assigned"),
+    worker_id: z.string().min(1),
+    vehicle_id: z.string().min(1),
+  }),
   z.object({ type: z.literal("unassigned") }),
   z.object({ type: z.literal("started") }),
   z.object({ type: z.literal("suspended"), reason: z.string().min(1) }),
-  z.object({ type: z.literal("stop_moved"), stop_id: z.string().min(1), to_run_id: z.string().min(1) }),
+  z.object({
+    type: z.literal("stop_moved"),
+    stop_id: z.string().min(1),
+    to_run_id: z.string().min(1),
+  }),
   z.object({ type: z.literal("completed") }),
   z.object({ type: z.literal("cash_declared"), amount_minor: z.number().int() }),
   z.object({ type: z.literal("cash_counted"), amount_minor: z.number().int() }),
@@ -63,9 +71,7 @@ const proofBody = z.object({
 
 type Builders = { [K in EventBody["type"]]: (body: Extract<EventBody, { type: K }>) => RunEvent };
 
-const plain =
-  (type: RunEvent["type"]) =>
-  (): RunEvent => ({ type }) as RunEvent;
+const plain = (type: RunEvent["type"]) => (): RunEvent => ({ type }) as RunEvent;
 
 const BUILDERS: Builders = {
   unassigned: plain("unassigned"),
@@ -201,10 +207,7 @@ function readRoute(deps: RouteDeps): Route {
       const caller = await callerFrom(deps.lookup, request.headers);
       requireScope(caller, "runs:read");
 
-      const found = await deps.repository.runById(
-        caller.tenantId,
-        request.params["id"] ?? "",
-      );
+      const found = await deps.repository.runById(caller.tenantId, request.params["id"] ?? "");
       if (found === undefined) throw new DomainError("not_found", "no run with that identifier");
       return { status: 200, body: found.run };
     },
@@ -324,12 +327,15 @@ function scanOutRoute(deps: RouteDeps): Route {
 function scanHistoryRoute(deps: RouteDeps): Route {
   return {
     method: "GET",
-    path: "/v1/consignments/:id/hub-scans",
+    path: "/v1/hub-scans",
     handle: async (request) => {
       const caller = await callerFrom(deps.lookup, request.headers);
       requireScope(caller, "runs:read");
 
-      const scans = await deps.repository.scansFor(caller.tenantId, request.params["id"] ?? "");
+      const consignmentId = request.query["consignment_id"] ?? "";
+      if (consignmentId === "") return invalid("name the consignment whose scans you want");
+
+      const scans = await deps.repository.scansFor(caller.tenantId, consignmentId);
       return { status: 200, body: { scans: scans.map(scanResponse) } };
     },
   };

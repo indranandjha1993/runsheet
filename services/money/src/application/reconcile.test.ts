@@ -127,9 +127,9 @@ describe("receiving an invoice", () => {
   });
 
   it("refuses an invoice from a carrier nobody set up", async () => {
-    await expect(
-      receiveInvoice(deps, invoice({ carrierAccountId: "nope" })),
-    ).rejects.toThrow("no carrier account with that identifier");
+    await expect(receiveInvoice(deps, invoice({ carrierAccountId: "nope" }))).rejects.toThrow(
+      "no carrier account with that identifier",
+    );
   });
 
   it("refuses an invoice with no lines", async () => {

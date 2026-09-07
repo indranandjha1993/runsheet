@@ -49,9 +49,10 @@ describe("packing a day's work into vehicles", () => {
   });
 
   it("spreads work across vehicles when one cannot take it all", () => {
-    const packed = packInto([van({ id: "v1" }), van({ id: "v2" })], [
-      job("a"), job("b"), job("c"), job("d"), job("e"),
-    ]);
+    const packed = packInto(
+      [van({ id: "v1" }), van({ id: "v2" })],
+      [job("a"), job("b"), job("c"), job("d"), job("e")],
+    );
 
     expect(packed.assigned).toHaveLength(2);
     expect(packed.unassigned).toHaveLength(0);
@@ -81,9 +82,10 @@ describe("packing a day's work into vehicles", () => {
   it("respects weight as well as stop count when spreading", () => {
     const heavy = (id: string): Job => job(id, { weightGrams: 30_000 });
 
-    const packed = packInto([van({ id: "v1" }), van({ id: "v2" })], [
-      heavy("a"), heavy("b"), heavy("c"),
-    ]);
+    const packed = packInto(
+      [van({ id: "v1" }), van({ id: "v2" })],
+      [heavy("a"), heavy("b"), heavy("c")],
+    );
 
     expect(packed.assigned.map((a) => a.jobs.length)).toEqual([1, 1]);
     expect(packed.unassigned.map((j) => j.id)).toEqual(["c"]);
@@ -94,9 +96,10 @@ describe("ordering stops by distance", () => {
   const at = { latitude: 12.9, longitude: 77.6 };
 
   it("puts the nearest first", () => {
-    const sorted = [job("far", { location: { latitude: 13.5, longitude: 77.6 } }), job("near", { location: { latitude: 12.91, longitude: 77.6 } })].sort(
-      byDistanceFrom(at),
-    );
+    const sorted = [
+      job("far", { location: { latitude: 13.5, longitude: 77.6 } }),
+      job("near", { location: { latitude: 12.91, longitude: 77.6 } }),
+    ].sort(byDistanceFrom(at));
 
     expect(sorted.map((j) => j.id)).toEqual(["near", "far"]);
   });

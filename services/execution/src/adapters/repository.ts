@@ -118,9 +118,19 @@ async function writeRun(pool: Pool, run: Run, expectedVersion: number): Promise<
        suspend_reason = EXCLUDED.suspend_reason, version = EXCLUDED.version, updated_at = now()
      WHERE runs.version = $13`,
     [
-      run.id, run.tenantId, run.hubId, run.date, run.status, run.workerId ?? null,
-      run.vehicleId ?? null, run.declaredCashMinor ?? null, run.countedCashMinor ?? null,
-      run.forcedClose, run.suspendReason ?? null, expectedVersion + 1, expectedVersion,
+      run.id,
+      run.tenantId,
+      run.hubId,
+      run.date,
+      run.status,
+      run.workerId ?? null,
+      run.vehicleId ?? null,
+      run.declaredCashMinor ?? null,
+      run.countedCashMinor ?? null,
+      run.forcedClose,
+      run.suspendReason ?? null,
+      expectedVersion + 1,
+      expectedVersion,
     ],
   );
   if (result.rowCount === 0) {
@@ -148,8 +158,14 @@ async function writeStops(pool: Pool, run: Run): Promise<void> {
            ndr_reason = EXCLUDED.ndr_reason, proof_id = EXCLUDED.proof_id,
            cash_collected_minor = EXCLUDED.cash_collected_minor`,
         [
-          action.id, stop.id, action.kind, action.consignmentId, action.result ?? null,
-          action.ndrReason ?? null, action.proofId ?? null, action.cashCollectedMinor ?? null,
+          action.id,
+          stop.id,
+          action.kind,
+          action.consignmentId,
+          action.result ?? null,
+          action.ndrReason ?? null,
+          action.proofId ?? null,
+          action.cashCollectedMinor ?? null,
         ],
       );
     }
@@ -180,7 +196,10 @@ function runQueries(pool: Pool): Pick<ExecutionRepository, "saveRun" | "runById"
            AND status NOT IN ('closed','cancelled') ORDER BY id`,
         [tenantId, hubId, date],
       );
-      const stops = await loadStops(pool, result.rows.map((row) => row.id));
+      const stops = await loadStops(
+        pool,
+        result.rows.map((row) => row.id),
+      );
       return result.rows.map((row) => toRun(row, stops.get(row.id) ?? []));
     },
   };
@@ -220,8 +239,15 @@ function proofQueries(pool: Pool): Pick<ExecutionRepository, "saveProof" | "proo
            media_ids, satisfies_requirement, requirement)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
         [
-          proof.id, proof.tenantId, proof.consignmentId, proof.kinds.join(","), proof.capturedAt,
-          proof.geofenceOk ?? null, proof.mediaIds, proof.satisfiesRequirement, proof.requirement,
+          proof.id,
+          proof.tenantId,
+          proof.consignmentId,
+          proof.kinds.join(","),
+          proof.capturedAt,
+          proof.geofenceOk ?? null,
+          proof.mediaIds,
+          proof.satisfiesRequirement,
+          proof.requirement,
         ],
       );
     },
@@ -271,9 +297,18 @@ function scanQueries(pool: Pool): Pick<ExecutionRepository, "saveScan" | "scansF
            run_id, scanned_at, accepted, weight_grams, volumetric_grams, exception)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
         [
-          id, scan.tenantId, scan.hubId, scan.workerId, scan.consignmentId, direction,
-          runId ?? null, scan.at, scan.accepted, scan.weightGrams ?? null,
-          scan.volumetricGrams ?? null, scan.exception ?? null,
+          id,
+          scan.tenantId,
+          scan.hubId,
+          scan.workerId,
+          scan.consignmentId,
+          direction,
+          runId ?? null,
+          scan.at,
+          scan.accepted,
+          scan.weightGrams ?? null,
+          scan.volumetricGrams ?? null,
+          scan.exception ?? null,
         ],
       );
     },
@@ -301,7 +336,8 @@ function streamQueries(pool: Pool): Pick<ExecutionRepository, "nextSequence"> {
         [tenantId, aggregateId],
       );
       const row = result.rows[0];
-      if (row === undefined) throw new Error(`could not claim a stream position for ${aggregateId}`);
+      if (row === undefined)
+        throw new Error(`could not claim a stream position for ${aggregateId}`);
       return Number(row.last_sequence);
     },
   };

@@ -2,7 +2,10 @@ import { loadConfig } from "@runsheet/runtime";
 import { z } from "zod";
 
 const url = (port: number): z.ZodDefault<z.ZodString> =>
-  z.string().min(1).default(`http://localhost:${String(port)}`);
+  z
+    .string()
+    .min(1)
+    .default(`http://localhost:${String(port)}`);
 
 const schema = z.object({
   PORT_GATEWAY: z.coerce.number().int().positive().default(14000),
@@ -13,6 +16,7 @@ const schema = z.object({
   ADDRESS_URL: url(14215),
   ORDERS_URL: url(14220),
   EXECUTION_URL: url(14230),
+  LINEHAUL_URL: url(14235),
   PLANNING_URL: url(14240),
   PROMISE_URL: url(14250),
   EXCEPTIONS_URL: url(14260),
@@ -37,6 +41,7 @@ export function addressOf(config: GatewayConfig, name: string): string | undefin
     address: config.ADDRESS_URL,
     orders: config.ORDERS_URL,
     execution: config.EXECUTION_URL,
+    linehaul: config.LINEHAUL_URL,
     planning: config.PLANNING_URL,
     promise: config.PROMISE_URL,
     exceptions: config.EXCEPTIONS_URL,

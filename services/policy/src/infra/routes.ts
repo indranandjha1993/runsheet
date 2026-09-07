@@ -82,7 +82,10 @@ function toPolicyEvent(body: MoveBody): Parameters<typeof movePolicy>[1]["event"
   return body;
 }
 
-function toDecisionEvent(body: OutcomeBody, at: Date): Parameters<typeof recordOutcome>[1]["event"] {
+function toDecisionEvent(
+  body: OutcomeBody,
+  at: Date,
+): Parameters<typeof recordOutcome>[1]["event"] {
   if (body.type === "executed") {
     return { type: "executed", producedEventIds: body.produced_event_ids, at };
   }

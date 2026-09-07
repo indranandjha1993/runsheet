@@ -37,7 +37,12 @@ describe("zone resolution", () => {
   });
 
   it("returns nothing when no zone covers the point", () => {
-    expect(resolveZone([zone({ id: "z", hubId: "hub-a", priority: 0, at: [12.99, 77.59] })], point(1, 1))).toBeUndefined();
+    expect(
+      resolveZone(
+        [zone({ id: "z", hubId: "hub-a", priority: 0, at: [12.99, 77.59] })],
+        point(1, 1),
+      ),
+    ).toBeUndefined();
   });
 
   it("prefers the higher priority zone where two overlap", () => {
@@ -68,7 +73,10 @@ describe("zone resolution", () => {
   });
 
   it("returns nothing when every covering zone is deactivated", () => {
-    const off = { ...zone({ id: "z-off", hubId: "hub-a", priority: 0, at: [12.99, 77.59] }), active: false };
+    const off = {
+      ...zone({ id: "z-off", hubId: "hub-a", priority: 0, at: [12.99, 77.59] }),
+      active: false,
+    };
 
     expect(resolveZone([off], point(12.98, 77.6))).toBeUndefined();
   });

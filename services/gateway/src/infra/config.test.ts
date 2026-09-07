@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addressOf, describeConfig, gatewayConfig } from "./config.js";
+import { UPSTREAMS } from "../domain/routing-table.js";
 
 describe("gateway configuration", () => {
   it("runs on the documented port and rate with nothing configured", () => {
@@ -39,12 +40,23 @@ describe("gateway configuration", () => {
   });
 
   it("rejects a rate that is not a number", () => {
-    expect(() => gatewayConfig({ RATE_LIMIT_PER_MINUTE: "fast" })).toThrow(
-      /RATE_LIMIT_PER_MINUTE/,
-    );
+    expect(() => gatewayConfig({ RATE_LIMIT_PER_MINUTE: "fast" })).toThrow(/RATE_LIMIT_PER_MINUTE/);
   });
 
   it("masks the service addresses when describing itself for the log", () => {
     expect(describeConfig(gatewayConfig({}))["ORDERS_URL"]).toBe("[set]");
+  });
+});
+
+describe("resolving the newest upstream", () => {
+  it("knows where the linehaul service is", () => {
+    expect(addressOf(gatewayConfig({}), "linehaul")).toBe("http://localhost:14235");
+  });
+
+  it("has an address for every upstream the routing table names", () => {
+    const config = gatewayConfig({});
+    const names = new Set(UPSTREAMS.map((upstream) => upstream.name));
+
+    for (const name of names) expect(addressOf(config, name)).toBeDefined();
   });
 });

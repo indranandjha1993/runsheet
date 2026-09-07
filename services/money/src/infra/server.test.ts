@@ -21,7 +21,12 @@ function start(
   const port = typeof address === "object" && address !== null ? address.port : 0;
   return {
     url: `http://127.0.0.1:${String(port)}`,
-    close: () => new Promise((resolve) => server.close(() => { resolve(); })),
+    close: () =>
+      new Promise((resolve) =>
+        server.close(() => {
+          resolve();
+        }),
+      ),
   };
 }
 
@@ -89,7 +94,12 @@ describe("the http server", () => {
     const port = typeof address === "object" && address !== null ? address.port : 0;
     running = {
       url: `http://127.0.0.1:${String(port)}`,
-      close: () => new Promise((resolve) => server.close(() => { resolve(); })),
+      close: () =>
+        new Promise((resolve) =>
+          server.close(() => {
+            resolve();
+          }),
+        ),
     };
 
     await fetch(`${running.url}/v1/hubs`, {

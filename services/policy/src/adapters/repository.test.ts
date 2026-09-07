@@ -83,9 +83,7 @@ describe("the policy repository", () => {
   });
 
   it("refuses a rollout that is not a percentage", async () => {
-    await expect(
-      repository.savePolicy({ ...policy(), rolloutPercent: 150 }),
-    ).rejects.toThrow();
+    await expect(repository.savePolicy({ ...policy(), rolloutPercent: 150 })).rejects.toThrow();
   });
 
   it("finds the policies watching for an event, newest version first", async () => {

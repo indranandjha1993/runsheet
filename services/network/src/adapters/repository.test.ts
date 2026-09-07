@@ -6,7 +6,9 @@ import { hub } from "../domain/hub.js";
 import { polygon } from "../domain/geo.js";
 import { lane } from "../domain/lane.js";
 
-const pool = new Pool({ connectionString: "postgres://runsheet:runsheet@localhost:15432/test_network" });
+const pool = new Pool({
+  connectionString: "postgres://runsheet:runsheet@localhost:15432/test_network",
+});
 const repository = postgresNetwork(pool);
 const migrations = new URL("../../migrations", import.meta.url).pathname;
 const tenantId = "01J8Z0T0000000000000000002";
@@ -90,8 +92,16 @@ describe("the network repository", () => {
     ]);
     const base = { hubId: south.id, priority: 0, boundary };
 
-    await repository.saveZone(tenantId, { ...base, id: "01J8Z0T0000000000000000021", active: true });
-    await repository.saveZone(tenantId, { ...base, id: "01J8Z0T0000000000000000022", active: false });
+    await repository.saveZone(tenantId, {
+      ...base,
+      id: "01J8Z0T0000000000000000021",
+      active: true,
+    });
+    await repository.saveZone(tenantId, {
+      ...base,
+      id: "01J8Z0T0000000000000000022",
+      active: false,
+    });
 
     expect(await repository.zonesFor(tenantId)).toHaveLength(1);
   });

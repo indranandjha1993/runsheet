@@ -82,6 +82,7 @@ describe("the store and the contracts agree", () => {
       "consignment",
       "decision",
       "exception",
+      "linehaul",
       "money",
       "network",
       "order",
@@ -100,11 +101,13 @@ describe("the store and the contracts agree", () => {
       const promiseFamily = ["promise", "notification"];
       const moneyFamily = ["invoice", "settlement", "cash"];
       const decisionFamily = ["policy", "decision"];
+      const linehaulFamily = ["bag", "trip"];
       if (topic === "run") return !runFamily.includes(prefix);
       if (topic === "network") return !networkFamily.includes(prefix);
       if (topic === "promise") return !promiseFamily.includes(prefix);
       if (topic === "money") return !moneyFamily.includes(prefix);
       if (topic === "decision") return !decisionFamily.includes(prefix);
+      if (topic === "linehaul") return !linehaulFamily.includes(prefix);
       return prefix !== topic;
     });
 

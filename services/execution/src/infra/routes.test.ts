@@ -49,7 +49,11 @@ interface PlannedRun {
   stops: { id: string; actions: { id: string }[] }[];
 }
 
-const post = (url: string, body: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
 async function planned(): Promise<PlannedRun> {
@@ -184,9 +188,9 @@ describe("a shift over the api", () => {
       status: "suspended",
     });
     await post(events, { stop_id: run.stops[1]?.id, to_run_id: "run-2", type: "stop_moved" });
-    expect((await post(events, { type: "force_closed", reason: "device_lost" })).body).toMatchObject(
-      { status: "closed" },
-    );
+    expect(
+      (await post(events, { type: "force_closed", reason: "device_lost" })).body,
+    ).toMatchObject({ status: "closed" });
   });
 
   it("cancels a run nobody has started", async () => {
@@ -346,7 +350,7 @@ describe("hub scanning over the api", () => {
 
     const response = await router.handle({
       method: "GET",
-      url: "/v1/consignments/c1/hub-scans",
+      url: "/v1/hub-scans?consignment_id=c1",
       headers: tenant,
       body: undefined,
     });
@@ -354,4 +358,4 @@ describe("hub scanning over the api", () => {
     expect(response.status).toBe(200);
     expect((response.body as { scans: unknown[] }).scans).toHaveLength(2);
   });
-})
+});

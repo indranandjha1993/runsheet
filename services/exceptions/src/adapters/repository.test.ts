@@ -96,10 +96,22 @@ describe("the exceptions repository", () => {
   it("returns the queue worst first", async () => {
     await repository.save(sample());
     await repository.save(
-      raise({ ...sample(), id: "01J8Z0T0000000000000000011", type: "address_unclear", subjectId: "a-1", at }),
+      raise({
+        ...sample(),
+        id: "01J8Z0T0000000000000000011",
+        type: "address_unclear",
+        subjectId: "a-1",
+        at,
+      }),
     );
     await repository.save(
-      raise({ ...sample(), id: "01J8Z0T0000000000000000012", type: "parcel_damaged", subjectId: "c-1", at }),
+      raise({
+        ...sample(),
+        id: "01J8Z0T0000000000000000012",
+        type: "parcel_damaged",
+        subjectId: "c-1",
+        at,
+      }),
     );
 
     expect((await repository.queue(tenantId)).map((e) => e.severity)).toEqual([
@@ -112,7 +124,13 @@ describe("the exceptions repository", () => {
   it("can filter the queue to one severity", async () => {
     await repository.save(sample());
     await repository.save(
-      raise({ ...sample(), id: "01J8Z0T0000000000000000011", type: "address_unclear", subjectId: "a-1", at }),
+      raise({
+        ...sample(),
+        id: "01J8Z0T0000000000000000011",
+        type: "address_unclear",
+        subjectId: "a-1",
+        at,
+      }),
     );
 
     expect(await repository.queue(tenantId, "high")).toHaveLength(1);

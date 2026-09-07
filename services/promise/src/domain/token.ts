@@ -50,11 +50,7 @@ function signatureMatches(encoded: string, presented: string, secret: string): b
   return timingSafeEqual(expected, actual);
 }
 
-export function readToken(
-  token: string,
-  secret: string,
-  at: Date,
-): TokenContents | undefined {
+export function readToken(token: string, secret: string, at: Date): TokenContents | undefined {
   const separator = token.indexOf(".");
   if (separator < 1 || token.slice(separator + 1).includes(".")) return undefined;
 

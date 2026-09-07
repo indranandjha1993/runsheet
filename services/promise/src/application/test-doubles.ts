@@ -28,9 +28,7 @@ export function inMemoryPromises(): PromiseRepository {
     },
     notificationsFor: (tenantId, consignmentId) =>
       Promise.resolve(
-        notifications.filter(
-          (n) => n.tenantId === tenantId && n.consignmentId === consignmentId,
-        ),
+        notifications.filter((n) => n.tenantId === tenantId && n.consignmentId === consignmentId),
       ),
     nextSequence: (tenantId, aggregateId) => {
       const at = key(tenantId, aggregateId);

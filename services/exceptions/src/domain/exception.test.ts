@@ -41,7 +41,9 @@ describe("raising an exception", () => {
   });
 
   it("has a key that is the same for the same problem on the same subject", () => {
-    expect(keyOf(raised())).toBe(keyOf({ ...raised(), id: "exc-2" }));
+    const sameProblem: Exception = { ...raised(), id: "exc-2" };
+
+    expect(keyOf(raised())).toBe(keyOf(sameProblem));
     expect(keyOf(raised())).not.toBe(keyOf({ ...raised(), subjectId: "run-2" }));
   });
 });

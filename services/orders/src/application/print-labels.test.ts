@@ -50,7 +50,11 @@ describe("printing labels for a consignment", () => {
   it("gives one label per package", async () => {
     const consignment = await booked(3);
 
-    const labels = await printLabels(deps, { tenantId: "t", consignmentId: consignment.id, ...routing });
+    const labels = await printLabels(deps, {
+      tenantId: "t",
+      consignmentId: consignment.id,
+      ...routing,
+    });
 
     expect(labels).toHaveLength(3);
     expect(labels.map((label) => label.pieceOf)).toEqual(["1 of 3", "2 of 3", "3 of 3"]);
@@ -59,7 +63,11 @@ describe("printing labels for a consignment", () => {
   it("gives every piece its own barcode", async () => {
     const consignment = await booked(3);
 
-    const labels = await printLabels(deps, { tenantId: "t", consignmentId: consignment.id, ...routing });
+    const labels = await printLabels(deps, {
+      tenantId: "t",
+      consignmentId: consignment.id,
+      ...routing,
+    });
 
     expect(new Set(labels.map((label) => label.barcode)).size).toBe(3);
   });

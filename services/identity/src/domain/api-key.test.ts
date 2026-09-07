@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fingerprintOf, hashSecret, issue, scopesAllow, verify } from "./api-key.js";
+import { fingerprintOf, hashSecret, issue, SCOPES, scopesAllow, verify } from "./api-key.js";
 
 const tenantId = "01J8Z0T0000000000000000002";
 
@@ -32,7 +32,13 @@ describe("issuing a key", () => {
 
   it("refuses a scope nobody defined", () => {
     expect(() =>
-      issue({ id: "k", tenantId, name: "n", scopes: ["everything:always"], secret: "a".repeat(48) }),
+      issue({
+        id: "k",
+        tenantId,
+        name: "n",
+        scopes: ["everything:always"],
+        secret: "a".repeat(48),
+      }),
     ).toThrow("unknown scope: everything:always");
   });
 
@@ -117,5 +123,24 @@ describe("edge cases in verification", () => {
 
   it("rejects a scope string with no action part", () => {
     expect(scopesAllow(["consignments:write"], "consignments" as never)).toBe(false);
+  });
+});
+
+describe("the scopes the platform issues", () => {
+  it("covers the middle mile, so a hub can bag and dispatch", () => {
+    expect(SCOPES).toContain("linehaul:write");
+    expect(SCOPES).toContain("linehaul:read");
+  });
+
+  it("names every scope as a resource and an action", () => {
+    for (const scope of SCOPES) expect(scope).toMatch(/^[a-z]+:(read|write)$/);
+  });
+
+  it("offers a read scope for every write scope, so a viewer can be created", () => {
+    const writes = SCOPES.filter((scope) => scope.endsWith(":write"));
+
+    for (const write of writes) {
+      expect(SCOPES).toContain(write.replace(":write", ":read"));
+    }
   });
 });

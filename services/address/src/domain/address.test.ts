@@ -78,7 +78,12 @@ describe("a driver confirming where the door actually is", () => {
   });
 
   it("grows more certain as more drivers agree", () => {
-    const once = confirmPin(resolved(), { latitude: 12.9712, longitude: 77.6402, workerId: "w1", at });
+    const once = confirmPin(resolved(), {
+      latitude: 12.9712,
+      longitude: 77.6402,
+      workerId: "w1",
+      at,
+    });
     const twice = confirmPin(once, { latitude: 12.9713, longitude: 77.6401, workerId: "w2", at });
 
     expect(twice.confirmations).toBe(2);
@@ -146,9 +151,9 @@ describe("a driver confirming where the door actually is", () => {
   });
 
   it("refuses a pin outside the possible range", () => {
-    expect(() =>
-      confirmPin(resolved(), { latitude: 91, longitude: 0, workerId: "w", at }),
-    ).toThrow("latitude must be between -90 and 90");
+    expect(() => confirmPin(resolved(), { latitude: 91, longitude: 0, workerId: "w", at })).toThrow(
+      "latitude must be between -90 and 90",
+    );
   });
 
   it("records who moved it and when, so a bad pin can be traced", () => {

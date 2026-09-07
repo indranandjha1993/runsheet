@@ -55,6 +55,7 @@ const promiseTopic = { topic: "promise", key: "consignment_id" } as const;
 const planTopic = { topic: "plan", key: "aggregate_id" } as const;
 const moneyTopic = { topic: "money", key: "aggregate_id" } as const;
 const decisionTopic = { topic: "decision", key: "aggregate_id" } as const;
+const linehaulTopic = { topic: "linehaul", key: "aggregate_id" } as const;
 
 const scannedInPayload = z.object({
   hub_id: z.string(),
@@ -100,6 +101,19 @@ const cashVariancePayload = z.object({
   driver_id: z.string(),
   currency: z.string(),
   variance_minor: z.number().int(),
+});
+
+const bagDiscrepancyPayload = z.object({
+  bag_id: z.string(),
+  missing_consignment_ids: z.array(z.string()),
+  unexpected_consignment_ids: z.array(z.string()),
+  misrouted: z.boolean(),
+});
+
+const sealBrokenPayload = z.object({
+  bag_id: z.string(),
+  seal_number: z.string(),
+  consignment_ids: z.array(z.string()),
 });
 
 export interface EventDefinition {
@@ -156,6 +170,23 @@ export const eventCatalogue: Record<string, EventDefinition> = {
   "decision.failed": define(empty, decisionTopic),
   "decision.expired": define(empty, decisionTopic),
   "decision.shadow_recorded": define(empty, decisionTopic),
+  "bag.parcel_added": define(empty, linehaulTopic),
+  "bag.parcel_removed": define(empty, linehaulTopic),
+  "bag.sealed": define(empty, linehaulTopic),
+  "bag.loaded": define(empty, linehaulTopic),
+  "bag.received": define(empty, linehaulTopic),
+  "bag.emptied": define(empty, linehaulTopic),
+  "bag.seal_broken": define(sealBrokenPayload, linehaulTopic),
+  "bag.discrepancy_found": define(bagDiscrepancyPayload, linehaulTopic),
+  "trip.planned": define(empty, linehaulTopic),
+  "trip.crewed": define(empty, linehaulTopic),
+  "trip.bag_loaded": define(empty, linehaulTopic),
+  "trip.bag_unloaded": define(empty, linehaulTopic),
+  "trip.departed": define(empty, linehaulTopic),
+  "trip.arrived": define(empty, linehaulTopic),
+  "trip.closed": define(empty, linehaulTopic),
+  "trip.cancelled": define(empty, linehaulTopic),
+  "trip.bags_missing": define(empty, linehaulTopic),
   "consignment.out_for_delivery": define(empty, consignmentTopic),
   "consignment.attempted": define(attemptedPayload, consignmentTopic),
   "consignment.delivered": define(empty, consignmentTopic),

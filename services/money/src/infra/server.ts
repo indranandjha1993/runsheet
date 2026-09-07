@@ -3,7 +3,11 @@ import { createLogger, healthReport, type Logger, type Probe } from "@runsheet/r
 import type { HttpRequest } from "../adapters/http.js";
 
 export interface ServerDeps {
-  readonly router: { handle(request: HttpRequest): Promise<{ status: number; body: unknown; headers?: Record<string, string> }> };
+  readonly router: {
+    handle(
+      request: HttpRequest,
+    ): Promise<{ status: number; body: unknown; headers?: Record<string, string> }>;
+  };
   readonly probes: readonly Probe[];
   readonly logger: Logger;
   readonly port: number;
@@ -20,7 +24,12 @@ async function readBody(incoming: IncomingMessage): Promise<unknown> {
   }
 }
 
-function send(response: ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}): void {
+function send(
+  response: ServerResponse,
+  status: number,
+  body: unknown,
+  headers: Record<string, string> = {},
+): void {
   response.writeHead(status, { "content-type": "application/json", ...headers });
   response.end(JSON.stringify(body));
 }

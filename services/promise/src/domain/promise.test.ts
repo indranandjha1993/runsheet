@@ -97,7 +97,9 @@ describe("updating the estimate", () => {
 
 describe("what the consignee is shown", () => {
   it("shows the status, the window, and the estimate", () => {
-    const view = publicView(updateEta(promised(), { eta: new Date("2026-09-07T15:00:00.000Z"), at }));
+    const view = publicView(
+      updateEta(promised(), { eta: new Date("2026-09-07T15:00:00.000Z"), at }),
+    );
 
     expect(view).toMatchObject({
       status: "on_track",

@@ -38,10 +38,7 @@ export function rateLimiter(options: RateLimitOptions): {
       forgetIdle(at);
 
       const bucket = buckets.get(caller) ?? { tokens: options.perMinute, lastSeen: at };
-      const refilled = Math.min(
-        options.perMinute,
-        bucket.tokens + (at - bucket.lastSeen) * perMs,
-      );
+      const refilled = Math.min(options.perMinute, bucket.tokens + (at - bucket.lastSeen) * perMs);
 
       if (refilled < 1) {
         buckets.set(caller, { tokens: refilled, lastSeen: at });

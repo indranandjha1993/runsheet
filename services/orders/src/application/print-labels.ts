@@ -13,10 +13,7 @@ export interface PrintLabelsCommand {
 
 // A reprint has to produce the parcel's existing barcodes. Issuing new ones would leave the
 // parcel wearing a label the platform no longer recognises.
-export async function printLabels(
-  deps: OrdersDeps,
-  command: PrintLabelsCommand,
-): Promise<Label[]> {
+export async function printLabels(deps: OrdersDeps, command: PrintLabelsCommand): Promise<Label[]> {
   const found = await deps.repository.consignmentById(command.tenantId, command.consignmentId);
   if (found === undefined) {
     throw new DomainError("not_found", "no consignment with that identifier");

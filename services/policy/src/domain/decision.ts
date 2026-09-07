@@ -50,7 +50,7 @@ export interface Decision {
   readonly proposedAt: Date;
   readonly shadow: boolean;
   readonly modelVersion?: string;
-  readonly modelExchange?: ModelExchange;
+  readonly modelExchange?: ModelExchange | undefined;
   readonly producedEventIds?: readonly string[];
   readonly reviewedBy?: string;
   readonly reversalReason?: string;

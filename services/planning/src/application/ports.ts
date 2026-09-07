@@ -27,7 +27,12 @@ export interface PlannedRun {
 }
 
 export interface PlanningRepository {
-  savePlan(runs: readonly PlannedRun[], tenantId: string, hubId: string, date: string): Promise<void>;
+  savePlan(
+    runs: readonly PlannedRun[],
+    tenantId: string,
+    hubId: string,
+    date: string,
+  ): Promise<void>;
   planFor(tenantId: string, hubId: string, date: string): Promise<PlannedRun[]>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;
 }

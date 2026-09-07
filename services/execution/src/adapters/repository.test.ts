@@ -175,7 +175,11 @@ describe("hub scans in the database", () => {
   };
 
   it("reads back a scan with its measurements", async () => {
-    await repository.saveScan("01J8Z0T0000000000000000050", { ...scan, weightGrams: 1500, volumetricGrams: 1200 }, "in");
+    await repository.saveScan(
+      "01J8Z0T0000000000000000050",
+      { ...scan, weightGrams: 1500, volumetricGrams: 1200 },
+      "in",
+    );
 
     const history = await repository.scansFor(tenantId, "c1");
     expect(history).toHaveLength(1);
@@ -183,7 +187,11 @@ describe("hub scans in the database", () => {
   });
 
   it("orders the history the way the parcel travelled", async () => {
-    await repository.saveScan("01J8Z0T0000000000000000051", { ...scan, hubId: "hub-2", at: new Date("2026-09-07T14:00:00.000Z") }, "in");
+    await repository.saveScan(
+      "01J8Z0T0000000000000000051",
+      { ...scan, hubId: "hub-2", at: new Date("2026-09-07T14:00:00.000Z") },
+      "in",
+    );
     await repository.saveScan("01J8Z0T0000000000000000050", scan, "in");
 
     const history = await repository.scansFor(tenantId, "c1");
@@ -203,9 +211,9 @@ describe("hub scans in the database", () => {
   });
 
   it("refuses an outscan row that names no run", async () => {
-    await expect(
-      repository.saveScan("01J8Z0T0000000000000000053", scan, "out"),
-    ).rejects.toThrow(/hub_scans_outscan_names_a_run/);
+    await expect(repository.saveScan("01J8Z0T0000000000000000053", scan, "out")).rejects.toThrow(
+      /hub_scans_outscan_names_a_run/,
+    );
   });
 
   it("keeps one tenant's scans away from another", async () => {

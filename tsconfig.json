@@ -51,6 +51,9 @@
     },
     {
       "path": "services/policy/tsconfig.build.json"
+    },
+    {
+      "path": "services/linehaul/tsconfig.build.json"
     }
   ]
 }

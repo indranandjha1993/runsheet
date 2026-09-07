@@ -11,13 +11,7 @@ const MINIMUM_AGREEMENT = 0.9;
 const MINIMUM_SHADOW_DECISIONS = 100;
 
 export type PolicyState =
-  | "draft"
-  | "dry_run"
-  | "shadow"
-  | "staged"
-  | "live"
-  | "rolled_back"
-  | "retired";
+  "draft" | "dry_run" | "shadow" | "staged" | "live" | "rolled_back" | "retired";
 
 export interface Policy {
   readonly id: string;
@@ -109,10 +103,7 @@ function assertPromotable(event: PolicyEvent): void {
 }
 
 type Handlers = {
-  [K in PolicyEvent["type"]]: (
-    policy: Policy,
-    event: Extract<PolicyEvent, { type: K }>,
-  ) => Policy;
+  [K in PolicyEvent["type"]]: (policy: Policy, event: Extract<PolicyEvent, { type: K }>) => Policy;
 };
 
 const HANDLERS: Handlers = {

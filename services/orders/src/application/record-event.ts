@@ -35,8 +35,7 @@ const PAYLOAD: PayloadBuilders = {
 
 function payloadFor(event: ConsignmentEvent): Record<string, unknown> {
   const build = PAYLOAD[event.type] as
-    | ((e: ConsignmentEvent) => Record<string, unknown>)
-    | undefined;
+    ((e: ConsignmentEvent) => Record<string, unknown>) | undefined;
   return build?.(event) ?? {};
 }
 

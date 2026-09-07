@@ -56,4 +56,4 @@ describe("rendering a label for a thermal printer", () => {
   it("escapes a tilde too, because it is the other control character", () => {
     expect(toZpl({ ...label, address: ["A~B"] })).toContain("A_7eB");
   });
-})
+});

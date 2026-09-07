@@ -19,9 +19,7 @@ const MAKANI = /\bmakani\s+([0-9]{5}\s?[0-9]{5})\b/i;
 
 // Drops the fields the parser could not find, so an address never carries an empty value that
 // later reads as "we looked and it is blank".
-function present(
-  fields: Record<string, string | undefined>,
-): Omit<ParsedAddress, "completeness"> {
+function present(fields: Record<string, string | undefined>): Omit<ParsedAddress, "completeness"> {
   const out: Record<string, string> = {};
   for (const [name, value] of Object.entries(fields)) {
     if (value !== undefined) out[name] = value;

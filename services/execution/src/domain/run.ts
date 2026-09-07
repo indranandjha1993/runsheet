@@ -2,13 +2,7 @@ import { DomainError } from "./errors.js";
 import { outcomeOf, recordAction, type RecordActionCommand, type Stop } from "./stop.js";
 
 export type RunStatus =
-  | "planned"
-  | "assigned"
-  | "started"
-  | "suspended"
-  | "completed"
-  | "closed"
-  | "cancelled";
+  "planned" | "assigned" | "started" | "suspended" | "completed" | "closed" | "cancelled";
 
 export interface Run {
   readonly id: string;

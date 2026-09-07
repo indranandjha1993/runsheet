@@ -29,7 +29,11 @@ beforeEach(() => {
   );
 });
 
-const post = (url: string, body: unknown, headers = {}): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers = {},
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
 const get = (url: string, headers = {}): Promise<{ status: number; body: unknown }> =>

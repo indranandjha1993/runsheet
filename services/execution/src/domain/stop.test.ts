@@ -72,9 +72,9 @@ describe("a stop", () => {
   });
 
   it("refuses an action it does not have", () => {
-    expect(() =>
-      recordAction(stop(), { actionId: "nope", result: "done", proofId: "p" }),
-    ).toThrow("this stop has no action nope");
+    expect(() => recordAction(stop(), { actionId: "nope", result: "done", proofId: "p" })).toThrow(
+      "this stop has no action nope",
+    );
   });
 
   it("refuses to record the same action twice", () => {
@@ -86,7 +86,11 @@ describe("a stop", () => {
   });
 
   it("can be skipped before anything is attempted, with a reason", () => {
-    const skipped = recordAction(stop(), { actionId: "a1", result: "skipped", ndrReason: "road_closed" });
+    const skipped = recordAction(stop(), {
+      actionId: "a1",
+      result: "skipped",
+      ndrReason: "road_closed",
+    });
 
     expect(skipped.actions[0]?.result).toBe("skipped");
   });
@@ -101,9 +105,9 @@ describe("a stop", () => {
 
 describe("skipping", () => {
   it("insists on a reason when an action is skipped", () => {
-    expect(() =>
-      recordAction(stop(), { actionId: "a1", result: "skipped" }),
-    ).toThrow("a skipped action needs a reason");
+    expect(() => recordAction(stop(), { actionId: "a1", result: "skipped" })).toThrow(
+      "a skipped action needs a reason",
+    );
   });
 
   it("records the cash a driver collected at the door", () => {

@@ -60,10 +60,7 @@ export function calibrationOf(outcomes: readonly DecisionOutcome[]): Calibration
   };
 }
 
-function recommend(
-  precision: number,
-  enoughToJudge: boolean,
-): Calibration["recommendation"] {
+function recommend(precision: number, enoughToJudge: boolean): Calibration["recommendation"] {
   if (precision < PRECISION_FLOOR) return "roll_back";
   return enoughToJudge ? "widen_rollout" : "keep_watching";
 }

@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { plannedStop } from "./stop.js";
-import {
-  applyToRun,
-  canClose,
-  cashSummary,
-  plannedRun,
-  type Run,
-} from "./run.js";
+import { applyToRun, canClose, cashSummary, plannedRun, type Run } from "./run.js";
 
 const stops = [
-  plannedStop({ id: "s1", sequence: 1, actions: [{ id: "a1", kind: "deliver", consignmentId: "c1" }] }),
-  plannedStop({ id: "s2", sequence: 2, actions: [{ id: "a2", kind: "deliver", consignmentId: "c2" }] }),
+  plannedStop({
+    id: "s1",
+    sequence: 1,
+    actions: [{ id: "a1", kind: "deliver", consignmentId: "c1" }],
+  }),
+  plannedStop({
+    id: "s2",
+    sequence: 2,
+    actions: [{ id: "a2", kind: "deliver", consignmentId: "c2" }],
+  }),
 ];
 
 const run = (): Run =>

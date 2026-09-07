@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { calibration, consider, movePolicy, publishPolicy, recordOutcome } from "./decide.js";
-import {
-  countingIds,
-  fixedClock,
-  inMemoryPolicies,
-  recordingPublisher,
-} from "./test-doubles.js";
+import { countingIds, fixedClock, inMemoryPolicies, recordingPublisher } from "./test-doubles.js";
 import type { PolicyDeps } from "./ports.js";
 import type { Policy } from "../domain/policy.js";
 
@@ -140,13 +135,21 @@ describe("considering whether to act", () => {
 
   it("stops when the day's budget is spent, rather than running away", async () => {
     const policy = await publishPolicy(deps, { ...policyCommand, budgetPerDay: 2 });
-    await movePolicy(deps, { tenantId, policyId: policy.id, event: { type: "dry_run_passed", decisions: 10 } });
+    await movePolicy(deps, {
+      tenantId,
+      policyId: policy.id,
+      event: { type: "dry_run_passed", decisions: 10 },
+    });
     await movePolicy(deps, {
       tenantId,
       policyId: policy.id,
       event: { type: "shadowed", decisions: 1000, agreedWithHumans: 0.99 },
     });
-    await movePolicy(deps, { tenantId, policyId: policy.id, event: { type: "staged", percent: 100 } });
+    await movePolicy(deps, {
+      tenantId,
+      policyId: policy.id,
+      event: { type: "staged", percent: 100 },
+    });
 
     await consider(deps, { ...request, subjectId: "run-1" });
     await consider(deps, { ...request, subjectId: "run-2" });

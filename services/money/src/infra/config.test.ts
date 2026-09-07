@@ -21,7 +21,6 @@ describe("money configuration", () => {
     );
   });
 
-
   it("points the reader at the example file when something is missing", () => {
     expect(() => moneyConfig({})).toThrow(/\.env\.example/);
   });

@@ -36,7 +36,11 @@ beforeEach(() => {
   );
 });
 
-const post = (url: string, body: unknown, headers = tenant): Promise<{ status: number; body: unknown }> =>
+const post = (
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = tenant,
+): Promise<{ status: number; body: unknown }> =>
   router.handle({ method: "POST", url, headers, body });
 
 const get = (url: string): Promise<{ status: number; body: unknown }> =>
@@ -254,7 +258,8 @@ describe("recording what happened, and replaying it", () => {
   it("reports a decision nobody made", async () => {
     expect((await get("/v1/decisions/nope/replayable")).status).toBe(404);
     expect(
-      (await post("/v1/decisions/nope/events", { type: "executed", produced_event_ids: [] })).status,
+      (await post("/v1/decisions/nope/events", { type: "executed", produced_event_ids: [] }))
+        .status,
     ).toBe(404);
   });
 });
@@ -274,10 +279,12 @@ describe("shadow decisions", () => {
 
     expect(response.body).toMatchObject({ decision: { shadow: true } });
     expect(
-      (await post(`/v1/decisions/${decisionId}/events`, {
-        type: "shadow_recorded",
-        would_have_done: "approve",
-      })).body,
+      (
+        await post(`/v1/decisions/${decisionId}/events`, {
+          type: "shadow_recorded",
+          would_have_done: "approve",
+        })
+      ).body,
     ).toMatchObject({ state: "shadow_recorded" });
   });
 
@@ -293,10 +300,12 @@ describe("shadow decisions", () => {
     const decisionId = (response.body as { decision: { id: string } }).decision.id;
 
     expect(
-      (await post(`/v1/decisions/${decisionId}/events`, {
-        type: "executed",
-        produced_event_ids: [],
-      })).status,
+      (
+        await post(`/v1/decisions/${decisionId}/events`, {
+          type: "executed",
+          produced_event_ids: [],
+        })
+      ).status,
     ).toBe(409);
   });
 });

@@ -10,9 +10,9 @@
     "build": "pnpm -r --if-present build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "lint": "eslint . && prettier --check --ignore-unknown \"packages/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
-    "format": "prettier --write --ignore-unknown \"packages/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
-    "typecheck": "tsc -b",
+    "lint": "eslint . && prettier --check --ignore-unknown \"packages/**\" \"services/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
+    "format": "prettier --write --ignore-unknown \"packages/**\" \"services/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",
+    "typecheck": "tsc -b && tsc -p tsconfig.eslint.json",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {

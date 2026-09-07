@@ -13,7 +13,10 @@ export interface OrdersRepository {
   orderByReference(tenantId: string, reference: string): Promise<Order | undefined>;
   orderById(tenantId: string, id: string): Promise<Order | undefined>;
   saveConsignment(consignment: Consignment, expectedVersion: number): Promise<void>;
-  consignmentById(tenantId: string, id: string): Promise<{ consignment: Consignment; version: number } | undefined>;
+  consignmentById(
+    tenantId: string,
+    id: string,
+  ): Promise<{ consignment: Consignment; version: number } | undefined>;
   openConsignments(tenantId: string, limit: number): Promise<Consignment[]>;
   serialFor(tenantId: string, consignmentId: string, pieces: number): Promise<number>;
   nextSequence(tenantId: string, aggregateId: string): Promise<number>;

@@ -102,21 +102,27 @@ describe("what a caller may do", () => {
     const { secret } = await withKey(["runs:write"]);
     const caller = await authenticate(deps.repository, secret);
 
-    expect(() => { authorise(caller, "runs:read"); }).not.toThrow();
+    expect(() => {
+      authorise(caller, "runs:read");
+    }).not.toThrow();
   });
 
   it("refuses a scope the key lacks, and says which", async () => {
     const { secret } = await withKey(["runs:read"]);
     const caller = await authenticate(deps.repository, secret);
 
-    expect(() => { authorise(caller, "runs:write"); }).toThrow("this credential lacks the runs:write scope");
+    expect(() => {
+      authorise(caller, "runs:write");
+    }).toThrow("this credential lacks the runs:write scope");
   });
 
   it("keeps personal data behind its own scope", async () => {
     const { secret } = await withKey(["consignments:write", "runs:write"]);
     const caller = await authenticate(deps.repository, secret);
 
-    expect(() => { authorise(caller, "pii:read"); }).toThrow(/pii:read/);
+    expect(() => {
+      authorise(caller, "pii:read");
+    }).toThrow(/pii:read/);
   });
 });
 

@@ -5,16 +5,10 @@
     "outDir": "dist",
     "composite": true,
     "noEmit": false,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "src/**/*.test.ts"
-  ],
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.test.ts"],
   "references": [
     {
       "path": "../../packages/kernel/tsconfig.build.json"

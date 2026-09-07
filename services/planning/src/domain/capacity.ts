@@ -52,7 +52,7 @@ export function packInto(vehicles: readonly Vehicle[], jobs: readonly Job[]): Pa
 
   for (const vehicle of vehicles) {
     const taken: Job[] = [];
-    for (let i = 0; i < remaining.length; ) {
+    for (let i = 0; i < remaining.length;) {
       const candidate = remaining[i];
       if (candidate !== undefined && fits(vehicle, [...taken, candidate])) {
         taken.push(candidate);

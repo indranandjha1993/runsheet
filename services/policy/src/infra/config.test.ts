@@ -12,8 +12,6 @@ describe("policy configuration", () => {
     expect(() => policyConfig({})).toThrow(/DATABASE_URL_POLICY is required/);
   });
 
-
-
   it("points the reader at the example file when something is missing", () => {
     expect(() => policyConfig({})).toThrow(/\.env\.example/);
   });
@@ -21,8 +19,6 @@ describe("policy configuration", () => {
   it("rejects a port that is not a port", () => {
     expect(() => policyConfig({ ...minimal, PORT_POLICY: "http" })).toThrow(/PORT_POLICY/);
   });
-
-
 
   it("hides the database address when describing itself for the log", () => {
     const described = describeConfig(policyConfig(minimal));

@@ -26,12 +26,20 @@ const bookBody = z
 
 const eventBody = z.discriminatedUnion("type", [
   z.object({ type: z.literal("picked_up") }),
-  z.object({ type: z.literal("pickup_attempted"), ndr_reason: z.string().min(1), proof_id: z.string() }),
+  z.object({
+    type: z.literal("pickup_attempted"),
+    ndr_reason: z.string().min(1),
+    proof_id: z.string(),
+  }),
   z.object({ type: z.literal("inscanned"), hub_id: z.string().min(1) }),
   z.object({ type: z.literal("departed_hub") }),
   z.object({ type: z.literal("out_for_delivery"), run_id: z.string().min(1) }),
   z.object({ type: z.literal("attempted"), ndr_reason: z.string().min(1), proof_id: z.string() }),
-  z.object({ type: z.literal("delivered"), proof_id: z.string(), cash_collected_minor: z.number().int().optional() }),
+  z.object({
+    type: z.literal("delivered"),
+    proof_id: z.string(),
+    cash_collected_minor: z.number().int().optional(),
+  }),
   z.object({ type: z.literal("rto_initiated") }),
   z.object({ type: z.literal("rto_out_for_delivery"), run_id: z.string().min(1) }),
   z.object({ type: z.literal("rto_delivered"), proof_id: z.string() }),
@@ -44,8 +52,6 @@ const eventBody = z.discriminatedUnion("type", [
 
 type EventBody = z.infer<typeof eventBody>;
 
-
-
 function invalid(message: string): { status: number; body: unknown } {
   return { status: 400, body: { error: { code: "invalid_request", message } } };
 }
@@ -56,9 +62,7 @@ type Builders = {
   [K in EventBody["type"]]: (body: Extract<EventBody, { type: K }>) => DomainEvent;
 };
 
-const plain =
-  (type: DomainEvent["type"]) =>
-  (): DomainEvent => ({ type }) as DomainEvent;
+const plain = (type: DomainEvent["type"]) => (): DomainEvent => ({ type }) as DomainEvent;
 
 const BUILDERS: Builders = {
   picked_up: plain("picked_up"),
@@ -82,9 +86,7 @@ const BUILDERS: Builders = {
   delivered: (b) => ({
     type: "delivered",
     proofId: b.proof_id,
-    ...(b.cash_collected_minor === undefined
-      ? {}
-      : { cashCollectedMinor: b.cash_collected_minor }),
+    ...(b.cash_collected_minor === undefined ? {} : { cashCollectedMinor: b.cash_collected_minor }),
   }),
 };
 
