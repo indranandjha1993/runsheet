@@ -1,6 +1,6 @@
 COMPOSE = docker compose -p runsheet -f infra/local/compose.yaml
 
-.PHONY: help setup install up up-core down logs ps migrate dev test lint typecheck check clean spec sandbox sandbox-stop
+.PHONY: help setup install up up-core down logs ps migrate dev test lint typecheck check clean spec sandbox sandbox-stop walkthrough docs video
 
 help:
 	@echo "Runsheet"
@@ -13,6 +13,9 @@ help:
 	@echo "  make migrate    apply every service's migrations"
 	@echo "  make sandbox    start every service with a tenant and a key to call it with"
 	@echo "  make spec       regenerate the published interface and event specifications"
+	@echo "  make walkthrough  drive one parcel through every service, asserting each step"
+	@echo "  make docs       regenerate the reference pages under docs/ from the specifications"
+	@echo "  make video      re-record docs/demo.gif and docs/demo.mp4 against the running stack"
 	@echo "  make check      run tests, type check, and linter"
 	@echo "  make logs       follow infrastructure logs"
 	@echo ""
@@ -66,6 +69,15 @@ sandbox:
 
 sandbox-stop:
 	bash infra/local/stop-all.sh
+
+walkthrough:
+	bash infra/local/walkthrough.sh
+
+docs:
+	python3 infra/local/reference-docs.py
+
+video:
+	vhs docs/demo.tape
 
 check: test typecheck lint
 

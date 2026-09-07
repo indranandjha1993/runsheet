@@ -72,3 +72,12 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm exec vitest run --coverage
+
+      - name: The reference documentation is current
+        run: |
+          python3 infra/local/reference-docs.py
+          if ! git diff --quiet -- docs/reference; then
+            echo "docs/reference is behind the specifications. Run: make docs"
+            git --no-pager diff --stat -- docs/reference
+            exit 1
+          fi
