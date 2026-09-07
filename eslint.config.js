@@ -18,7 +18,7 @@ const layerBoundaries = {
 };
 
 export default tseslint.config(
-  { ignores: ["**/dist/**", "**/node_modules/**", "**/coverage/**"] },
+  { ignores: ["**/dist/**", "**/node_modules/**", "**/coverage/**", "contracts/scripts/**"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
