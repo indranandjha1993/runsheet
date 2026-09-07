@@ -41,6 +41,21 @@ importers:
       vitest:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@26.4.1)(@vitest/coverage-v8@5.0.0)(vite@8.2.2(@types/node@26.4.1))
+      zod:
+        specifier: ^4.5.4
+        version: 4.5.4
+
+  contracts:
+    dependencies:
+      '@runsheet/eventstore':
+        specifier: workspace:*
+        version: link:../packages/eventstore
+      '@runsheet/kernel':
+        specifier: workspace:*
+        version: link:../packages/kernel
+      zod:
+        specifier: ^4.0.0
+        version: 4.5.4
 
   packages/eventstore:
     dependencies:
@@ -1462,6 +1477,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
 
 snapshots:
 
@@ -2977,3 +2995,5 @@ snapshots:
   xtend@4.0.2: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@4.5.4: {}
