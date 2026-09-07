@@ -10,7 +10,7 @@ export const UPSTREAMS: readonly Upstream[] = [
   { name: "network", prefixes: ["/v1/hubs", "/v1/zones", "/v1/lanes", "/v1/serviceability"] },
   { name: "address", prefixes: ["/v1/addresses"] },
   { name: "orders", prefixes: ["/v1/orders", "/v1/consignments"] },
-  { name: "execution", prefixes: ["/v1/runs", "/v1/proofs", "/v1/hub-scans"] },
+  { name: "execution", prefixes: ["/v1/runs", "/v1/proofs", "/v1/hub-scans", "/v1/sync"] },
   { name: "planning", prefixes: ["/v1/plans"] },
   { name: "promise", prefixes: ["/v1/promises"] },
   { name: "promise", prefixes: ["/track"], public: true },
