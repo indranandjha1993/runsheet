@@ -442,3 +442,25 @@ describe("listing the day's runs over the api", () => {
     expect(response.status).toBe(400);
   });
 });
+
+describe("scanning with everything a floor can capture", () => {
+  it("records dimensions and the booked weight alongside the scale reading", async () => {
+    const response = await post("/v1/hub-scans/in", {
+      hub_id: "hub-1",
+      worker_id: "w1",
+      consignment_id: "c1",
+      barcode: "RS0000000013",
+      expected: true,
+      weight_grams: 1250,
+      booked_weight_grams: 1200,
+      dimensions_mm: { length: 300, width: 200, height: 100 },
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({ weight_grams: 1250, volumetric_grams: 1200 });
+  });
+
+  it("refuses a scan with no hub", async () => {
+    expect((await post("/v1/hub-scans/in", { worker_id: "w1" })).status).toBe(400);
+  });
+});

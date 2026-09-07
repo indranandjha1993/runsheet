@@ -137,3 +137,30 @@ describe("reserving barcode serials", () => {
     expect(theirs).not.toBe(mine);
   });
 });
+
+describe("what comes back from the database, field by field", () => {
+  it("keeps the delivery time, the hub and the run a consignment last touched", async () => {
+    const consignment = sample();
+    await repository.saveConsignment(consignment, 0);
+    const delivered = {
+      ...consignment,
+      status: "delivered" as const,
+      currentHubId: "DEL3",
+      currentRunId: "run-1",
+      deliveredAt: new Date("2026-09-09T11:00:00.000Z"),
+    };
+    await repository.saveConsignment(delivered, 1);
+
+    const found = await repository.consignmentById(tenantId, consignment.id);
+
+    expect(found?.consignment).toMatchObject({
+      currentHubId: "DEL3",
+      currentRunId: "run-1",
+      deliveredAt: new Date("2026-09-09T11:00:00.000Z"),
+    });
+  });
+
+  it("finds nothing for an order nobody placed", async () => {
+    expect(await repository.orderById(tenantId, "nowhere")).toBeUndefined();
+  });
+});
