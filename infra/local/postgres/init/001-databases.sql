@@ -18,3 +18,4 @@ CREATE DATABASE test_eventstore;
 CREATE DATABASE test_consumer;
 CREATE DATABASE test_contracts;
 CREATE DATABASE test_network;
+CREATE DATABASE test_orders;

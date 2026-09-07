@@ -15,6 +15,9 @@
     },
     {
       "path": "services/network/tsconfig.build.json"
+    },
+    {
+      "path": "services/orders/tsconfig.build.json"
     }
   ]
 }
