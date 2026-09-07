@@ -6,6 +6,26 @@ on:
   pull_request:
 
 jobs:
+  sign-off:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Every commit carries a sign-off
+        run: |
+          missing=$(git log --format='%H %s%n%b%n---' \
+            "origin/${{ github.base_ref }}..HEAD" |
+            awk 'BEGIN{RS="---\n"} $0 !~ /Signed-off-by: .+ <.+@.+>/ && NF {print substr($0,1,60)}')
+          if [ -n "$missing" ]; then
+            echo "These commits have no sign-off. See CONTRIBUTING.md."
+            echo "$missing"
+            echo "Fix them with: git rebase --signoff origin/${{ github.base_ref }}"
+            exit 1
+          fi
+
   check:
     runs-on: ubuntu-latest
 
