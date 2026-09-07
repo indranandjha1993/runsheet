@@ -3,6 +3,7 @@ import { DomainError } from "../domain/errors.js";
 import type { Route } from "../adapters/http.js";
 import { captureProof, planRun, recordRunEvent } from "../application/run-operations.js";
 import type { ExecutionDeps } from "../application/ports.js";
+import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 import type { RunEvent } from "../domain/run.js";
 
 const planBody = z.object({
@@ -78,28 +79,23 @@ const BUILDERS: Builders = {
   force_closed: (b) => ({ type: "force_closed", reason: b.reason }),
 };
 
-function tenantOf(headers: Record<string, string | undefined>): string {
-  const tenant = headers["x-tenant-id"];
-  if (tenant === undefined || tenant === "") {
-    throw new DomainError("tenant_required", "the x-tenant-id header is required");
-  }
-  return tenant;
-}
-
 function invalid(message: string): { status: number; body: unknown } {
   return { status: 400, body: { error: { code: "invalid_request", message } } };
 }
 
-function planRoute(deps: ExecutionDeps): Route {
+function planRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/runs",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:write");
+
       const parsed = planBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
 
       const run = await planRun(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         hubId: parsed.data.hub_id,
         date: parsed.data.date,
         stops: parsed.data.stops.map((stop) => ({
@@ -113,17 +109,20 @@ function planRoute(deps: ExecutionDeps): Route {
   };
 }
 
-function eventRoute(deps: ExecutionDeps): Route {
+function eventRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/runs/:id/events",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:write");
+
       const parsed = eventBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
 
       const build = BUILDERS[parsed.data.type] as (b: EventBody) => RunEvent;
       const run = await recordRunEvent(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         runId: request.params["id"] ?? "",
         event: build(parsed.data),
       });
@@ -133,16 +132,19 @@ function eventRoute(deps: ExecutionDeps): Route {
   };
 }
 
-function actionRoute(deps: ExecutionDeps): Route {
+function actionRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/runs/:id/actions",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:write");
+
       const parsed = actionBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
 
       const run = await recordRunEvent(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         runId: request.params["id"] ?? "",
         event: {
           type: "action_recorded",
@@ -164,16 +166,19 @@ function actionRoute(deps: ExecutionDeps): Route {
   };
 }
 
-function proofRoute(deps: ExecutionDeps): Route {
+function proofRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/proofs",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:write");
+
       const parsed = proofBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((i) => i.message).join("; "));
 
       const proof = await captureProof(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         consignmentId: parsed.data.consignment_id,
         requirement: parsed.data.requirement,
         kinds: parsed.data.kinds,
@@ -186,13 +191,16 @@ function proofRoute(deps: ExecutionDeps): Route {
   };
 }
 
-function readRoute(deps: ExecutionDeps): Route {
+function readRoute(deps: RouteDeps): Route {
   return {
     method: "GET",
     path: "/v1/runs/:id",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "runs:read");
+
       const found = await deps.repository.runById(
-        tenantOf(request.headers),
+        caller.tenantId,
         request.params["id"] ?? "",
       );
       if (found === undefined) throw new DomainError("not_found", "no run with that identifier");
@@ -201,6 +209,10 @@ function readRoute(deps: ExecutionDeps): Route {
   };
 }
 
-export function executionRoutes(deps: ExecutionDeps): Route[] {
+export interface RouteDeps extends ExecutionDeps {
+  readonly lookup: CallerLookup;
+}
+
+export function executionRoutes(deps: RouteDeps): Route[] {
   return [planRoute(deps), eventRoute(deps), actionRoute(deps), proofRoute(deps), readRoute(deps)];
 }

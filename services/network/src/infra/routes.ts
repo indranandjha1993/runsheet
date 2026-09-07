@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { DomainError } from "../domain/errors.js";
 import type { Route } from "../adapters/http.js";
 import { checkServiceability } from "../application/check-serviceability.js";
 import { registerHub, type RegisterHubDeps } from "../application/register-hub.js";
+import { callerFrom, requireScope, type CallerLookup } from "@runsheet/auth";
 
 const hubBody = z.object({
   code: z.string().min(1),
@@ -21,28 +21,23 @@ const serviceabilityQuery = z.object({
   service: z.string().min(1),
 });
 
-function tenantOf(headers: Record<string, string | undefined>): string {
-  const tenant = headers["x-tenant-id"];
-  if (tenant === undefined || tenant === "") {
-    throw new DomainError("tenant_required", "the x-tenant-id header is required");
-  }
-  return tenant;
-}
-
 function invalid(message: string): { status: number; body: unknown } {
   return { status: 400, body: { error: { code: "invalid_request", message } } };
 }
 
-function createHubRoute(deps: RegisterHubDeps): Route {
+function createHubRoute(deps: RouteDeps): Route {
   return {
     method: "POST",
     path: "/v1/hubs",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "network:write");
+
       const parsed = hubBody.safeParse(request.body);
       if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
 
       const hub = await registerHub(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         code: parsed.data.code,
         name: parsed.data.name,
         countryCode: parsed.data.country_code,
@@ -58,17 +53,20 @@ function createHubRoute(deps: RegisterHubDeps): Route {
   };
 }
 
-function serviceabilityRoute(deps: RegisterHubDeps): Route {
+function serviceabilityRoute(deps: RouteDeps): Route {
   return {
     method: "GET",
     path: "/v1/serviceability",
     handle: async (request) => {
+      const caller = await callerFrom(deps.lookup, request.headers);
+      requireScope(caller, "network:read");
+
       const query = Object.fromEntries(new URL(request.url, "http://local").searchParams);
       const parsed = serviceabilityQuery.safeParse(query);
       if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message).join("; "));
 
       const answer = await checkServiceability(deps, {
-        tenantId: tenantOf(request.headers),
+        tenantId: caller.tenantId,
         latitude: parsed.data.latitude,
         longitude: parsed.data.longitude,
         service: parsed.data.service,
@@ -80,6 +78,10 @@ function serviceabilityRoute(deps: RegisterHubDeps): Route {
   };
 }
 
-export function networkRoutes(deps: RegisterHubDeps): Route[] {
+export interface RouteDeps extends RegisterHubDeps {
+  readonly lookup: CallerLookup;
+}
+
+export function networkRoutes(deps: RouteDeps): Route[] {
   return [createHubRoute(deps), serviceabilityRoute(deps)];
 }

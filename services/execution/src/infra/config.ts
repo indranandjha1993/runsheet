@@ -4,6 +4,7 @@ import { z } from "zod";
 const schema = z.object({
   PORT_EXECUTION: z.coerce.number().int().positive().default(14230),
   DATABASE_URL_EXECUTION: z.string().min(1),
+  IDENTITY_URL: z.string().min(1).default("http://localhost:14200"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
