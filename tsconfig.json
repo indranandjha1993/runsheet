@@ -39,6 +39,9 @@
     },
     {
       "path": "services/planning/tsconfig.build.json"
+    },
+    {
+      "path": "services/gateway/tsconfig.build.json"
     }
   ]
 }
