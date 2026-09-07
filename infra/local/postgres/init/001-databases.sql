@@ -24,3 +24,4 @@ CREATE DATABASE test_identity;
 CREATE DATABASE test_address;
 CREATE DATABASE test_exceptions;
 CREATE DATABASE test_promise;
+CREATE DATABASE test_planning;
