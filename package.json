@@ -7,7 +7,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "pnpm -r --if-present build",
+    "build": "tsc -b && pnpm -r --if-present build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check --ignore-unknown \"packages/**\" \"services/**\" \"contracts/**\" \"infra/**\" \"*.{json,js,ts,md,yaml}\"",

@@ -193,3 +193,17 @@ describe("a screen that breaks", () => {
     expect(screen.getByRole("link", { name: "Board" })).toBeInTheDocument();
   });
 });
+
+describe("linking to a settlement queue", () => {
+  beforeEach(() => {
+    localStorage.setItem("runsheet.key", KEY);
+  });
+
+  it("opens on the queue the address names", async () => {
+    show("/settlements?state=approved", {
+      "/v1/settlements?state=approved": { settlements: [{ id: "s1", lineId: "l1", invoiceId: "i1", state: "approved", varianceMinor: 0, reasons: [] }] },
+    });
+
+    expect(await screen.findByText("approved", { selector: "[data-status]" })).toBeInTheDocument();
+  });
+});
