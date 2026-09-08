@@ -5,12 +5,8 @@ runs it in the field, closes the money, and can prove every automated decision i
 built for couriers, postal operators, and distributors moving fifty thousand to two million
 shipments a month, and it runs on your own machines.
 
-<table>
-  <tr>
-    <td width="68%"><img src="screens/board.png" alt="The console" /></td>
-    <td width="32%"><img src="screens/driver-ar.png" alt="The driver app" /></td>
-  </tr>
-</table>
+![The console](screens/board.png){ width="66%" }
+![The driver app](screens/driver-ar.png){ width="31%" }
 
 ## Where to go
 

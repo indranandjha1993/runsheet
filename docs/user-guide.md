@@ -86,13 +86,9 @@ file that opens safely in a spreadsheet. The six reports are described in
 
 ## The driver app
 
-<table>
-  <tr>
-    <td><img src="screens/driver-en.png" alt="English" /></td>
-    <td><img src="screens/driver-hi.png" alt="Hindi" /></td>
-    <td><img src="screens/driver-ar.png" alt="Arabic" /></td>
-  </tr>
-</table>
+![English](screens/driver-en.png){ width="32%" }
+![Hindi](screens/driver-hi.png){ width="32%" }
+![Arabic](screens/driver-ar.png){ width="32%" }
 
 Open `/driver` on a handset, or hand a driver a link that carries their run. The next stop fills
 the screen with one large action; done, could not deliver, or skip for now. Every tap is kept on
