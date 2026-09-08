@@ -1,0 +1,191 @@
+# The whole platform on one host: infrastructure, twelve services, the gateway, and the web
+# application. Copy .env.example to .env beside this file, change every secret, and run
+#   docker compose -f infra/deploy/compose.yaml up -d
+# Services find each other by container name; nothing but the gateway and the web app is
+# reachable from outside the compose network.
+
+x-service: &service
+  build:
+    context: ../..
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    IDENTITY_URL: http://identity:14200
+    ORDERS_URL: http://orders:14220
+    NETWORK_URL: http://network:14210
+    ADDRESS_URL: http://address:14215
+    EXECUTION_URL: http://execution:14230
+    LINEHAUL_URL: http://linehaul:14235
+    PLANNING_URL: http://planning:14240
+    PROMISE_URL: http://promise:14250
+    EXCEPTIONS_URL: http://exceptions:14260
+    MONEY_URL: http://money:14270
+    POLICY_URL: http://policy:14280
+    REPORTING_URL: http://reporting:14290
+    REDIS_URL: redis://redis:6379
+    BROKER_BROKERS: redpanda:9092
+    CLICKHOUSE_URL: http://clickhouse:8123
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: runsheet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-runsheet}
+      POSTGRES_DB: runsheet
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ../local/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U runsheet"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redpanda:
+    image: redpandadata/redpanda:v24.3.1
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --memory=512M
+      - --overprovisioned
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092
+    volumes:
+      - redpanda:/var/lib/redpanda/data
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    restart: unless-stopped
+    volumes:
+      - clickhouse:/var/lib/clickhouse
+
+  identity:
+    <<: *service
+    command: ["node", "services/identity/dist/main.js"]
+    environment:
+      DATABASE_URL_IDENTITY: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/identity_tenancy
+
+  network:
+    <<: *service
+    command: ["node", "services/network/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_NETWORK: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/network
+
+  address:
+    <<: *service
+    command: ["node", "services/address/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_ADDRESS: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/address
+
+  orders:
+    <<: *service
+    command: ["node", "services/orders/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_ORDERS: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/orders_consignments
+
+  execution:
+    <<: *service
+    command: ["node", "services/execution/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_EXECUTION: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/execution
+
+  linehaul:
+    <<: *service
+    command: ["node", "services/linehaul/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_LINEHAUL: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/linehaul
+
+  planning:
+    <<: *service
+    command: ["node", "services/planning/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_PLANNING: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/planning
+
+  promise:
+    <<: *service
+    command: ["node", "services/promise/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_PROMISE: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/promise
+
+  exceptions:
+    <<: *service
+    command: ["node", "services/exceptions/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_EXCEPTIONS: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/exceptions
+
+  money:
+    <<: *service
+    command: ["node", "services/money/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      ORDERS_URL: http://orders:14220
+      DATABASE_URL_MONEY: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/money
+
+  policy:
+    <<: *service
+    command: ["node", "services/policy/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_POLICY: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/policy
+
+  reporting:
+    <<: *service
+    command: ["node", "services/reporting/dist/main.js"]
+    environment:
+      IDENTITY_URL: http://identity:14200
+      DATABASE_URL_REPORTING: postgres://runsheet:${POSTGRES_PASSWORD:-runsheet}@postgres:5432/reporting
+
+  gateway:
+    <<: *service
+    command: ["node", "services/gateway/dist/main.js"]
+    ports:
+      - "${PORT_GATEWAY:-14000}:14000"
+    depends_on:
+      identity:
+        condition: service_started
+
+  web:
+    <<: *service
+    command: ["node", "apps/web/serve.js"]
+    environment:
+      GATEWAY_URL: http://gateway:14000
+      PORT_WEB: "14100"
+    ports:
+      - "${PORT_WEB:-14100}:14100"
+    depends_on:
+      gateway:
+        condition: service_started
+
+volumes:
+  postgres:
+  redis:
+  redpanda:
+  clickhouse:

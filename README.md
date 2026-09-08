@@ -44,7 +44,16 @@ real request. A higher-quality copy is at [`docs/demo.mp4`](docs/demo.mp4). Rege
 
 ## The console
 
-![The console](docs/console-board.png)
+<table>
+  <tr>
+    <td width="70%"><img src="docs/console-board.png" alt="The console: the board" /></td>
+    <td width="30%"><img src="docs/driver-app.png" alt="The driver app, in Arabic" /></td>
+  </tr>
+  <tr>
+    <td>The operator console: dense rows, status by ink, tint and mark</td>
+    <td>The driver app on a handset, laid out right to left</td>
+  </tr>
+</table>
 
 A web console for the office and an installable driver app for the handset, both on the published
 interface, in English, Hindi, and Arabic. See [the console](docs/console.md).
@@ -72,8 +81,13 @@ whatever else you have running.
 
 ## Documentation
 
+The full documentation is a site: **https://indranandjha1993.github.io/runsheet/**, with a
+step-by-step [deployment guide](https://indranandjha1993.github.io/runsheet/deploy/) and a
+[guide to every screen](https://indranandjha1993.github.io/runsheet/user-guide/). The same pages
+live in this repository under `docs/`.
+
 Everything needed to clone this, run it for a real operation, and understand it in detail is in
-[`docs/`](docs/README.md):
+[`docs/`](docs/index.md):
 
 - [Getting started](docs/getting-started.md), from clone to first delivery
 - [Concepts](docs/concepts.md): consignment, run, hub, bag, trip, rate card, settlement, policy

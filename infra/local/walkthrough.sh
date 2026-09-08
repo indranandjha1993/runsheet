@@ -3,7 +3,8 @@
 # first thing that is not as it should be. This is the check that "it all works" means.
 set -e
 cd "$(dirname "$0")/../.."
-set -a; . ./.env; set +a
+# Settings come from .env when there is one; against a container deployment there may not be.
+if [ -f .env ]; then set -a; . ./.env; set +a; fi
 
 G="http://localhost:${PORT_GATEWAY:-14000}"
 JSON="content-type: application/json"
@@ -38,6 +39,8 @@ AUTH="x: y"
 TENANT=$(call POST /v1/tenants '{"name":"Walkthrough Logistics","country_code":"IN","currency":"INR","locale":"en-IN","region":"ap-south"}' 201 | json "d['id']")
 SECRET=$(call POST /v1/keys "{\"tenant_id\":\"$TENANT\",\"name\":\"ops\",\"scopes\":[\"consignments:write\",\"consignments:read\",\"runs:write\",\"runs:read\",\"network:write\",\"network:read\",\"addresses:write\",\"addresses:read\",\"linehaul:write\",\"linehaul:read\",\"money:write\",\"money:read\",\"policies:write\",\"policies:read\",\"reports:read\"]}" 201 | json "d['secret']")
 AUTH="Authorization: Bearer $SECRET"
+# WALKTHROUGH_KEY_FILE=<path> keeps the key, so the console can be opened on this data afterwards.
+[ -n "${WALKTHROUGH_KEY_FILE:-}" ] && printf '%s\n' "$SECRET" > "$WALKTHROUGH_KEY_FILE"
 call GET /v1/callers/current "" 200 | json "d['tenantId']" | grep -q "$TENANT" || fail "credential does not resolve to its tenant"
 ok "tenant $TENANT, key issued, credential resolves"
 

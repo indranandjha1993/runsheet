@@ -1,4 +1,5 @@
 import { useState, type JSX } from "react";
+import { useSearchParams } from "react-router";
 import { useAccess } from "../platform/api-context.js";
 import { useLocale } from "../platform/locale-context.js";
 import { useLoad } from "../platform/use-load.js";
@@ -12,7 +13,10 @@ const STATES = ["mismatched", "missing_evidence", "disputed", "matched", "approv
 export function Settlements(): JSX.Element {
   const { api } = useAccess();
   const { t } = useLocale();
-  const [state, setState] = useState("mismatched");
+  // The queue can be linked to: /settlements?state=approved opens on that queue.
+  const [params, setParams] = useSearchParams();
+  const asked = params.get("state");
+  const [state, setState] = useState(asked !== null && STATES.includes(asked) ? asked : "mismatched");
   const queue = useLoad(() => api.get<{ settlements: Settlement[] }>(`/v1/settlements?state=${state}`), [state]);
 
   const act = async (id: string, type: string): Promise<void> => {
@@ -24,7 +28,7 @@ export function Settlements(): JSX.Element {
     <Panel title={t("console.settlements")} actions={<Button onClick={queue.reload}>{t("console.refresh")}</Button>}>
       <Row>
         {STATES.map((s) => (
-          <Button key={s} primary={s === state} onClick={() => { setState(s); }}>{s}</Button>
+          <Button key={s} primary={s === state} onClick={() => { setState(s); setParams({ state: s }); }}>{s}</Button>
         ))}
       </Row>
       <Await loaded={queue.loaded}>

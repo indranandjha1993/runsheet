@@ -1,0 +1,70 @@
+site_name: Runsheet
+site_description: An open-source execution platform for logistics networks.
+site_url: https://indranandjha1993.github.io/runsheet/
+repo_url: https://github.com/indranandjha1993/runsheet
+repo_name: indranandjha1993/runsheet
+edit_uri: edit/main/docs/
+docs_dir: docs
+copyright: AGPL-3.0
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Dark
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Light
+  font:
+    text: Noto Sans
+    code: Noto Sans Mono
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight
+
+nav:
+  - Home: index.md
+  - Start here:
+      - Getting started: getting-started.md
+      - Concepts: concepts.md
+      - Business flows: flows.md
+  - Deploy:
+      - Deploy for your business: deploy.md
+      - Operations: operations.md
+  - Use:
+      - The console, screen by screen: user-guide.md
+      - The driver app: driver-app.md
+      - Reporting: reporting.md
+  - Integrate:
+      - The interface: api.md
+      - Events: events.md
+      - Connectors: connectors.md
+      - Every route: reference/routes.md
+      - Every event: reference/events.md
+  - Understand:
+      - The services: services.md
+      - The console: console.md
+      - Questions people ask: faq.md
